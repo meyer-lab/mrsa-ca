@@ -1,5 +1,9 @@
 """
 Import mrsa and ca rna data from tfac-mrsa and ca-rna repos respectively.
+
+To-do:
+    Change inputs & outputs of functions for ease-of-use when further code is developed.
+    Include more pre-processing as I learn what I'm going to need.
 """
 
 from os.path import join, dirname, abspath

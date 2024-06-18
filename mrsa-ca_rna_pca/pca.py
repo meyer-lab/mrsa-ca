@@ -1,5 +1,13 @@
 """
-going to stack the mrsa and ca rna data while trimming to shared gene expression
+Perform the PCA analysis on the formed matrix from import_data.py
+
+To-do:
+    Move all graphing elements out.
+    Figure out nice loop for graphing.
+    Relearn PCA and SVD to confirm I know what I'm graphing
+        and why. Also, get confirmation about what I'm
+        hoping to show (differences diseases across genes?).
+    Add r2x analysis to double check performance of PCA
 """
 
 from sklearn.decomposition import PCA
@@ -22,6 +30,10 @@ def perform_PCA(components=8):
 
     return rna_decomp
 
+"""
+Move all plotting and figure generation to another file after making sure
+I'm on the right track with these.
+"""
 def plot_pca():
     n_components = 6
     
@@ -42,8 +54,9 @@ def plot_pca():
     rna_decomp = pd.DataFrame(perform_PCA(n_components), indeces, columns)
     
 
-    # figure out nice loop to make later...
-
+    """
+    figuring out a nicer loop...
+    """
     disease = ["mrsa", "ca"]
     colors = ["red", "blue"]
     fig = plt.figure()
@@ -55,21 +68,21 @@ def plot_pca():
     plt.ylabel("PC 2")
     fig.savefig("loopTest")
 
+    # use as reference for what I want the loop to accomplish.
+    # fig01 = plt.figure()
+    # plt.scatter(rna_decomp.loc["mrsa","PC1"], rna_decomp.loc["mrsa", "PC2"], color="red")
+    # plt.scatter(rna_decomp.loc["ca","PC1"], rna_decomp.loc["ca", "PC2"], color="blue")
+    # fig01.savefig("fig01")
 
-    fig01 = plt.figure()
-    plt.scatter(rna_decomp.loc["mrsa","PC1"], rna_decomp.loc["mrsa", "PC2"], color="red")
-    plt.scatter(rna_decomp.loc["ca","PC1"], rna_decomp.loc["ca", "PC2"], color="blue")
-    fig01.savefig("fig01")
+    # fig02 = plt.figure()
+    # plt.scatter(rna_decomp.loc["mrsa","PC3"], rna_decomp.loc["mrsa", "PC4"], color="red")
+    # plt.scatter(rna_decomp.loc["ca","PC3"], rna_decomp.loc["ca", "PC4"], color="blue")
+    # fig02.savefig("fig02")
 
-    fig02 = plt.figure()
-    plt.scatter(rna_decomp.loc["mrsa","PC3"], rna_decomp.loc["mrsa", "PC4"], color="red")
-    plt.scatter(rna_decomp.loc["ca","PC3"], rna_decomp.loc["ca", "PC4"], color="blue")
-    fig02.savefig("fig02")
-
-    fig03 = plt.figure()
-    plt.scatter(rna_decomp.loc["mrsa","PC5"], rna_decomp.loc["mrsa", "PC6"], color="red")
-    plt.scatter(rna_decomp.loc["ca","PC5"], rna_decomp.loc["ca", "PC6"], color="blue")
-    fig03.savefig("fig03")
+    # fig03 = plt.figure()
+    # plt.scatter(rna_decomp.loc["mrsa","PC5"], rna_decomp.loc["mrsa", "PC6"], color="red")
+    # plt.scatter(rna_decomp.loc["ca","PC5"], rna_decomp.loc["ca", "PC6"], color="blue")
+    # fig03.savefig("fig03")
 
 
     

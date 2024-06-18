@@ -27,13 +27,60 @@ def import_mrsa_rna():
 
     # patient # needs to be converted to int32
     mrsa_rna.index = mrsa_rna.index.astype("int32")
-    print(mrsa_rna)
+    # print(mrsa_rna)
 
-    # always scale (demean and divide by variance) rna data
+    # always scale (demean and divide by variance) rna data. scale() expects array or matrix-like, so we numpy
     mrsa_rna.loc[:,:] = scale(mrsa_rna.to_numpy())
 
     return mrsa_rna
 
+def import_ca_rna():
+    """
+    reads ca data from discovery_data_ca
+    
+    Returns: ca_rna (pandas.DataFrame)
+    """
+    ca_rna = pd.read_csv(
+        join(BASE_DIR, "mrsa-ca_rna_pca", "data", "discovery_data_ca.txt.gz"),
+        delimiter=",",
+        # converters={0: lambda x: int(x,16)},
+        index_col=0
+    )
 
-mrsaImportTest = import_mrsa_rna()
-# print(mrsaImportTest)
+    # ca_rna.index = ca_rna.index.map(lambda x: int(x, 16))
+
+
+    # we want to replace each member of the dataframe, not the index or column labels
+    ca_rna.loc[:,:] = scale(ca_rna.to_numpy())
+
+    return ca_rna
+
+def form_matrix():
+    """
+    concatenate the two datasets while trimming to shared genes (columns)
+    
+    Returns: rna_combined (pandas.DataFrame)
+    """
+    mrsa_rna = import_mrsa_rna()
+    # new_mrsa_ind = np.full((len(mrsa_rna.index),), "mrsa")
+    # mrsa_rna.set_index(new_mrsa_ind, inplace=True)
+    
+    ca_rna = import_ca_rna()
+    # new_ca_ind = np.full((len(ca_rna.index),), "ca")
+    # ca_rna.set_index(new_ca_ind, inplace=True)
+
+    # print(f"mrsa and ca rna matrices are shape: {mrsa_rna.shape} and {ca_rna.shape} respectively")
+    mat = pd.concat([mrsa_rna, ca_rna])
+    # print(f"size of concatenated matrix: {mat.shape}")
+    mat = mat.dropna(axis=1)
+    # print(f"shape of the mat after dropping NaN genes: {mat.shape}")
+    # print(mat.index)
+
+    return mat
+
+#debug calls
+# mrsaImportTest = import_mrsa_rna()
+# caImportTest = import_ca_rna()
+# mat = form_matrix()
+# print(mrsaImportTest.columns)
+# print(caImportTest.columns)

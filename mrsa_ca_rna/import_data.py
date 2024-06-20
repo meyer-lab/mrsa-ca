@@ -4,9 +4,7 @@ Import mrsa and ca rna data from tfac-mrsa and ca-rna repos respectively.
 To-do:
     Change inputs & outputs of functions for ease-of-use when further code is developed.
     Include more pre-processing as I learn what I'm going to need.
-    Scale the data after concatenating.
-    Double-check ca data is TPM'd but summing across rows to see if they equal
-        1e6.
+    
 """
 
 from os.path import join, dirname, abspath
@@ -34,10 +32,10 @@ def import_mrsa_rna():
 
     # patient # needs to be converted to int32
     mrsa_rna.index = mrsa_rna.index.astype("int32")
-    # print(mrsa_rna)
 
-    # always scale (demean and divide by variance) rna data. scale() expects array or matrix-like, so we numpy
-    mrsa_rna.loc[:,:] = scale(mrsa_rna.to_numpy())
+
+    # # always scale (demean and divide by variance) rna data. scale() expects array or matrix-like, so we numpy
+    # mrsa_rna.loc[:,:] = scale(mrsa_rna.to_numpy())
 
     return mrsa_rna
 
@@ -56,9 +54,12 @@ def import_ca_rna():
 
     # ca_rna.index = ca_rna.index.map(lambda x: int(x, 16))
 
+    # TPM the data across the rows
+    ca_rna = ca_rna.mul(1000000/ca_rna.sum(axis=1), axis=0)
 
-    # we want to replace each member of the dataframe, not the index or column labels
-    ca_rna.loc[:,:] = scale(ca_rna.to_numpy())
+
+    # # we want to replace each member of the dataframe, not the index or column labels
+    # ca_rna.loc[:,:] = scale(ca_rna.to_numpy())
 
     return ca_rna
 
@@ -77,17 +78,20 @@ def form_matrix():
     # ca_rna.set_index(new_ca_ind, inplace=True)
 
     # print(f"mrsa and ca rna matrices are shape: {mrsa_rna.shape} and {ca_rna.shape} respectively")
-    mat = pd.concat([mrsa_rna, ca_rna])
-    # print(f"size of concatenated matrix: {mat.shape}")
-    mat = mat.dropna(axis=1)
-    # print(f"shape of the mat after dropping NaN genes: {mat.shape}")
-    # print(mat.index)
+    rna_combined = pd.concat([mrsa_rna, ca_rna])
+    # print(f"size of concatenated matrix: {rna_combined.shape}")
+    rna_combined = rna_combined.dropna(axis=1)
+    # print(f"shape of the rna_combined after dropping NaN genes: {rna_combined.shape}")
+    # print(rna_combined.index)
 
-    return mat
+    # scale the matrix after all the data is added to it
+    rna_combined.loc[:,:] = scale(rna_combined.to_numpy())
+
+    return rna_combined
 
 #debug calls
 # mrsaImportTest = import_mrsa_rna()
 # caImportTest = import_ca_rna()
-# mat = form_matrix()
+# rna_combined = form_matrix()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)

@@ -1,40 +1,25 @@
 """
-Perform the PCA analysis on the formed matrix from import_data.py
+Graph PC's against each other in pairs (PC1 vs PC2, PC3 vs PC4, etc.)
+and analyze the results. We are hoping to see interesting patterns
+across patients i.e. the scores matrix.
 
 To-do:
-    Move all graphing elements out.
-    Figure out nice loop for graphing.
-    Relearn PCA and SVD to confirm I know what I'm graphing
-        and why. Also, get confirmation about what I'm
-        hoping to show (differences diseases across genes?).
-    Add r2x analysis to double check performance of PCA.
-        Can simply use explained_variance_, looping to higher component #s
+    Make a nice loop for graphing all the different components.
+    Implement seaborn.
+    Refactor using new filesystem setup (where to outout figures,
+        what files to import, what arguments the functions take, etc.)
+    Change everything to be Fig_Setup -> MakeFig (subplots) like in
+        tfac-mrsa code.
 """
 
-from sklearn.decomposition import PCA
-from import_data import form_matrix, import_mrsa_rna, import_ca_rna
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def perform_PCA(components=8):
+from mrsa_ca_rna.import_data import import_mrsa_rna, import_ca_rna
+from mrsa_ca_rna.pca import perform_PCA
 
-    rna_mat = form_matrix()
 
-    pca = PCA(n_components=components)
-
-    rna_decomp = pca.fit_transform(rna_mat)
-
-    # print(f"shape of loadings: {pca.components_.shape}, (components, gene)")
-    # print(f"Shape of scores: {rna_decomp.shape} (patients, components)")
-    print(rna_decomp)
-
-    return rna_decomp
-
-"""
-Move all plotting and figure generation to another file after making sure
-I'm on the right track with these.
-"""
 def plot_pca():
     n_components = 6
     
@@ -84,14 +69,3 @@ def plot_pca():
     # plt.scatter(rna_decomp.loc["mrsa","PC5"], rna_decomp.loc["mrsa", "PC6"], color="red")
     # plt.scatter(rna_decomp.loc["ca","PC5"], rna_decomp.loc["ca", "PC6"], color="blue")
     # fig03.savefig("fig03")
-
-
-    
-
-    
-
-
-    
-
-# perform_PCA(2)
-plot_pca()

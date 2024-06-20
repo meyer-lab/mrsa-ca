@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mrsa-ca_rna_pca"
+name = "mrsa_ca_rna"
 version = "0.1.0"
 description = ""
 authors = ["MrBones1102 <jamespopoli@gmail.com>"]

@@ -7,7 +7,8 @@ To-do:
     Relearn PCA and SVD to confirm I know what I'm graphing
         and why. Also, get confirmation about what I'm
         hoping to show (differences diseases across genes?).
-    Add r2x analysis to double check performance of PCA
+    Add r2x analysis to double check performance of PCA.
+        Can simply use explained_variance_, looping to higher component #s
 """
 
 from sklearn.decomposition import PCA

@@ -4,6 +4,9 @@ Import mrsa and ca rna data from tfac-mrsa and ca-rna repos respectively.
 To-do:
     Change inputs & outputs of functions for ease-of-use when further code is developed.
     Include more pre-processing as I learn what I'm going to need.
+    Scale the data after concatenating.
+    Double-check ca data is TPM'd but summing across rows to see if they equal
+        1e6.
 """
 
 from os.path import join, dirname, abspath

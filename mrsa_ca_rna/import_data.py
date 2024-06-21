@@ -23,7 +23,7 @@ def import_mrsa_rna():
     Reurns: mrsa_rna (pandas.DataFram)
     """
     mrsa_rna = pd.read_csv(
-        join(BASE_DIR, "mrsa-ca_rna_pca", "data", "rna_combat_tpm_mrsa.txt.zip"),
+        join(BASE_DIR, "mrsa_ca_rna", "data", "rna_combat_tpm_mrsa.txt.zip"),
         delimiter=",",
         index_col=0,
         engine="c",
@@ -46,7 +46,7 @@ def import_ca_rna():
     Returns: ca_rna (pandas.DataFrame)
     """
     ca_rna = pd.read_csv(
-        join(BASE_DIR, "mrsa-ca_rna_pca", "data", "discovery_data_ca.txt.gz"),
+        join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_data_ca.txt.gz"),
         delimiter=",",
         # converters={0: lambda x: int(x,16)},
         index_col=0

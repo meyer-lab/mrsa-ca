@@ -35,11 +35,11 @@ def perform_PCA(rna_mat:pd.DataFrame):
     components = np.arange(1, 101)
     total_explained = []
     threshold = 0.95
-    change_threshold = 0.005
+    change_threshold = 0.002
     for component in components:
         pca = PCA(n_components=component)
         rna_decomp = pca.fit_transform(rna_mat)
-        total_explained.append(pca.explained_variance_ratio_.sum())
+        total_explained.append(float(pca.explained_variance_ratio_.sum()))
         try:
             delta = (total_explained[-1]-total_explained[-2])/total_explained[-2]
         except:
@@ -52,7 +52,7 @@ def perform_PCA(rna_mat:pd.DataFrame):
                 break
             elif (component > 1 and delta < change_threshold):
                 opt_comp = component
-                print(f"Failed to reach threshold before explained variance delta dopped below 0.1% at {component} components")
+                print(f"Failed to reach threshold before explained variance delta dopped below {change_threshold*100}% at {component} components")
                 break
     
 

@@ -16,12 +16,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from mrsa_ca_rna.import_data import import_mrsa_rna, import_ca_rna
+from mrsa_ca_rna.import_data import import_mrsa_rna, import_ca_rna, form_matrix
 from mrsa_ca_rna.pca import perform_PCA
 
 
 def plot_pca():
-    n_components = 6
     
     mrsa_rna = import_mrsa_rna()
     new_mrsa = np.full((len(mrsa_rna.index),), "mrsa")
@@ -31,14 +30,17 @@ def plot_pca():
     new_ca = np.full((len(ca_rna.index),), "ca")
     # ca_rna.set_index(new_ca, inplace=True)
 
+    
+
+    rna_mat = form_matrix()
+    rna_decomp, n_components, _ = perform_PCA(rna_mat)
+
     indeces = np.concatenate((new_mrsa, new_ca))
     columns = []
     for i in range(n_components):
         columns.append("PC" + str(i+1))
-
-
-    rna_decomp = pd.DataFrame(perform_PCA(n_components), indeces, columns)
     
+    rna_decomp_df = pd.DataFrame(rna_decomp, indeces, columns)
 
     """
     figuring out a nicer loop...
@@ -47,7 +49,7 @@ def plot_pca():
     colors = ["red", "blue"]
     fig = plt.figure()
     for i, color in zip(disease, colors):
-        plt.scatter(rna_decomp.loc[i, "PC1"], rna_decomp.loc[i, "PC2"], color=color, label=i)
+        plt.scatter(rna_decomp_df.loc[i, "PC1"], rna_decomp_df.loc[i, "PC2"], color=color, label=i)
     plt.legend(loc="best", shadow=False, scatterpoints=1)
     plt.title("PCA of MRSA and CA RNAseq")
     plt.xlabel("PC 1")
@@ -69,3 +71,6 @@ def plot_pca():
     # plt.scatter(rna_decomp.loc["mrsa","PC5"], rna_decomp.loc["mrsa", "PC6"], color="red")
     # plt.scatter(rna_decomp.loc["ca","PC5"], rna_decomp.loc["ca", "PC6"], color="blue")
     # fig03.savefig("fig03")
+
+# debug
+plot_pca()

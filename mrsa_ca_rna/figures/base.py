@@ -27,7 +27,7 @@ matplotlib.rcParams["grid.linestyle"] = "dotted"
 # legend styles
 matplotlib.rcParams["legend.borderpad"] = 0.25
 matplotlib.rcParams["legend.fontsize"] = 9
-matplotlib.rcParams["legend.framealpha"] = 0.25
+matplotlib.rcParams["legend.framealpha"] = 0.75
 matplotlib.rcParams["legend.handlelength"] = 0.5
 matplotlib.rcParams["legend.handletextpad"] = 0.25
 matplotlib.rcParams["legend.labelspacing"] = 0.2

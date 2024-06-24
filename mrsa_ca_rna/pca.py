@@ -5,10 +5,11 @@ To-do:
     Relearn PCA and SVD to confirm I know what I'm graphing
         and why. Also, get confirmation about what I'm
         hoping to show (differences diseases across genes?).
-    Arrange rna_comp into a pandas DataFrame for ease of use before
-        returning it.
-            Index labels: mrsa or ca
-            Column labels: PC1, PC2, PC3, etc.
+    Perform PCA only once since it is ordered (PC1 is the same at
+        1 or 36 components) and then take subsets for graphs and
+        calcs.
+    Run PCA on longitudinal data that I wither find here or in
+        import_data.
 """
 
 from sklearn.decomposition import PCA

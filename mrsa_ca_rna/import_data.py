@@ -4,7 +4,13 @@ Import mrsa and ca rna data from tfac-mrsa and ca-rna repos respectively.
 To-do:
     Change inputs & outputs of functions for ease-of-use when further code is developed.
     Include more pre-processing as I learn what I'm going to need.
-    
+    Find longitudinal data in ca data since we know it should be there.
+        They will either have the same label if they denote patient or 
+        they may just be offset by a constant value if they are samples
+        and come from the same patient. Take a look and see what's there.
+    Get more data from healthy patients to include in this analysis to
+        increase the power of the PCA analysis for finding real, not batch,
+        differences in the data.
 """
 
 from os.path import join, dirname, abspath

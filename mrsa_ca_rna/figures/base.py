@@ -1,5 +1,9 @@
 """
 Sets up the base figure upon which subplots will be placed in a manuscript style.
+
+To-do:
+    Graph PC2 vs. PC3, 4, 5, 6, etc. to remove PC1 (batch) from analysis.
+    Graph more PCs.
 """
 
 import matplotlib.figure

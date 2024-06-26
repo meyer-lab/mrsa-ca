@@ -72,6 +72,21 @@ def import_ca_rna():
 
     return ca_rna
 
+def import_ca_meta():
+    """
+    reads ca metadata from discovery_data_meta.txt
+
+    Returns:
+        ca_meta (pandas.DataFrame)
+    """
+    ca_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_metadata_ca.txt"),
+        delimiter=",",
+        index_col=0
+    )
+
+    return ca_meta
+
 def form_matrix():
     """
     concatenate the two datasets while trimming to shared genes (columns)
@@ -104,3 +119,4 @@ def form_matrix():
 # rna_combined = form_matrix()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)
+import_ca_meta()

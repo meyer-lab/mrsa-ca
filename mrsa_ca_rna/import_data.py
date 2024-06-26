@@ -11,6 +11,9 @@ To-do:
     Get more data from healthy patients to include in this analysis to
         increase the power of the PCA analysis for finding real, not batch,
         differences in the data.
+        Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
+        dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
+        infection.
 """
 
 from os.path import join, dirname, abspath

@@ -20,10 +20,12 @@ from mrsa_ca_rna.pca import perform_PCA
 def figure_00_setup():
     """ Make and organize the data to be used in genFig"""
     rna_mat = form_matrix()
+    rna_decomp, pca = perform_PCA(rna_mat)
 
-    rna_decomp, components, explained = perform_PCA(rna_mat)
-    components = np.arange(1, components+1)
-    data = np.stack([components, explained]).T
+    components = range(1, pca.n_components_+1)
+    total_explained = np.cumsum(pca.explained_variance_ratio_)
+
+    data = np.stack([components, total_explained]).T
     data = pd.DataFrame(data, columns=["components", "explained"])
     data["components"] = data["components"].astype("int32")
 
@@ -60,4 +62,4 @@ def genFig():
 
 # #debug
 # fig = genFig()
-# fig.savefig("./mrsa_ca_rna/output/fig00_withBase.svg")
+# fig.savefig("./mrsa_ca_rna/output/fig00_SinglePCA.png")

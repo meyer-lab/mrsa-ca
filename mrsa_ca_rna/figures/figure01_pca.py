@@ -24,28 +24,23 @@ import matplotlib.pyplot as plt
 def figure01_setup():
     
     mrsa_rna = import_mrsa_rna()
-    new_mrsa = np.full(len(mrsa_rna.index), "mrsa").T
+    mrsa_label = np.full(len(mrsa_rna.index), "mrsa").T
 
     ca_rna = import_ca_rna()
-    new_ca = np.full(len(ca_rna.index), "ca").T
+    ca_label = np.full(len(ca_rna.index), "ca").T
 
-    indeces = np.concatenate((mrsa_rna.index, ca_rna.index))
-    state = np.concatenate((new_mrsa, new_ca))
+    state = np.concatenate((mrsa_label, ca_label))
 
     rna_mat = form_matrix()
-    rna_decomp, n_components, _ = perform_PCA(rna_mat)
+    rna_decomp, pca = perform_PCA(rna_mat)
     
     columns = []
-    for i in range(n_components):
+    for i in range(pca.n_components_):
         columns.append("PC" + str(i+1))
     
-    rna_decomp_df = pd.DataFrame(rna_decomp, indeces, columns)
-    rna_decomp_df.insert(loc=0, column="state", value=state)
+    rna_decomp.insert(loc=0, column="state", value=state)
 
-    """
-    figuring out a nicer loop...
-    """
-    return rna_decomp_df
+    return rna_decomp
 
     # use as reference for what I want the loop to accomplish.
     # fig01 = plt.figure()
@@ -101,6 +96,6 @@ def genFig():
 
     return f
 
-# debug
-fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_withBase.png")
+# # debug
+# fig = genFig()
+# fig.savefig("./mrsa_ca_rna/output/fig01_singlePCA.png")

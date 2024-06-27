@@ -53,7 +53,8 @@ def import_ca_meta():
     reads ca metadata from discovery_data_meta.txt and trims to Candida phenotype
 
     Returns:
-        ca_meta (pandas.DataFrame)
+        ca_pos_meta (pandas.Index): patients positive with CA
+        ca_neg_meta (pandas.Index): patients negative with CA
     """
     ca_meta = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_metadata_ca.txt"),
@@ -61,14 +62,21 @@ def import_ca_meta():
         index_col=0
     )
 
-    ca_meta.drop(ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] != "Candidemia"].index, inplace=True)
-    return ca_meta
+    # # drop anything not CA
+    # ca_meta.drop(ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] != "Candidemia"].index, inplace=True)
+
+    ca_pos_meta = ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] == "Candidemia"].index
+    ca_neg_meta = ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] == "Healthy"].index
+
+    return ca_pos_meta, ca_neg_meta
 
 def import_ca_rna():
     """
     reads ca data from discovery_data_ca
     
-    Returns: ca_rna (pandas.DataFrame)
+    Returns:
+        ca_pos_rna (pandas.DataFrame): patient rna positive with ca
+        ca_neg_rna (pandas.DataFrame): patient rna negative with ca
     """
     ca_rna = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_data_ca.txt.gz"),
@@ -79,36 +87,46 @@ def import_ca_rna():
 
     # ca_rna.index = ca_rna.index.map(lambda x: int(x, 16))
 
-    # Trim ca dataset to only those patients with ca phenotype
-    ca_meta = import_ca_meta()
-    ca_rna = ca_rna.loc[ca_meta.index]
-
     # TPM the data across the rows
     ca_rna = ca_rna.mul(1000000/ca_rna.sum(axis=1), axis=0)
 
+    # Trim ca dataset to only those patients with ca or healthy phenotype
+    ca_pos_meta, ca_neg_meta = import_ca_meta()
+    ca_pos_rna = ca_rna.loc[ca_pos_meta]
+    ca_neg_rna = ca_rna.loc[ca_neg_meta]
+
+    
+
+    # Let's check for repeat indices
+    matching = 0
+    for i, id in enumerate(ca_pos_rna.index):
+        for ii in range(len(ca_pos_rna.index)):
+            if id == ca_rna.index[ii] and i != ii:
+                matching += 1
 
     # # we want to replace each member of the dataframe, not the index or column labels
     # ca_rna.loc[:,:] = scale(ca_rna.to_numpy())
 
-    return ca_rna
+    return ca_pos_rna, ca_neg_rna
 
 
 def form_matrix():
     """
     concatenate the two datasets while trimming to shared genes (columns)
     
-    Returns: rna_combined (pandas.DataFrame)
+    Returns:
+        rna_combined (pandas.DataFrame): Concatenated MRSA and CA positive + CA negative rna data
     """
     mrsa_rna = import_mrsa_rna()
     # new_mrsa_ind = np.full((len(mrsa_rna.index),), "mrsa")
     # mrsa_rna.set_index(new_mrsa_ind, inplace=True)
     
-    ca_rna = import_ca_rna()
+    ca_pos_rna, ca_neg_rna = import_ca_rna()
     # new_ca_ind = np.full((len(ca_rna.index),), "ca")
     # ca_rna.set_index(new_ca_ind, inplace=True)
 
     # print(f"mrsa and ca rna matrices are shape: {mrsa_rna.shape} and {ca_rna.shape} respectively")
-    rna_combined = pd.concat([mrsa_rna, ca_rna])
+    rna_combined = pd.concat([mrsa_rna, ca_pos_rna, ca_neg_rna])
     # print(f"size of concatenated matrix: {rna_combined.shape}")
     rna_combined = rna_combined.dropna(axis=1)
     # print(f"shape of the rna_combined after dropping NaN genes: {rna_combined.shape}")
@@ -121,8 +139,8 @@ def form_matrix():
 
 #debug calls
 # mrsaImportTest = import_mrsa_rna()
-caImportTest = import_ca_rna()
-# rna_combined = form_matrix()
+# caImportTest = import_ca_rna()
+rna_combined = form_matrix()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)
 # import_ca_meta()

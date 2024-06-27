@@ -48,6 +48,22 @@ def import_mrsa_rna():
 
     return mrsa_rna
 
+def import_ca_meta():
+    """
+    reads ca metadata from discovery_data_meta.txt and trims to Candida phenotype
+
+    Returns:
+        ca_meta (pandas.DataFrame)
+    """
+    ca_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_metadata_ca.txt"),
+        delimiter=",",
+        index_col=0
+    )
+
+    ca_meta.drop(ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] != "Candidemia"].index, inplace=True)
+    return ca_meta
+
 def import_ca_rna():
     """
     reads ca data from discovery_data_ca
@@ -63,6 +79,10 @@ def import_ca_rna():
 
     # ca_rna.index = ca_rna.index.map(lambda x: int(x, 16))
 
+    # Trim ca dataset to only those patients with ca phenotype
+    ca_meta = import_ca_meta()
+    ca_rna = ca_rna.loc[ca_meta.index]
+
     # TPM the data across the rows
     ca_rna = ca_rna.mul(1000000/ca_rna.sum(axis=1), axis=0)
 
@@ -72,20 +92,6 @@ def import_ca_rna():
 
     return ca_rna
 
-def import_ca_meta():
-    """
-    reads ca metadata from discovery_data_meta.txt
-
-    Returns:
-        ca_meta (pandas.DataFrame)
-    """
-    ca_meta = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_metadata_ca.txt"),
-        delimiter=",",
-        index_col=0
-    )
-
-    return ca_meta
 
 def form_matrix():
     """
@@ -115,8 +121,8 @@ def form_matrix():
 
 #debug calls
 # mrsaImportTest = import_mrsa_rna()
-# caImportTest = import_ca_rna()
+caImportTest = import_ca_rna()
 # rna_combined = form_matrix()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)
-import_ca_meta()
+# import_ca_meta()

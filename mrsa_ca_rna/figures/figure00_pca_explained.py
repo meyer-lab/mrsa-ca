@@ -61,5 +61,5 @@ def genFig():
     return f
 
 # #debug
-# fig = genFig()
-# fig.savefig("./mrsa_ca_rna/output/fig00_SinglePCA.png")
+fig = genFig()
+fig.savefig("./mrsa_ca_rna/output/fig00_CA-MRSA-Only.png")

@@ -9,3 +9,5 @@ mrsa_ca_rna/output/fig01_withBase.png
 mrsa_ca_rna/output/fig00_SinglePCA.png
 mrsa_ca_rna/output/fig01_singlePCA.png
 mrsa_ca_rna/output/fig01_PC2Comp.png
+mrsa_ca_rna/output/fig01_CA_MRSA_Only.png
+mrsa_ca_rna/output/fig00_CA-MRSA-Only.png

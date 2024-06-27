@@ -72,30 +72,42 @@ def genFig():
 
     data = figure01_setup()
 
+    component_pairs = np.array([[1,2],
+                                [3,4],
+                                [5,6],
+                                [7,8]],
+                                dtype=int)
     
+    assert component_pairs.shape[0] == layout["ncols"]*layout["nrows"], "component pairs to be graphed do not match figure layout size"
 
-    a = sns.scatterplot(data=data.loc[:,"PC2":"PC3"], x="PC2", y="PC3", hue=data.loc[:,"state"], ax=ax[0])
-    a.set_xlabel("PC2")
-    a.set_ylabel("PC3")
+    # for i, j, k in enumerate(component_pairs):
+    #     a = sns.scatterplot(data=data.loc[:,(data.columns[j],data.columns[k])], x=data.columns[j], y=data.columns[k], hue=data.loc[:,"state"], ax=ax[i])
+    #     a.set_xlabel(data.columns[j])
+    #     a.set_ylabel(data.columns[k])
+    #     a.set_title("Var Comp 1")
+
+    a = sns.scatterplot(data=data.loc[:,"PC1":"PC2"], x="PC1", y="PC2", hue=data.loc[:,"state"], ax=ax[0])
+    a.set_xlabel("PC1")
+    a.set_ylabel("PC2")
     a.set_title("Var Comp 1")
 
-    a = sns.scatterplot(data=data.loc[:,("PC2","PC4")], x="PC2", y="PC4", hue=data.loc[:,"state"], ax=ax[1])
-    a.set_xlabel("PC2")
+    a = sns.scatterplot(data=data.loc[:,("PC3","PC4")], x="PC3", y="PC4", hue=data.loc[:,"state"], ax=ax[1])
+    a.set_xlabel("PC3")
     a.set_ylabel("PC4")
     a.set_title("Var Comp 2")
 
-    a = sns.scatterplot(data=data.loc[:,("PC2","PC5")], x="PC2", y="PC5", hue=data.loc[:,"state"], ax=ax[2])
-    a.set_xlabel("PC2")
-    a.set_ylabel("PC5")
+    a = sns.scatterplot(data=data.loc[:,("PC5","PC6")], x="PC5", y="PC6", hue=data.loc[:,"state"], ax=ax[2])
+    a.set_xlabel("PC5")
+    a.set_ylabel("PC6")
     a.set_title("Var Comp 3")
 
-    a = sns.scatterplot(data=data.loc[:,("PC2","PC6")], x="PC2", y="PC6", hue=data.loc[:,"state"], ax=ax[3])
-    a.set_xlabel("PC2")
-    a.set_ylabel("PC6")
+    a = sns.scatterplot(data=data.loc[:,("PC7","PC8")], x="PC7", y="PC8", hue=data.loc[:,"state"], ax=ax[3])
+    a.set_xlabel("PC7")
+    a.set_ylabel("PC8")
     a.set_title("Var Comp 4")
 
     return f
 
 # debug
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_PC2Comp.png")
+fig.savefig("./mrsa_ca_rna/output/fig01_looping.png")

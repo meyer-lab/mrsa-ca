@@ -104,10 +104,67 @@ def import_ca_rna():
             if id == ca_rna.index[ii] and i != ii:
                 matching += 1
 
-    # # we want to replace each member of the dataframe, not the index or column labels
-    # ca_rna.loc[:,:] = scale(ca_rna.to_numpy())
 
     return ca_pos_rna, ca_neg_rna
+
+def import_GSE_metadata():
+    """
+    Read metadata file to determine patient characteristics.
+
+    Returns:
+        gse_healthy_pats (pandas.Index): index of ID's for just healthy patients
+    """
+    gse_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "GSE114192_modified_metadata.txt.gz"),
+        delimiter="\t",
+        index_col=0
+    )
+
+    gse_annot = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
+        delimiter="\t",
+        index_col=0
+    )
+
+    gse_meta = gse_meta.T
+    gse_meta = gse_meta.reset_index(names="!Sample_title").set_index("ID_REF").dropna(axis="columns")
+    gse_meta.drop("GSM3137557", inplace=True) # This patient isn't in the rna data for some reason?
+
+
+    gene_conversion = pd.DataFrame(gse_annot.loc[:,"EnsemblGeneID"], index=gse_annot.index, columns=["EnsemblGeneID"]).dropna(axis=0)
+    gene_conversion = dict(zip(gene_conversion.index, gene_conversion["EnsemblGeneID"]))
+
+    
+    gse_healthy_pat = gse_meta.loc[gse_meta["!Sample_title"].str.contains("Healthy_Control")].index
+
+    return gse_healthy_pat, gene_conversion
+
+
+def import_GSE_rna():
+    """
+    Read GSE rna data. We are looking for healthy samples to augment our power with mrsa-ca
+    
+    Returns:
+        gse_rna (pandas.DataFrame): A DataFrame of shape (patient x gene)
+    """
+    gse_rna = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "GSE114192_norm_counts_TPM.tsv.gz"),
+        delimiter="\t",
+        index_col=0
+    )
+    # transpose to get DataFrame into (patient x gene) form
+    gse_rna = gse_rna.T
+
+    gse_healthy_index, gene_conversion = import_GSE_metadata()
+
+    gse_rna = gse_rna.loc[gse_healthy_index]
+    gse_rna.rename(gene_conversion, axis=1, inplace=True)
+
+    # ca_pos_meta = ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] == "Candidemia"].index
+
+    gse_rna = gse_rna.loc[:,gse_rna.columns.str.contains("ENSG")==True]
+
+    return gse_rna
 
 
 def form_matrix():
@@ -124,6 +181,8 @@ def form_matrix():
     ca_pos_rna, ca_neg_rna = import_ca_rna()
     # new_ca_ind = np.full((len(ca_rna.index),), "ca")
     # ca_rna.set_index(new_ca_ind, inplace=True)
+
+    gse_healthy = import_GSE_rna()
 
     # print(f"mrsa and ca rna matrices are shape: {mrsa_rna.shape} and {ca_rna.shape} respectively")
     rna_combined = pd.concat([mrsa_rna, ca_pos_rna, ca_neg_rna])
@@ -144,3 +203,5 @@ rna_combined = form_matrix()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)
 # import_ca_meta()
+# import_GSE_rna()
+# import_GSE_metadata()

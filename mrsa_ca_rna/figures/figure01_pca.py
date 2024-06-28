@@ -76,4 +76,4 @@ def genFig():
 
 """Debug function call section"""
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_Healthy.png")
+fig.savefig("./mrsa_ca_rna/output/fig01_Healthy+.png")

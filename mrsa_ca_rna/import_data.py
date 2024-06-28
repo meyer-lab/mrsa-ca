@@ -187,6 +187,10 @@ def form_matrix():
     Need to implement gse_healthy into the rna_combined but concat fails
     due to non-unique indexing. Need to do a deeper dive on this when
     I get back to it.
+
+    Hypothesis: rna column data that isn't in the EGSM form has values that are
+    the same as the patient numbers from the mrsa indeces. Must remove all
+    non-EGSM values before concat
     """
     gse_healthy = import_GSE_rna()
 

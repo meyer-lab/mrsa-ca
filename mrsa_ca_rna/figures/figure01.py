@@ -1,12 +1,9 @@
 """
-Graph PC's against each other in pairs (PC1 vs PC2, PC3 vs PC4, etc.)
-and analyze the results. We are hoping to see interesting patterns
-across patients i.e. the scores matrix.
+This is a copy of figure01_pca.py that was generated when I was trying
+to figure out what had happened to the original (see commit message before
+the commit accompanying this comment section)
 
-To-do:
-    Make a function that takes in PCA component data and automatically determines the
-        appropriate size and layout of the graph. Can remove assert once
-        completed.
+This is to be deleted once I can ensure the previous file generates plots correctly
 """
 
 import numpy as np

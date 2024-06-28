@@ -7,6 +7,7 @@ To-do:
     Make a function that takes in PCA component data and automatically determines the
         appropriate size and layout of the graph. Can remove assert once
         completed.
+    Regenerate plots using recently added gse_healthy data
 """
 
 import numpy as np

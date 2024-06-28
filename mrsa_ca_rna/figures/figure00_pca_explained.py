@@ -5,6 +5,7 @@ components.
 
 To-do:
     Cleanup after writing more of these figure files
+    Regenerate plots using recently added gse_healthy data
 """
 
 import matplotlib.pyplot as plt

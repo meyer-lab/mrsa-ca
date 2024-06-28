@@ -14,6 +14,7 @@ To-do:
         Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
         dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
         infection.
+    Incorporate gse_healthy into form_matrix()
 """
 
 from os.path import join, dirname, abspath
@@ -182,6 +183,11 @@ def form_matrix():
     # new_ca_ind = np.full((len(ca_rna.index),), "ca")
     # ca_rna.set_index(new_ca_ind, inplace=True)
 
+    """
+    Need to implement gse_healthy into the rna_combined but concat fails
+    due to non-unique indexing. Need to do a deeper dive on this when
+    I get back to it.
+    """
     gse_healthy = import_GSE_rna()
 
     # print(f"mrsa and ca rna matrices are shape: {mrsa_rna.shape} and {ca_rna.shape} respectively")

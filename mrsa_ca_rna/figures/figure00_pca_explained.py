@@ -63,4 +63,4 @@ def genFig():
 
 # #debug
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig00_CA-Healthy-MRSA.png")
+fig.savefig("./mrsa_ca_rna/output/fig00_Healthy+.png")

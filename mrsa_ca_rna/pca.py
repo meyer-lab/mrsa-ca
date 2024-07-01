@@ -27,12 +27,6 @@ def perform_PCA(rna_mat:pd.DataFrame):
     Returns: rna_decomp (pd.DataFrame), pca (object)
     """
 
-
-    """
-    Cycle through a an increasing amount of components to perform pca.
-    Perform the fit_transform of the data in-situ once optimal components
-    are found, or the max # of components tested if threshold is not reached.
-    """
     
     components = 100 # delta percent explained drops below 0.1% @ ~component 70
     pca = PCA(n_components=components)
@@ -44,34 +38,6 @@ def perform_PCA(rna_mat:pd.DataFrame):
 
     rna_decomp = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
-    """Previous exploratory code. Obsolete now"""
-    # components = range(1,101)
-    # total_explained = []
-    # threshold = 0.95
-    # change_threshold = 0.002
-    # for component in components:
-    #     pca = PCA(n_components=component)
-    #     rna_decomp = pca.fit_transform(rna_mat)
-    #     total_explained.append(float(pca.explained_variance_ratio_.sum()))
-    #     try:
-    #         delta = (total_explained[-1]-total_explained[-2])/total_explained[-2]
-    #     except:
-    #         print("Skipping delta calculation with 1 component")
-    #     else:
-    #         print(f"Trying {component} components with {delta*100}% more variance explained...")
-    #         if pca.explained_variance_ratio_.sum() >= threshold:
-    #             opt_comp = component
-    #             print(f"Explained variance matches or exceeds threshold at {component} components")
-    #             break
-    #         elif (component > 1 and delta < change_threshold):
-    #             opt_comp = component
-    #             print(f"Failed to reach threshold before explained variance delta dopped below {change_threshold*100}% at {component} components")
-    #             break
-    
-
-    # print(f"shape of loadings: {pca.components_.shape}, (components, gene)")
-    # print(f"Shape of scores: {rna_decomp.shape} (patients, components)")
-    # print(rna_decomp)
 
     return rna_decomp, pca
 

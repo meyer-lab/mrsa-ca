@@ -81,6 +81,7 @@ def genFig():
     
     assert component_pairs.shape[0] == layout["ncols"]*layout["nrows"], "component pairs to be graphed do not match figure layout size"
 
+    # coincidentally, columns in DataFrames start at 1
     for i, (j, k) in enumerate(component_pairs):
         a = sns.scatterplot(data=data.loc[:,(data.columns[j],data.columns[k])], x=data.columns[j], y=data.columns[k], hue=data.loc[:,"state"], ax=ax[i])
         a.set_xlabel(data.columns[j])

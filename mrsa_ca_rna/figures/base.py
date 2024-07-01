@@ -4,6 +4,10 @@ Sets up the base figure upon which subplots will be placed in a manuscript style
 To-do:
     Graph PC2 vs. PC3, 4, 5, 6, etc. to remove PC1 (batch) from analysis.
     Graph more PCs.
+    Make heatmap of ~40 components annotated by cohort to try to see patterns.
+        Jackson has heatmap code I can use to learn from.
+    Make a figure detailing results of a logistical regression model for MRSA outcome.
+        Rgression file and functions must be written.
 """
 
 import matplotlib.figure

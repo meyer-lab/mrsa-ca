@@ -5,15 +5,14 @@ To-do:
     Relearn PCA and SVD to confirm I know what I'm graphing
         and why. Also, get confirmation about what I'm
         hoping to show (differences diseases across genes?).
-    Perform PCA only once since it is ordered (PC1 is the same at
-        1 or 36 components) and then take subsets for graphs and
-        calcs.
-    Run PCA on longitudinal data that I wither find here or in
-        import_data.
+    After performing PCA, when creating scores and loadings df's,
+        add relevant metadata into these df's because they'll be
+        used for graphing all sorts of things and it will just be
+        easier to have the data available in the df's.
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import form_matrix
+from mrsa_ca_rna.import_data import concat_datasets
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -23,9 +22,13 @@ def perform_PCA(rna_mat: pd.DataFrame):
     """
     Perform pca analysis on concatenated rna matrix
 
-    Accepts: rna_mat (pd.DataFrame)
+    Accepts:
+        rna_mat (pd.DataFrame)
 
-    Returns: rna_decomp (pd.DataFrame), pca (object)
+    Returns:
+        scores (pd.DataFrame): the scores matrix of the concatenated datasets as a result of PCA
+        loadings (pd.DataFrame): the loadings matrix of the concatenated datasets as a result of PCA
+        pca (object): the PCA object for further use in the code. Might remove once I finish changing perform_PCA
     """
 
     components = 100  # delta percent explained drops below 0.1% @ ~component 70
@@ -36,11 +39,12 @@ def perform_PCA(rna_mat: pd.DataFrame):
     for i in range(1, 101):
         column_labels.append("PC" + str(i))
 
-    rna_decomp = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
+    scores = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
-    return rna_decomp, pca
+    rows = []
+    for i in range(pca.n_components_):
+        rows.append("PC" + str(i + 1))
 
+    loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
 
-# debug calls
-# rna_mat = form_matrix()
-# perform_PCA(rna_mat)
+    return scores, loadings, pca

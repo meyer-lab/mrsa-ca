@@ -7,7 +7,10 @@ To-do:
     Make a function that takes in PCA component data and automatically determines the
         appropriate size and layout of the graph. Can remove assert once
         completed.
-    Regenerate plots using recently added gse_healthy data
+    Figure out how to plot PCA with sns.pairplot instead of sns.scatterplot
+        Seems like it would negate the need for component_pairs since it pairs
+        the data itself? Can't get a good sense of it just from the documentation
+        yet.
 """
 
 import numpy as np
@@ -17,7 +20,7 @@ from mrsa_ca_rna.import_data import (
     import_mrsa_rna,
     import_ca_rna,
     import_GSE_rna,
-    form_matrix,
+    concat_datasets,
 )
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
@@ -42,16 +45,16 @@ def figure01_setup():
     # make state column for graphing across disease type and healthy
     state = np.concatenate((mrsa_label, ca_label, healthy_ca, healthy_gse))
 
-    rna_mat = form_matrix()
-    rna_decomp, pca = perform_PCA(rna_mat)
+    rna_mat = concat_datasets()
+    scores, loadings, pca = perform_PCA(rna_mat)
 
     columns = []
     for i in range(pca.n_components_):
         columns.append("PC" + str(i + 1))
 
-    rna_decomp.insert(loc=0, column="state", value=state)
+    scores.insert(loc=0, column="state", value=state)
 
-    return rna_decomp
+    return scores
 
 
 def genFig():
@@ -96,6 +99,7 @@ def genFig():
             hue=data.loc[:, "state"],
             ax=ax[i],
         )
+
         a.set_xlabel(data.columns[j])
         a.set_ylabel(data.columns[k])
         a.set_title(f"Var Comp {data.columns[j]} vs {data.columns[k]}")
@@ -105,4 +109,4 @@ def genFig():
 
 """Debug function call section"""
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_Large_Sequential_compare.png")
+fig.savefig("./mrsa_ca_rna/output/fig01_pairplot.png")

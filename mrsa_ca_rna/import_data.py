@@ -12,7 +12,7 @@ To-do:
         Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
         dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
         infection.
-    Incorporate gse_healthy into form_matrix()
+    Incorporate gse_healthy into concat_datasets()
 """
 
 from os.path import join, dirname, abspath
@@ -202,7 +202,7 @@ def import_GSE_rna():
     gse_rna = gse_rna.loc[:, ~gse_rna.columns.duplicated()]
 
     # keep all the successfully mapped genes and discard anything using original convention
-    gse_rna = gse_rna.loc[:, gse_rna.columns.str.contains("ENSG") == True]
+    gse_rna = gse_rna.loc[:, gse_rna.columns.str.contains("ENSG", na=False)]
     gse_rna.index.name, gse_rna.columns.name = (
         None,
         None,
@@ -211,7 +211,7 @@ def import_GSE_rna():
     return gse_rna
 
 
-def form_matrix():
+def concat_datasets():
     """
     concatenate the two datasets while trimming to shared genes (columns)
 
@@ -240,11 +240,11 @@ def form_matrix():
 # debug calls
 # mrsaImportTest = import_mrsa_rna()
 # caImportTest = import_ca_rna()
-# rna_combined = form_matrix()
+# rna_combined = concat_datasets()
 # print(mrsaImportTest.columns)
 # print(caImportTest.columns)
 # import_ca_meta()
-# import_GSE_rna()
+import_GSE_rna()
 # import_GSE_metadata()
-import_ca_val_meta()
-import_ca_val_rna()
+# import_ca_val_meta()
+# import_ca_val_rna()

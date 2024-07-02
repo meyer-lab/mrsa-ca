@@ -9,7 +9,7 @@ To-do:
 """
 
 import matplotlib.pyplot as plt
-from mrsa_ca_rna.import_data import form_matrix
+from mrsa_ca_rna.import_data import concat_datasets
 import numpy as np
 import pandas as pd
 from mrsa_ca_rna.figures.base import setupBase
@@ -21,24 +21,16 @@ from mrsa_ca_rna.pca import perform_PCA
 
 def figure_00_setup():
     """Make and organize the data to be used in genFig"""
-    rna_mat = form_matrix()
+    rna_mat = concat_datasets()
     rna_decomp, pca = perform_PCA(rna_mat)
 
-    components = range(1, pca.n_components_ + 1)
+    components = np.arange(1, pca.n_components_ + 1, dtype=int)
     total_explained = np.cumsum(pca.explained_variance_ratio_)
 
-    data = np.stack([components, total_explained]).T
-    data = pd.DataFrame(data, columns=["components", "explained"])
-    data["components"] = data["components"].astype("int32")
+    data = pd.DataFrame(components, columns=["components"])
+    data["total_explained"] = total_explained
 
     return data
-
-    # fig00 = plt.figure()
-    # plt.plot(components, explained)
-    # plt.title("'Completeness' of PCA Decomposition" )
-    # plt.xlabel("# of Principle Components")
-    # plt.ylabel("Fraction of variance explained")
-    # fig00.savefig("./output/fig00")
 
 
 def genFig():

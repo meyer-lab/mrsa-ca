@@ -18,28 +18,28 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def perform_PCA(rna_mat:pd.DataFrame):
+
+def perform_PCA(rna_mat: pd.DataFrame):
     """
     Perform pca analysis on concatenated rna matrix
-    
+
     Accepts: rna_mat (pd.DataFrame)
-    
+
     Returns: rna_decomp (pd.DataFrame), pca (object)
     """
 
-    
-    components = 100 # delta percent explained drops below 0.1% @ ~component 70
+    components = 100  # delta percent explained drops below 0.1% @ ~component 70
     pca = PCA(n_components=components)
     rna_decomp = pca.fit_transform(rna_mat)
 
     column_labels = []
-    for i in range(1,101):
+    for i in range(1, 101):
         column_labels.append("PC" + str(i))
 
     rna_decomp = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
-
     return rna_decomp, pca
+
 
 # debug calls
 # rna_mat = form_matrix()

@@ -16,7 +16,7 @@ import matplotlib
 from matplotlib import gridspec, pyplot as plt
 import svgutils.transform as st
 
-# C++ anti-grain geometry backend 
+# C++ anti-grain geometry backend
 matplotlib.use("AGG")
 
 # axes styles
@@ -52,10 +52,11 @@ matplotlib.rcParams["ytick.labelsize"] = 8
 matplotlib.rcParams["ytick.major.pad"] = 1.0
 matplotlib.rcParams["ytick.minor.pad"] = 0.9
 
+
 def setupBase(figsize, gridd, style="whitegrid"):
     """
     Sets up base figure for plotting subplots
-    
+
     Accepts:
         figsize (tuple): size of figure in inches
         gridd (ndarray): subplot dimensions in rows and columns
@@ -71,7 +72,7 @@ def setupBase(figsize, gridd, style="whitegrid"):
         font_scale=0.7,
         color_codes=True,
         palette="viridis",
-        rc=plt.rcParams
+        rc=plt.rcParams,
     )
 
     f = plt.figure(figsize=figsize, constrained_layout=True)

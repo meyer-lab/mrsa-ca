@@ -12,7 +12,9 @@ To-do:
         Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
         dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
         infection.
-    Incorporate gse_healthy into concat_datasets()
+    Get more information about MRSA and CA data. Double check with Jackson that 'status'
+        refers to persistant/resolving for MRSA data. Find any indication in CA metadata
+        of persistance/resolving (can't find any so far).
 """
 
 from os.path import join, dirname, abspath
@@ -23,6 +25,23 @@ from sklearn.preprocessing import scale
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
 # print(f"The base directory is: {BASE_DIR}")
+
+def import_mrsa_meta():
+    """
+    reads mrsa metadata from patient_metadata_mrsa.txt
+    
+    Returns:
+        mrsa_meta (pandas.DataFrame)
+    """
+
+    mrsa_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "patient_metadata_mrsa.txt"),
+        delimiter=",",
+        index_col=0
+    )
+
+
+    return mrsa_meta
 
 
 def import_mrsa_rna():
@@ -42,9 +61,6 @@ def import_mrsa_rna():
     # patient # needs to be converted to int32
     mrsa_rna.index = mrsa_rna.index.astype("int32")
 
-    # # always scale (demean and divide by variance) rna data. scale() expects array or matrix-like, so we numpy
-    # mrsa_rna.loc[:,:] = scale(mrsa_rna.to_numpy())
-
     return mrsa_rna
 
 
@@ -53,8 +69,7 @@ def import_ca_meta():
     reads ca metadata from discovery_data_meta.txt and trims to Candida phenotype
 
     Returns:
-        ca_pos_meta (pandas.Index): patients positive with CA
-        ca_neg_meta (pandas.Index): patients negative with CA
+        ca_meta (pandas.DataFrame): candidemia patient metadata containing only candidemia and healthy phenotypes
     """
     ca_meta = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "discovery_metadata_ca.txt"),
@@ -62,17 +77,12 @@ def import_ca_meta():
         index_col=0,
     )
 
-    # # drop anything not CA
-    # ca_meta.drop(ca_meta.loc[ca_meta["characteristics_ch1.4.phenotype"] != "Candidemia"].index, inplace=True)
+    # trim CA metadata down to only candidemia and healthy patients
+    ca_meta = ca_meta.loc[
+        ca_meta["characteristics_ch1.4.phenotype"].str.contains("Candidemia|Healthy")
+    ]
 
-    ca_pos_meta = ca_meta.loc[
-        ca_meta["characteristics_ch1.4.phenotype"] == "Candidemia"
-    ].index
-    ca_neg_meta = ca_meta.loc[
-        ca_meta["characteristics_ch1.4.phenotype"] == "Healthy"
-    ].index
-
-    return ca_pos_meta, ca_neg_meta
+    return ca_meta
 
 
 def import_ca_rna():
@@ -96,11 +106,10 @@ def import_ca_rna():
     ca_rna = ca_rna.mul(1000000 / ca_rna.sum(axis=1), axis=0)
 
     # Trim ca dataset to only those patients with ca or healthy phenotype
-    ca_pos_meta, ca_neg_meta = import_ca_meta()
-    ca_pos_rna = ca_rna.loc[ca_pos_meta]
-    ca_neg_rna = ca_rna.loc[ca_neg_meta]
+    healthy_pats = import_ca_meta()
+    ca_rna = ca_rna.loc[healthy_pats.index]
 
-    return ca_pos_rna, ca_neg_rna
+    return ca_rna
 
 
 def import_ca_val_meta():
@@ -130,7 +139,7 @@ def import_GSE_metadata():
     Read metadata file to determine patient characteristics.
 
     Returns:
-        gse_healthy_pats (pandas.Index): index of ID's for just healthy patients
+        gse_healthy_pats (pandas.DataFrame): DataFrame of just healthy patients
         gene_conversion (python dict): mapping of GeneID to EmsemblGeneID provided by annot
     """
     # patient metadata for cross checking healthy patient data
@@ -167,10 +176,10 @@ def import_GSE_metadata():
         zip(gene_conversion.index, gene_conversion["EnsemblGeneID"])
     )  # multiple GeneID are mapped to the same EnsemblGeneID
 
-    # we just need to healthy patient ID's to trim the rna data
+    # we only want healthy patients
     gse_healthy_pat = gse_meta.loc[
         gse_meta["!Sample_title"].str.contains("Healthy_Control")
-    ].index
+    ]
 
     return gse_healthy_pat, gene_conversion
 
@@ -190,7 +199,9 @@ def import_GSE_rna():
     # transpose to get DataFrame into (patient x gene) form
     gse_rna = gse_rna.T
 
-    gse_healthy_index, gene_conversion = import_GSE_metadata()
+    gse_healthy_pat, gene_conversion = import_GSE_metadata()
+    # just need index of gse_healthy_pat
+    gse_healthy_index = gse_healthy_pat.index
 
     # trim to healthy data only
     gse_rna = gse_rna.loc[gse_healthy_index]
@@ -217,34 +228,57 @@ def concat_datasets():
 
     Returns:
         rna_combined (pandas.DataFrame): Concatenated MRSA, CA+, CA-, and extra healthy datasets
+        meta_combined (pandas.DataFrame): Concatenated MRSA, CA, and GSE datasets
     """
-    # import relevant mrsa and ca data (ca separated into positive and negative)
+    # import relevant mrsa and ca data
+    mrsa_meta = import_mrsa_meta()
     mrsa_rna = import_mrsa_rna()
-    ca_pos_rna, ca_neg_rna = import_ca_rna()
+    ca_meta = import_ca_meta()
+    ca_rna = import_ca_rna()
 
     # import any addition healthy data to help with analysis power
+    gse_meta, _ = import_GSE_metadata()
     gse_healthy = import_GSE_rna()
 
     # concatenate all the matrices to along patient axis, keeping only the overlapping columns (join="inner")
     rna_combined = pd.concat(
-        [mrsa_rna, ca_pos_rna, ca_neg_rna, gse_healthy], axis=0, join="inner"
+        [mrsa_rna, ca_rna, gse_healthy], axis=0, join="inner"
     )
     rna_combined = rna_combined.dropna(axis=1)
+
+    # normalize and concatenate all the metadata 
+    mrsa_meta.drop(mrsa_meta.columns.difference(["status"]), axis=1, inplace=True)
+    mrsa_meta["disease"]= "mrsa"
+
+    ca_meta.drop(ca_meta.columns.difference(["characteristics_ch1.4.phenotype"]), axis=1, inplace=True)
+    ca_meta.rename(columns={"characteristics_ch1.4.phenotype": "disease"}, inplace=True)
+    ca_meta.insert(0, "status", np.full(len(ca_meta.index), "N/A"))
+    ca_meta.loc[ca_meta["disease"].str.contains("Candidemia"),"status"] = "unknown"
+
+    gse_meta.drop(gse_meta.columns.difference(["!Sample_title"]), axis=1, inplace=True)
+    gse_meta.rename(columns={"!Sample_title": "disease"}, inplace=True)
+    gse_meta["disease"] = "Healthy"
+    gse_meta.insert(0, "status", np.full(len(gse_meta.index), "N/A"))
+
+    # CA data does not have persistant or resolving types
+    meta_combined = pd.concat(
+        [mrsa_meta, ca_meta, gse_meta], axis=0, join="inner"
+        )
 
     # scale the matrix after all the data is added to it
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
 
-    return rna_combined
+    return rna_combined, meta_combined
 
 
 # debug calls
-# mrsaImportTest = import_mrsa_rna()
-# caImportTest = import_ca_rna()
-# rna_combined = concat_datasets()
-# print(mrsaImportTest.columns)
-# print(caImportTest.columns)
+# import_mrsa_meta()
+# import_mrsa_rna()
 # import_ca_meta()
-import_GSE_rna()
-# import_GSE_metadata()
+# import_ca_rna()
 # import_ca_val_meta()
 # import_ca_val_rna()
+# concat_datasets()
+# import_GSE_rna()
+# import_GSE_metadata()
+

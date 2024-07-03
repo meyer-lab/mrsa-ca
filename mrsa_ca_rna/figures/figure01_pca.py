@@ -4,9 +4,14 @@ and analyze the results. We are hoping to see interesting patterns
 across patients i.e. the scores matrix.
 
 To-do:
+    Refactor file based on new perform_PCA output.
+        Now outputs a scores matrix containing metadata for easy access.
+        No longer any need to generate labels within the fig setup func.
+
     Make a function that takes in PCA component data and automatically determines the
         appropriate size and layout of the graph. Can remove assert once
         completed.
+
     Figure out how to plot PCA with sns.pairplot instead of sns.scatterplot
         Seems like it would negate the need for component_pairs since it pairs
         the data itself? Can't get a good sense of it just from the documentation
@@ -28,34 +33,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def figure01_setup():
-    # import mrsa_rna data to generate mrsa labeling
-    mrsa_rna = import_mrsa_rna()
-    mrsa_label = np.full(len(mrsa_rna.index), "mrsa").T
-
-    # import mrsa_rna data to generate ca labeling
-    ca_pos_rna, ca_neg_rna = import_ca_rna()
-    ca_label = np.full(len(ca_pos_rna.index), "ca").T
-
-    # use previous ca_neg import and any other healthy import to make healthy label
-    gse_rna = import_GSE_rna()
-    healthy_ca = np.full(len(ca_neg_rna.index), "healthy_ca").T
-    healthy_gse = np.full(len(gse_rna.index), "healthy_gse").T
-
-    # make state column for graphing across disease type and healthy
-    state = np.concatenate((mrsa_label, ca_label, healthy_ca, healthy_gse))
-
-    rna_mat = concat_datasets()
-    scores, loadings, pca = perform_PCA(rna_mat)
-
-    columns = []
-    for i in range(pca.n_components_):
-        columns.append("PC" + str(i + 1))
-
-    scores.insert(loc=0, column="state", value=state)
-
-    return scores
-
 
 def genFig():
     fig_size = (12, 9)
@@ -65,7 +42,7 @@ def genFig():
     }
     ax, f, _ = setupBase(fig_size, layout)
 
-    data = figure01_setup()
+    scores, loadings, pca = perform_PCA()
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(
@@ -90,23 +67,23 @@ def genFig():
         component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
     ), "component pairs to be graphed do not match figure layout size"
 
-    # coincidentally, columns in DataFrames start at 1
+
     for i, (j, k) in enumerate(component_pairs):
         a = sns.scatterplot(
-            data=data.loc[:, (data.columns[j], data.columns[k])],
-            x=data.columns[j],
-            y=data.columns[k],
-            hue=data.loc[:, "state"],
+            data=scores.loc[:, (scores.columns[j+1], scores.columns[k+1])],
+            x=scores.columns[j+1],
+            y=scores.columns[k+1],
+            hue=scores.loc[:, "disease"],
             ax=ax[i],
         )
 
-        a.set_xlabel(data.columns[j])
-        a.set_ylabel(data.columns[k])
-        a.set_title(f"Var Comp {data.columns[j]} vs {data.columns[k]}")
+        a.set_xlabel(scores.columns[j+1])
+        a.set_ylabel(scores.columns[k+1])
+        a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
 
     return f
 
 
 """Debug function call section"""
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_pairplot.png")
+fig.savefig("./mrsa_ca_rna/output/fig01_NewPCA.png")

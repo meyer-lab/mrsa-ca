@@ -9,7 +9,6 @@ To-do:
 """
 
 import matplotlib.pyplot as plt
-from mrsa_ca_rna.import_data import concat_datasets
 import numpy as np
 import pandas as pd
 from mrsa_ca_rna.figures.base import setupBase
@@ -21,8 +20,7 @@ from mrsa_ca_rna.pca import perform_PCA
 
 def figure_00_setup():
     """Make and organize the data to be used in genFig"""
-    rna_mat = concat_datasets()
-    rna_decomp, pca = perform_PCA(rna_mat)
+    score, loadings, pca = perform_PCA()
 
     components = np.arange(1, pca.n_components_ + 1, dtype=int)
     total_explained = np.cumsum(pca.explained_variance_ratio_)

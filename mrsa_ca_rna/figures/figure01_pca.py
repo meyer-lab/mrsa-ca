@@ -4,10 +4,6 @@ and analyze the results. We are hoping to see interesting patterns
 across patients i.e. the scores matrix.
 
 To-do:
-    Refactor file based on new perform_PCA output.
-        Now outputs a scores matrix containing metadata for easy access.
-        No longer any need to generate labels within the fig setup func.
-
     Make a function that takes in PCA component data and automatically determines the
         appropriate size and layout of the graph. Can remove assert once
         completed.

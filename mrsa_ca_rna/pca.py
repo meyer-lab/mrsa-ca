@@ -2,9 +2,6 @@
 Perform the PCA analysis on the formed matrix from import_data.py
 
 To-do:
-    Relearn PCA and SVD to confirm I know what I'm graphing
-        and why. Also, get confirmation about what I'm
-        hoping to show (differences diseases across genes?).
     After performing PCA, when creating scores and loadings df's,
         add relevant metadata into these df's because they'll be
         used for graphing all sorts of things and it will just be
@@ -12,11 +9,7 @@ To-do:
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import (
-    import_mrsa_meta,
-    import_ca_meta,
-    concat_datasets
-)
+from mrsa_ca_rna.import_data import concat_datasets
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -45,8 +38,9 @@ def perform_PCA():
 
     # add disease type (mrsa, ca, healthy) and persistance metadata to scores
     scores = pd.concat(
-        [meta_mat, scores], axis=1, join="inner"
+        [meta_mat, scores], axis=1
     )
+    scores.dropna(axis=0, inplace=True) # some mrsa patients did not have rna data
 
     rows = []
     for i in range(pca.n_components_):
@@ -56,5 +50,5 @@ def perform_PCA():
 
     return scores, loadings, pca
 
-# debug calls
-perform_PCA()
+# # debug calls
+# perform_PCA()

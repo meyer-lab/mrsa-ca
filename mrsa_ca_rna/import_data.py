@@ -12,9 +12,9 @@ To-do:
         Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
         dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
         infection.
-    Get more information about MRSA and CA data. Double check with Jackson that 'status'
-        refers to persistant/resolving for MRSA data. Find any indication in CA metadata
-        of persistance/resolving (can't find any so far).
+
+    CA data does not contain resolving/persisting distinctions, but does contain mortality
+        rates. Consider using that for regression.
 """
 
 from os.path import join, dirname, abspath
@@ -267,7 +267,7 @@ def concat_datasets():
 
     # scale the matrix after all the data is added to it
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
-
+    
     return rna_combined, meta_combined
 
 

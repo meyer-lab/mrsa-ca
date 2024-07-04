@@ -4,4 +4,58 @@ and other relevant functions, starting with MRSA data,
 to determine patterns of persistance vs. resolving infection
 to eventually compare across disease types to see if
 these observed patterns are preserved.
+
+Main issue: current function setup involves performing pca
+    on all the data at once, after which I need to pick out
+    specific data. This can likely lead to really bad regression
+    data.
+
+To-do:
+    Set up LR on PCA (PCR) of whole data, analyszing MRSA:
+        Using current pca.py making the scores. Unfortunately,
+        pca is performned on whole-data, unless I change it back
+        to performing PCA on a specific matrix, but then I cannot
+        reliably annotate with metadata (can still label PC's)
+    
+    Set up PLSR:
+        Using sklearn docs and previous code from BE 175, use
+        PLSR to double check MRSA data's 
 """
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.pca import concat_datasets
+
+def perform_LR():
+
+    whole_scores, whole_loadings, pca = perform_PCA()
+    mrsa_scores = whole_scores.loc[whole_scores["disease"] == "mrsa"]
+    mrsa_data = mrsa_scores.loc[~(mrsa_scores["status"]=="Unknown")]
+    mrsa_X = mrsa_data.loc[:,"PC1":"PC100"]
+    mrsa_y = mrsa_data.loc[:,"status"]
+
+    # create some randomization later
+    rng = 42
+
+    X_train, X_test, y_train, y_test = train_test_split(mrsa_X, mrsa_y, random_state=rng)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    mrsa_Lreg = LogisticRegression().fit(X_train, y_train)
+    
+    score_train = mrsa_Lreg.score(X_train, y_train)
+    score_test = mrsa_Lreg.score(X_test, y_test)
+    confusion_train = confusion_matrix(y_train, mrsa_Lreg.predict(X_train))
+    confusion_test = confusion_matrix(y_test, mrsa_Lreg.predict(X_test))
+
+    print(f"Score and confusion matrix of training: {score_train} and {confusion_train}")
+    print(f"Score and confusion matrix of test: {score_test} and {confusion_test}")
+
+    return mrsa_Lreg
+
+
+perform_LR()

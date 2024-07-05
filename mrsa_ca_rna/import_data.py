@@ -26,10 +26,11 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 # print(f"The base directory is: {BASE_DIR}")
 
+
 def import_mrsa_meta():
     """
     reads mrsa metadata from patient_metadata_mrsa.txt
-    
+
     Returns:
         mrsa_meta (pandas.DataFrame)
     """
@@ -37,9 +38,8 @@ def import_mrsa_meta():
     mrsa_meta = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "patient_metadata_mrsa.txt"),
         delimiter=",",
-        index_col=0
+        index_col=0,
     )
-
 
     return mrsa_meta
 
@@ -241,19 +241,21 @@ def concat_datasets():
     gse_healthy = import_GSE_rna()
 
     # concatenate all the matrices to along patient axis, keeping only the overlapping columns (join="inner")
-    rna_combined = pd.concat(
-        [mrsa_rna, ca_rna, gse_healthy], axis=0, join="inner"
-    )
+    rna_combined = pd.concat([mrsa_rna, ca_rna, gse_healthy], axis=0, join="inner")
     rna_combined = rna_combined.dropna(axis=1)
 
-    # normalize and concatenate all the metadata 
+    # normalize and concatenate all the metadata
     mrsa_meta.drop(mrsa_meta.columns.difference(["status"]), axis=1, inplace=True)
-    mrsa_meta["disease"]= "mrsa"
+    mrsa_meta["disease"] = "mrsa"
 
-    ca_meta.drop(ca_meta.columns.difference(["characteristics_ch1.4.phenotype"]), axis=1, inplace=True)
+    ca_meta.drop(
+        ca_meta.columns.difference(["characteristics_ch1.4.phenotype"]),
+        axis=1,
+        inplace=True,
+    )
     ca_meta.rename(columns={"characteristics_ch1.4.phenotype": "disease"}, inplace=True)
     ca_meta.insert(0, "status", np.full(len(ca_meta.index), "N/A"))
-    ca_meta.loc[ca_meta["disease"].str.contains("Candidemia"),"status"] = "unknown"
+    ca_meta.loc[ca_meta["disease"].str.contains("Candidemia"), "status"] = "unknown"
 
     gse_meta.drop(gse_meta.columns.difference(["!Sample_title"]), axis=1, inplace=True)
     gse_meta.rename(columns={"!Sample_title": "disease"}, inplace=True)
@@ -261,9 +263,7 @@ def concat_datasets():
     gse_meta.insert(0, "status", np.full(len(gse_meta.index), "N/A"))
 
     # CA data does not have persistant or resolving types
-    meta_combined = pd.concat(
-        [mrsa_meta, ca_meta, gse_meta], axis=0, join="inner"
-        )
+    meta_combined = pd.concat([mrsa_meta, ca_meta, gse_meta], axis=0, join="inner")
 
     # scale the matrix after all the data is added to it
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
@@ -281,4 +281,3 @@ def concat_datasets():
 # concat_datasets()
 # import_GSE_rna()
 # import_GSE_metadata()
-

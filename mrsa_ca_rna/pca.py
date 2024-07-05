@@ -12,11 +12,7 @@ To-do:
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import (
-    import_mrsa_meta,
-    import_ca_meta,
-    concat_datasets
-)
+from mrsa_ca_rna.import_data import import_mrsa_meta, import_ca_meta, concat_datasets
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -44,9 +40,7 @@ def perform_PCA():
     scores = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
     # add disease type (mrsa, ca, healthy) and persistance metadata to scores
-    scores = pd.concat(
-        [meta_mat, scores], axis=1, join="inner"
-    )
+    scores = pd.concat([meta_mat, scores], axis=1, join="inner")
 
     rows = []
     for i in range(pca.n_components_):
@@ -55,6 +49,7 @@ def perform_PCA():
     loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
 
     return scores, loadings, pca
+
 
 # debug calls
 perform_PCA()

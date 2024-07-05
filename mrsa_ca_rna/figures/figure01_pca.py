@@ -33,7 +33,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-
 def genFig():
     fig_size = (12, 9)
     layout = {
@@ -67,18 +66,17 @@ def genFig():
         component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
     ), "component pairs to be graphed do not match figure layout size"
 
-
     for i, (j, k) in enumerate(component_pairs):
         a = sns.scatterplot(
-            data=scores.loc[:, (scores.columns[j+1], scores.columns[k+1])],
-            x=scores.columns[j+1],
-            y=scores.columns[k+1],
+            data=scores.loc[:, (scores.columns[j + 1], scores.columns[k + 1])],
+            x=scores.columns[j + 1],
+            y=scores.columns[k + 1],
             hue=scores.loc[:, "disease"],
             ax=ax[i],
         )
 
-        a.set_xlabel(scores.columns[j+1])
-        a.set_ylabel(scores.columns[k+1])
+        a.set_xlabel(scores.columns[j + 1])
+        a.set_ylabel(scores.columns[k + 1])
         a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
 
     return f

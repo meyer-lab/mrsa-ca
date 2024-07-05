@@ -5,62 +5,51 @@ To-do:
     Relearn PCA and SVD to confirm I know what I'm graphing
         and why. Also, get confirmation about what I'm
         hoping to show (differences diseases across genes?).
-    Arrange rna_comp into a pandas DataFrame for ease of use before
-        returning it.
-            Index labels: mrsa or ca
-            Column labels: PC1, PC2, PC3, etc.
+    After performing PCA, when creating scores and loadings df's,
+        add relevant metadata into these df's because they'll be
+        used for graphing all sorts of things and it will just be
+        easier to have the data available in the df's.
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import form_matrix
+from mrsa_ca_rna.import_data import import_mrsa_meta, import_ca_meta, concat_datasets
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def perform_PCA(rna_mat:pd.DataFrame):
+
+def perform_PCA():
     """
-    Perform pca analysis on concatenated rna matrix
-    
-    Accepts: rna_mat (pd.DataFrame)
-    
-    Returns: rna_decomp (ndarray), opt_comp (int), total_explained (ndarray)
+    Perform pca analysis on concatenated rna matrix, then attach corresponding patient metadata
+
+    Returns:
+        scores (pd.DataFrame): the scores matrix of the concatenated datasets as a result of PCA
+        loadings (pd.DataFrame): the loadings matrix of the concatenated datasets as a result of PCA
+        pca (object): the PCA object for further use in the code. Might remove once I finish changing perform_PCA
     """
 
+    rna_mat, meta_mat = concat_datasets()
+    components = 100  # delta percent explained drops below 0.1% @ ~component 70
+    pca = PCA(n_components=components)
+    rna_decomp = pca.fit_transform(rna_mat)
 
-    """
-    Cycle through a an increasing amount of components to perform pca.
-    Perform the fit_transform of the data in-situ once optimal components
-    are found, or the max # of components tested if threshold is not reached.
-    """
-    components = np.arange(1, 101)
-    total_explained = []
-    threshold = 0.95
-    change_threshold = 0.002
-    for component in components:
-        pca = PCA(n_components=component)
-        rna_decomp = pca.fit_transform(rna_mat)
-        total_explained.append(float(pca.explained_variance_ratio_.sum()))
-        try:
-            delta = (total_explained[-1]-total_explained[-2])/total_explained[-2]
-        except:
-            print("Skipping delta calculation with 1 component")
-        else:
-            print(f"Trying {component} components with {delta*100}% more variance explained...")
-            if pca.explained_variance_ratio_.sum() >= threshold:
-                opt_comp = component
-                print(f"Explained variance matches or exceeds threshold at {component} components")
-                break
-            elif (component > 1 and delta < change_threshold):
-                opt_comp = component
-                print(f"Failed to reach threshold before explained variance delta dopped below {change_threshold*100}% at {component} components")
-                break
-    
+    column_labels = []
+    for i in range(1, 101):
+        column_labels.append("PC" + str(i))
 
-    # print(f"shape of loadings: {pca.components_.shape}, (components, gene)")
-    # print(f"Shape of scores: {rna_decomp.shape} (patients, components)")
-    # print(rna_decomp)
+    scores = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
-    return rna_decomp, int(opt_comp), total_explained
+    # add disease type (mrsa, ca, healthy) and persistance metadata to scores
+    scores = pd.concat([meta_mat, scores], axis=1, join="inner")
+
+    rows = []
+    for i in range(pca.n_components_):
+        rows.append("PC" + str(i + 1))
+
+    loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
+
+    return scores, loadings, pca
+
 
 # debug calls
-# perform_PCA()
+perform_PCA()

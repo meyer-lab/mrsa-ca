@@ -4,73 +4,84 @@ and analyze the results. We are hoping to see interesting patterns
 across patients i.e. the scores matrix.
 
 To-do:
-    Make a nice loop for graphing all the different components.
-    Implement seaborn.
-    Refactor using new filesystem setup (where to outout figures,
-        what files to import, what arguments the functions take, etc.)
-    Change everything to be Fig_Setup -> MakeFig (subplots) like in
-        tfac-mrsa code.
+    Refactor file based on new perform_PCA output.
+        Now outputs a scores matrix containing metadata for easy access.
+        No longer any need to generate labels within the fig setup func.
+
+    Make a function that takes in PCA component data and automatically determines the
+        appropriate size and layout of the graph. Can remove assert once
+        completed.
+
+    Figure out how to plot PCA with sns.pairplot instead of sns.scatterplot
+        Seems like it would negate the need for component_pairs since it pairs
+        the data itself? Can't get a good sense of it just from the documentation
+        yet.
 """
 
 import numpy as np
 import pandas as pd
+
+from mrsa_ca_rna.import_data import (
+    import_mrsa_rna,
+    import_ca_rna,
+    import_GSE_rna,
+    concat_datasets,
+)
+from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.figures.base import setupBase
+import seaborn as sns
 import matplotlib.pyplot as plt
 
-from mrsa_ca_rna.import_data import import_mrsa_rna, import_ca_rna, form_matrix
-from mrsa_ca_rna.pca import perform_PCA
+
+def genFig():
+    fig_size = (12, 9)
+    layout = {
+        "ncols": 4,
+        "nrows": 3,
+    }
+    ax, f, _ = setupBase(fig_size, layout)
+
+    scores, loadings, pca = perform_PCA()
+
+    # modify what components you want to compare to one another:
+    component_pairs = np.array(
+        [
+            [1, 2],
+            [1, 3],
+            [2, 3],
+            [2, 4],
+            [3, 4],
+            [3, 5],
+            [4, 5],
+            [4, 6],
+            [5, 6],
+            [5, 7],
+            [6, 7],
+            [7, 8],
+        ],
+        dtype=int,
+    )
+
+    assert (
+        component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
+    ), "component pairs to be graphed do not match figure layout size"
+
+    for i, (j, k) in enumerate(component_pairs):
+        a = sns.scatterplot(
+            data=scores.loc[:, (scores.columns[j + 1], scores.columns[k + 1])],
+            x=scores.columns[j + 1],
+            y=scores.columns[k + 1],
+            hue=scores.loc[:, "disease"],
+            ax=ax[i],
+        )
+
+        a.set_xlabel(scores.columns[j + 1])
+        a.set_ylabel(scores.columns[k + 1])
+        a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
+
+    return f
 
 
-def plot_pca():
-    
-    mrsa_rna = import_mrsa_rna()
-    new_mrsa = np.full((len(mrsa_rna.index),), "mrsa")
-    # mrsa_rna.set_index(new_mrsa, inplace=True)
-
-    ca_rna = import_ca_rna()
-    new_ca = np.full((len(ca_rna.index),), "ca")
-    # ca_rna.set_index(new_ca, inplace=True)
-
-    
-
-    rna_mat = form_matrix()
-    rna_decomp, n_components, _ = perform_PCA(rna_mat)
-
-    indeces = np.concatenate((new_mrsa, new_ca))
-    columns = []
-    for i in range(n_components):
-        columns.append("PC" + str(i+1))
-    
-    rna_decomp_df = pd.DataFrame(rna_decomp, indeces, columns)
-
-    """
-    figuring out a nicer loop...
-    """
-    disease = ["mrsa", "ca"]
-    colors = ["red", "blue"]
-    fig = plt.figure()
-    for i, color in zip(disease, colors):
-        plt.scatter(rna_decomp_df.loc[i, "PC1"], rna_decomp_df.loc[i, "PC2"], color=color, label=i)
-    plt.legend(loc="best", shadow=False, scatterpoints=1)
-    plt.title("PCA of MRSA and CA RNAseq")
-    plt.xlabel("PC 1")
-    plt.ylabel("PC 2")
-    fig.savefig("loopTest")
-
-    # use as reference for what I want the loop to accomplish.
-    # fig01 = plt.figure()
-    # plt.scatter(rna_decomp.loc["mrsa","PC1"], rna_decomp.loc["mrsa", "PC2"], color="red")
-    # plt.scatter(rna_decomp.loc["ca","PC1"], rna_decomp.loc["ca", "PC2"], color="blue")
-    # fig01.savefig("fig01")
-
-    # fig02 = plt.figure()
-    # plt.scatter(rna_decomp.loc["mrsa","PC3"], rna_decomp.loc["mrsa", "PC4"], color="red")
-    # plt.scatter(rna_decomp.loc["ca","PC3"], rna_decomp.loc["ca", "PC4"], color="blue")
-    # fig02.savefig("fig02")
-
-    # fig03 = plt.figure()
-    # plt.scatter(rna_decomp.loc["mrsa","PC5"], rna_decomp.loc["mrsa", "PC6"], color="red")
-    # plt.scatter(rna_decomp.loc["ca","PC5"], rna_decomp.loc["ca", "PC6"], color="blue")
-    # fig03.savefig("fig03")
-
-# debug
-plot_pca()
+"""Debug function call section"""
+fig = genFig()
+fig.savefig("./mrsa_ca_rna/output/fig01_NewPCA.png")

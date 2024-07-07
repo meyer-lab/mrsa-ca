@@ -9,13 +9,11 @@ To-do:
 """
 
 import numpy as np
-import pandas as pd
 
 from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 def genFig():
@@ -27,7 +25,7 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     rna_mat = concat_datasets()
-    scores, loadings, pca = perform_PCA(rna_mat)
+    _, loadings, _ = perform_PCA(rna_mat)
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(
@@ -67,8 +65,3 @@ def genFig():
         a.set_title(f"Feature Var by {loadings.index[j]} vs {loadings.index[k]}")
 
     return f
-
-
-"""Debug function call section"""
-fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig02_Loadings_NewPCA.png")

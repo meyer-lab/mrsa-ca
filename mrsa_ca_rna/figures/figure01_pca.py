@@ -41,7 +41,7 @@ def genFig():
     }
     ax, f, _ = setupBase(fig_size, layout)
 
-    scores, loadings, pca = perform_PCA()
+    scores, _, _ = perform_PCA()
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(
@@ -80,8 +80,3 @@ def genFig():
         a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
 
     return f
-
-
-"""Debug function call section"""
-fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_NewPCA.png")

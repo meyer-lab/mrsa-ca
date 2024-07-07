@@ -10,6 +10,9 @@ To-do:
         Rgression file and functions must be written.
 """
 
+import sys
+import logging
+import time
 import matplotlib.figure
 import seaborn as sns
 import matplotlib
@@ -89,3 +92,15 @@ def setupBase(figsize, gridd, style="whitegrid"):
         x += 1
 
     return ax, f, gs
+
+def genFigure():
+    """ Main figure generation function. """
+    fdir = './output/'
+    start = time.time()
+    nameOut = 'figure' + sys.argv[1]
+
+    exec('from mrsa_ca_rna.figures import ' + nameOut)
+    ff = eval(nameOut + '.genFig()')
+    ff.savefig(fdir + nameOut + '.svg', dpi=ff.dpi, bbox_inches='tight', pad_inches=0)
+
+    logging.info('%s is done after %s seconds.', nameOut, time.time() - start)

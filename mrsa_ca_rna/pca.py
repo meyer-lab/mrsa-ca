@@ -49,7 +49,3 @@ def perform_PCA():
     loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
 
     return scores, loadings, pca
-
-
-# debug calls
-perform_PCA()

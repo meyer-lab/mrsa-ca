@@ -19,18 +19,10 @@ To-do:
 """
 
 import numpy as np
-import pandas as pd
 
-from mrsa_ca_rna.import_data import (
-    import_mrsa_rna,
-    import_ca_rna,
-    import_GSE_rna,
-    concat_datasets,
-)
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 
 def genFig():

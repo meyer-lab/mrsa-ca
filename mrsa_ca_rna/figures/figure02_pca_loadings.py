@@ -10,7 +10,6 @@ To-do:
 
 import numpy as np
 
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
@@ -24,8 +23,7 @@ def genFig():
     }
     ax, f, _ = setupBase(fig_size, layout)
 
-    rna_mat = concat_datasets()
-    _, loadings, _ = perform_PCA(rna_mat)
+    _, loadings, _ = perform_PCA()
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(

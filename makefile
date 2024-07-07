@@ -12,3 +12,6 @@ output/figure%.svg: mrsa_ca_rna/figures/figure%.py
 
 clean:
 	rm -rf output
+
+mypy:
+	poetry run mypy --install-types --non-interactive --ignore-missing-imports --check-untyped-defs mrsa_ca_rna

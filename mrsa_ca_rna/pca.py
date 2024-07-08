@@ -12,10 +12,8 @@ To-do:
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import import_mrsa_meta, import_ca_meta, concat_datasets
-import numpy as np
+from mrsa_ca_rna.import_data import concat_datasets
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def perform_PCA():
@@ -49,7 +47,3 @@ def perform_PCA():
     loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
 
     return scores, loadings, pca
-
-
-# debug calls
-perform_PCA()

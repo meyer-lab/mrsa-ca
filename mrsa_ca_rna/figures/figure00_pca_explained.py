@@ -8,7 +8,6 @@ To-do:
     Regenerate plots using recently added gse_healthy data
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mrsa_ca_rna.figures.base import setupBase
@@ -20,7 +19,7 @@ from mrsa_ca_rna.pca import perform_PCA
 
 def figure_00_setup():
     """Make and organize the data to be used in genFig"""
-    score, loadings, pca = perform_PCA()
+    _, _, pca = perform_PCA()
 
     components = np.arange(1, pca.n_components_ + 1, dtype=int)
     total_explained = np.cumsum(pca.explained_variance_ratio_)
@@ -40,14 +39,9 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     data = figure_00_setup()
-    a = sns.lineplot(data=data, x="components", y="explained", ax=ax[0])
+    a = sns.lineplot(data=data, x="components", y="total_explained", ax=ax[0])
     a.set_xlabel("# of Components")
     a.set_ylabel("Fraction of explained variance")
     a.set_title("PCA performance")
 
     return f
-
-
-# #debug
-fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig00_Healthy+.png")

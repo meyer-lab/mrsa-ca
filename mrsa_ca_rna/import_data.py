@@ -269,15 +269,3 @@ def concat_datasets():
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
 
     return rna_combined, meta_combined
-
-
-# debug calls
-# import_mrsa_meta()
-# import_mrsa_rna()
-# import_ca_meta()
-# import_ca_rna()
-# import_ca_val_meta()
-# import_ca_val_rna()
-# concat_datasets()
-# import_GSE_rna()
-# import_GSE_metadata()

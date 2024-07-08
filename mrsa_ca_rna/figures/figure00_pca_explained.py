@@ -40,7 +40,7 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     data = figure_00_setup()
-    a = sns.lineplot(data=data, x="components", y="explained", ax=ax[0])
+    a = sns.lineplot(data=data, x="components", y="total_explained", ax=ax[0])
     a.set_xlabel("# of Components")
     a.set_ylabel("Fraction of explained variance")
     a.set_title("PCA performance")

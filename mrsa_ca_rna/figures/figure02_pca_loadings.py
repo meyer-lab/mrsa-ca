@@ -27,7 +27,7 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     rna_mat = concat_datasets()
-    scores, loadings, pca = perform_PCA(rna_mat)
+    scores, loadings, pca = perform_PCA()
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(

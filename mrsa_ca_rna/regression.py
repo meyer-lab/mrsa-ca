@@ -42,10 +42,14 @@ def perform_LR():
     # create some randomization later
     rng = 42
 
-    X_train, X_test, y_train, y_test = train_test_split(mrsa_X, mrsa_y, random_state=rng)
+    # split the data into train and test
+    X_train, X_test, y_train, y_test = train_test_split(mrsa_X, mrsa_y, random_state=rng, )
+
+    # scale separately to avoid leakage
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
-    mrsa_Lreg = LogisticRegression().fit(X_train, y_train)
+    X_test = scaler.fit_transform(X_test)
+    mrsa_Lreg = LogisticRegression(C=10).fit(X_train, y_train)
     
     score_train = mrsa_Lreg.score(X_train, y_train)
     score_test = mrsa_Lreg.score(X_test, y_test)
@@ -57,5 +61,5 @@ def perform_LR():
 
     return mrsa_Lreg
 
-
+"""debug calls"""
 perform_LR()

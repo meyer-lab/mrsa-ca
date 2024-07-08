@@ -4,14 +4,10 @@ and analyze the results. We are hoping to see interesting patterns
 across patients i.e. the scores matrix.
 
 To-do:
-    Make a function that takes in PCA component data and automatically determines the
-        appropriate size and layout of the graph. Can remove assert once
-        completed.
 
-    Figure out how to plot PCA with sns.pairplot instead of sns.scatterplot
-        Seems like it would negate the need for component_pairs since it pairs
-        the data itself? Can't get a good sense of it just from the documentation
-        yet.
+    Choose either to:
+        1. Swap to sns.pairplot, comparing whole chunks of PCA plots together.
+        2. Apply a GMM model and select the best performing PCA plots 
 """
 
 import numpy as np
@@ -27,6 +23,10 @@ from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+
+from sklearn.mixture import GaussianMixture
+from scipy.spatial.distance import cdist
 
 
 
@@ -63,23 +63,42 @@ def genFig():
         component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
     ), "component pairs to be graphed do not match figure layout size"
 
+    largest = np.zeros(10)
+    for i in range(2,len(scores.columns[2:])+1):
+        j = i
+        while j < len(scores.columns[2:]):
+            data = scores.iloc[:,[i,j]]
 
-    for i, (j, k) in enumerate(component_pairs):
-        a = sns.scatterplot(
-            data=scores.loc[:, (scores.columns[j+1], scores.columns[k+1])],
-            x=scores.columns[j+1],
-            y=scores.columns[k+1],
-            hue=scores.loc[:, "disease"],
-            ax=ax[i],
-        )
+            gmm = GaussianMixture(n_components=4, random_state=0).fit(data)
+            distances = cdist(gmm.means_, gmm.means_)
+            total_dist = distances.sum() / 2
 
-        a.set_xlabel(scores.columns[j+1])
-        a.set_ylabel(scores.columns[k+1])
-        a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
+            for k in range(len(largest)):
+                if total_dist >= largest[k]:
+                    largest[k] = total_dist
+                    print(f"new largest found at {scores.columns[i]} vs {scores.columns[j]}. New largest: {largest}")
+                    break
+            j += 1
 
-    return f
+    a = sns.pairplot(scores.loc[:,"disease":"PC10"], hue="disease", palette="viridis")
+    return a
+
+    # for i, (j, k) in enumerate(component_pairs):
+    #     a = sns.scatterplot(
+    #         data=scores.loc[:, (scores.columns[j+1], scores.columns[k+1])],
+    #         x=scores.columns[j+1],
+    #         y=scores.columns[k+1],
+    #         hue=scores.loc[:, "disease"],
+    #         ax=ax[i],
+    #     )
+
+    #     a.set_xlabel(scores.columns[j+1])
+    #     a.set_ylabel(scores.columns[k+1])
+    #     a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
+
+    # return f
 
 
 """Debug function call section"""
 fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_NewPCA.png")
+fig.savefig("./mrsa_ca_rna/output/fig01_Pairplot.png")

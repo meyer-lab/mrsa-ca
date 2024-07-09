@@ -35,10 +35,8 @@ def perform_PCA():
     scores = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
 
     # add disease type (mrsa, ca, healthy) and persistance metadata to scores
-    scores = pd.concat(
-        [meta_mat, scores], axis=1
-    )
-    scores.dropna(axis=0, inplace=True) # some mrsa patients did not have rna data
+    scores = pd.concat([meta_mat, scores], axis=1)
+    scores.dropna(axis=0, inplace=True)  # some mrsa patients did not have rna data
 
     rows = []
     for i in range(pca.n_components_):

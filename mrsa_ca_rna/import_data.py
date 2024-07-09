@@ -267,5 +267,5 @@ def concat_datasets():
 
     # scale the matrix after all the data is added to it
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
-    
+
     return rna_combined, meta_combined

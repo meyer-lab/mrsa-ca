@@ -7,7 +7,7 @@ To-do:
 
     Choose either to:
         1. Swap to sns.pairplot, comparing whole chunks of PCA plots together.
-        2. Apply a GMM model and select the best performing PCA plots 
+        2. Apply a GMM model and select the best performing PCA plots
 """
 
 import numpy as np
@@ -18,7 +18,6 @@ import seaborn as sns
 
 # from sklearn.mixture import GaussianMixture
 # from scipy.spatial.distance import cdist
-
 
 
 def genFig():
@@ -72,7 +71,7 @@ def genFig():
     #                 break
     #         j += 1
 
-    a = sns.pairplot(scores.loc[:,"disease":"PC10"], hue="disease", palette="viridis")
+    a = sns.pairplot(scores.loc[:, "disease":"PC10"], hue="disease", palette="viridis")
     return a
 
     # for i, (j, k) in enumerate(component_pairs):

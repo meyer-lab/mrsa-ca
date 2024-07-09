@@ -11,15 +11,8 @@ Main issue: current function setup involves performing pca
     data.
 
 To-do:
-    Set up LR on PCA (PCR) of whole data, analyszing MRSA:
-        Using current pca.py making the scores. Unfortunately,
-        pca is performned on whole-data, unless I change it back
-        to performing PCA on a specific matrix, but then I cannot
-        reliably annotate with metadata (can still label PC's)
+    Change LogisticRegression to LogisticRegressionCV
     
-    Set up PLSR:
-        Using sklearn docs and previous code from BE 175, use
-        PLSR to double check MRSA data's 
 """
 
 from sklearn.model_selection import train_test_split

@@ -1,0 +1,19 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: poetry install
+    - name: Build figures
+      run: make all
+    - name: Upload files
+      uses: actions/upload-artifact@v4
+      with:
+        name: files
+        path: |
+          output/*.svg

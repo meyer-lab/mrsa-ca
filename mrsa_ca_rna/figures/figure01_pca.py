@@ -11,13 +11,10 @@ To-do:
 """
 
 import numpy as np
-import pandas as pd
 
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
-import matplotlib.pyplot as plt
-
 
 # from sklearn.mixture import GaussianMixture
 # from scipy.spatial.distance import cdist

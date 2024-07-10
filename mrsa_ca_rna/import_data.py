@@ -134,6 +134,28 @@ def import_ca_val_rna():
     return ca_val_rna
 
 
+def import_ca_series():
+    ca_series = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "CA_series_matrix_compat.txt"),
+        delimiter="\t",
+        index_col=0,
+    )
+
+    ca_series.reset_index(inplace=True)
+    j = 0
+    for i in range(len(ca_series.index)):
+        if ca_series["!Sample_title"].duplicated()[i]:
+            j += 1
+            ca_series.iloc[i, 0] = ca_series.iloc[i, 0] + "." + str(j)
+        elif j != 0:
+            ca_series.iloc[i-j-1, 0] = ca_series.iloc[i-j-1, 0] + ".0"
+            j = 0
+    
+    ca_series.set_index("!Sample_title", inplace=True)
+    
+    
+    return ca_series
+
 def import_GSE_metadata():
     """
     Read metadata file to determine patient characteristics.

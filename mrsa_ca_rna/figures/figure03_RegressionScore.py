@@ -32,6 +32,7 @@ def figure_03_setup():
 
     return performance
 
+
 def genFig():
 
     fig_size = (4, 4)
@@ -46,6 +47,3 @@ def genFig():
     a.set_title("Performance of Regression of MRSA outcome data given PCA across MRSA, CA, and Healthy data")
 
     return f
-
-"""debug until I look at make file"""
-genFig().savefig("./mrsa_ca_rna/output/fig03_RegressionScore.png")

@@ -15,6 +15,8 @@ To-do:
 
     CA data does not contain resolving/persisting distinctions, but does contain mortality
         rates. Consider using that for regression.
+
+    Finish importing CA and MRSA validation data and concatenating them.
 """
 
 from os.path import join, dirname, abspath
@@ -42,6 +44,15 @@ def import_mrsa_meta():
     )
 
     return mrsa_meta
+
+def import_mrsa_val_meta():
+    mrsa_val_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "validation_patient_metadata_mrsa.txt"),
+        delimiter=",",
+        index_col=0
+    )
+
+    return mrsa_val_meta
 
 
 def import_mrsa_rna():
@@ -106,8 +117,8 @@ def import_ca_rna():
     ca_rna = ca_rna.mul(1000000 / ca_rna.sum(axis=1), axis=0)
 
     # Trim ca dataset to only those patients with ca or healthy phenotype
-    healthy_pats = import_ca_meta()
-    ca_rna = ca_rna.loc[healthy_pats.index]
+    ca_healthy_pats = import_ca_meta()
+    ca_rna = ca_rna.loc[ca_healthy_pats.index]
 
     return ca_rna
 
@@ -120,6 +131,10 @@ def import_ca_val_meta():
         index_col=0,
     )
 
+    ca_val_meta = ca_val_meta.loc[
+        ca_val_meta["characteristics_ch1.4.phenotype"].str.contains("Candidemia|Healthy")
+    ]
+
     return ca_val_meta
 
 
@@ -131,9 +146,15 @@ def import_ca_val_rna():
         index_col=0,
     )
 
+    ca_val_rna = ca_val_rna.mul(1000000 / ca_val_rna.sum(axis=1), axis=0)
+    
+    # trim ca_val_rna to just those patients with CA or are Healthy
+    ca_healthy_pats = import_ca_val_meta()
+    ca_val_rna = ca_val_rna.loc[ca_healthy_pats.index]
+
     return ca_val_rna
 
-
+# further digesting the full CA_series_matrix from the primary source required
 def import_ca_series():
     ca_series = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "CA_series_matrix_compat.txt"),
@@ -291,3 +312,33 @@ def concat_datasets():
     rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
 
     return rna_combined, meta_combined
+
+def validation_data():
+
+    # import mrsa data for validation dataset generation
+    mrsa_val_meta = import_mrsa_val_meta()
+    mrsa_rna = import_mrsa_rna()
+
+    # attach statuses and drop all non-statused patients (leaving only validation set), then specify disease
+    mrsa_rna.insert(0, "status", mrsa_val_meta["status"])
+    mrsa_rna.dropna(axis=0, inplace=True)
+    mrsa_rna.insert(0, "disease", np.full(len(mrsa_rna.index), "mrsa"))
+    mrsa_rna["status"] = mrsa_rna["status"].astype(int) # astype did not work during insertion step above
+
+    # import ca data for validation dataset generation
+    ca_val_meta = import_ca_val_meta()
+    ca_val_rna = import_ca_val_rna()
+
+    # bring in CA validation data and attach disease ("Candidemia"/"Healthy") and statuses ("unknown"/"N/A")
+    ca_val_rna.insert(0, "disease", ca_val_meta["characteristics_ch1.4.phenotype"])
+    ca_val_rna.dropna(axis=0, inplace=True)
+    ca_val_rna.insert(1, "status", np.full(len(ca_val_rna.index), "unknown"))
+    ca_val_rna.loc[ca_val_rna["disease"].str.contains("Healthy"), "status"] = "N/A"
+
+    val_rna_combined = pd.concat([mrsa_rna, ca_val_rna], axis=0, join="inner")
+
+    val_rna_combined.iloc[:,2:] = scale(val_rna_combined.iloc[:,2:].to_numpy())
+
+    return val_rna_combined
+
+validation_data()

@@ -11,24 +11,38 @@ Main issue: current function setup involves performing pca
     data.
 
 To-do:
-    Change LogisticRegression to LogisticRegressionCV
+    Scale the data prior to running regression
+        Avoid data leakage?
+    All data PCA'd prior to use. Should I bring in a separate
+        un-PCA'd validation set, PCA it alone, then predict
+        using the current model?
+
+    Bring in PCA validation data from MRSA and CA validation sets
+        to validate model.
+    
+    Using CA metadata, create a function marking persis/resolve on
+        CA data using the probabilities plot present in the paper.
+        "After 30 days patient is 30% more likely to be healthy"
+        etc.
 
 """
 
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegressionCV
 import pandas as pd
 
-from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.pca import perform_PCA, perform_PCA_validation
 
 
-def perform_mrsa_LR(dataset:pd.DataFrame, components: int = 100):
+def perform_mrsa_LR(training:pd.DataFrame, validation:pd.DataFrame, components: int = 100):
     """
     Performs a logistic regression with cross validation on the
     PCA data of MRSA+CA+Healthy dataset.
     
     Parameters:
-        dataset (pandas.DataFrame): scores matrix from PCA analysis
+        training (pandas.DataFrame): scores matrix from PCA analysis
+        validation (pandas.DataFrame): scores matrix of a PCA'd validation set
         components (int): first x components to run regression on, default=100
     
     Returns:
@@ -36,17 +50,19 @@ def perform_mrsa_LR(dataset:pd.DataFrame, components: int = 100):
     """
     
     assert (
-        dataset.columns[2] == "PC1"
+        training.columns[2] == "PC1"
     ), "Could not perform regression: concat PCA matrix shape has changed or scores matrix not passed."
 
-    mrsa_X = dataset.iloc[:, 2:components+2]
-    mrsa_y = dataset.loc[:, "status"]
+    mrsa_X = training.iloc[:, 2:components+2]
+    mrsa_y = training.loc[:, "status"]
+
+    mrsa_test_X = validation.iloc[:, 2:components+2]
+    mrsa_test_y = validation.loc[:, "status"].astype(str) # mrsa_y is stored as strings '0' and '1' regression trained on strings fails on ints
 
     # create some randomization later
     rng = 42
 
     skf = StratifiedKFold(n_splits=10)
     clf = LogisticRegressionCV(cv=skf, random_state=rng).fit(mrsa_X, mrsa_y)
-    print(f"Score with first {components} components: {clf.score(mrsa_X, mrsa_y)}")
 
-    return clf.score(mrsa_X, mrsa_y), clf
+    return clf.score(mrsa_X, mrsa_y), clf.score(mrsa_test_X, mrsa_test_y), clf

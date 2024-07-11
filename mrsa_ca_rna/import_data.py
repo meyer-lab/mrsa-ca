@@ -6,6 +6,7 @@ To-do:
         They will either have the same label if they denote patient or
         they may just be offset by a constant value if they are samples
         and come from the same patient. Take a look and see what's there.
+
     Get more data from healthy patients to include in this analysis to
         increase the power of the PCA analysis for finding real, not batch,
         differences in the data.
@@ -16,7 +17,6 @@ To-do:
     CA data does not contain resolving/persisting distinctions, but does contain mortality
         rates. Consider using that for regression.
 
-    Finish importing CA and MRSA validation data and concatenating them.
 """
 
 from os.path import join, dirname, abspath
@@ -45,11 +45,12 @@ def import_mrsa_meta():
 
     return mrsa_meta
 
+
 def import_mrsa_val_meta():
     mrsa_val_meta = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "validation_patient_metadata_mrsa.txt"),
         delimiter=",",
-        index_col=0
+        index_col=0,
     )
 
     return mrsa_val_meta
@@ -132,7 +133,9 @@ def import_ca_val_meta():
     )
 
     ca_val_meta = ca_val_meta.loc[
-        ca_val_meta["characteristics_ch1.4.phenotype"].str.contains("Candidemia|Healthy")
+        ca_val_meta["characteristics_ch1.4.phenotype"].str.contains(
+            "Candidemia|Healthy"
+        )
     ]
 
     return ca_val_meta
@@ -147,12 +150,13 @@ def import_ca_val_rna():
     )
 
     ca_val_rna = ca_val_rna.mul(1000000 / ca_val_rna.sum(axis=1), axis=0)
-    
+
     # trim ca_val_rna to just those patients with CA or are Healthy
     ca_healthy_pats = import_ca_val_meta()
     ca_val_rna = ca_val_rna.loc[ca_healthy_pats.index]
 
     return ca_val_rna
+
 
 # further digesting the full CA_series_matrix from the primary source required
 def import_ca_series():
@@ -169,13 +173,13 @@ def import_ca_series():
             j += 1
             ca_series.iloc[i, 0] = ca_series.iloc[i, 0] + "." + str(j)
         elif j != 0:
-            ca_series.iloc[i-j-1, 0] = ca_series.iloc[i-j-1, 0] + ".0"
+            ca_series.iloc[i - j - 1, 0] = ca_series.iloc[i - j - 1, 0] + ".0"
             j = 0
-    
+
     ca_series.set_index("!Sample_title", inplace=True)
-    
-    
+
     return ca_series
+
 
 def import_GSE_metadata():
     """
@@ -313,8 +317,8 @@ def concat_datasets():
 
     return rna_combined, meta_combined
 
-def validation_data():
 
+def validation_data():
     # import mrsa data for validation dataset generation
     mrsa_val_meta = import_mrsa_val_meta()
     mrsa_rna = import_mrsa_rna()
@@ -337,8 +341,9 @@ def validation_data():
 
     val_rna_combined = pd.concat([mrsa_rna, ca_val_rna], axis=0, join="inner")
 
-    val_rna_combined.iloc[:,2:] = scale(val_rna_combined.iloc[:,2:].to_numpy())
+    val_rna_combined.iloc[:, 2:] = scale(val_rna_combined.iloc[:, 2:].to_numpy())
 
     return val_rna_combined
+
 
 validation_data()

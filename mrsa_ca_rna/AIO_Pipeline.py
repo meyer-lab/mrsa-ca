@@ -4,6 +4,7 @@ in a single spot to see if I can get some consisyency. This will just be
 using the MRSA data to see what kind of accuracy I get with a single dataset
 
 """
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import StratifiedKFold
@@ -22,16 +23,18 @@ from mrsa_ca_rna.import_data import (
 )
 from mrsa_ca_rna.figures.base import setupBase
 
-def aio_pipe(components=60):
 
+def aio_pipe(components=60):
     # bring in the data
-    mrsa_rna= import_mrsa_rna()
+    mrsa_rna = import_mrsa_rna()
     mrsa_meta = import_mrsa_meta()
     mrsa_val_meta = import_mrsa_val_meta()
 
     # combine the data together to whole dfs
-    mrsa_train_rna = mrsa_meta.loc[~mrsa_meta["status"].str.contains("Unknown"), "status"]
-    mrsa_train_rna = pd.concat([mrsa_train_rna, mrsa_rna], axis=1, join="inner") 
+    mrsa_train_rna = mrsa_meta.loc[
+        ~mrsa_meta["status"].str.contains("Unknown"), "status"
+    ]
+    mrsa_train_rna = pd.concat([mrsa_train_rna, mrsa_rna], axis=1, join="inner")
 
     mrsa_test_rna = mrsa_val_meta["status"]
     mrsa_test_rna = pd.concat([mrsa_test_rna, mrsa_rna], axis=1, join="inner")
@@ -48,7 +51,11 @@ def aio_pipe(components=60):
     skf = StratifiedKFold(n_splits=10)
     Cs = np.logspace(-5, 5, 20)
 
-    clf = make_pipeline(scaler, pca, LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=1000, random_state=rng))
+    clf = make_pipeline(
+        scaler,
+        pca,
+        LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=1000, random_state=rng),
+    )
 
     clf.fit(mrsa_train_X, mrsa_train_y)
 
@@ -72,16 +79,13 @@ def genFig():
     scores = []
 
     for component in components:
-
         accuracy, _ = aio_pipe(components=component)
         scores.append(accuracy)
 
     data = pd.DataFrame(data=components, columns=["Components"])
     data["Accuracy"] = scores
 
-    a = sns.lineplot(
-        data=data, x="Components", y="Accuracy", ax=ax[0]
-    )
+    a = sns.lineplot(data=data, x="Components", y="Accuracy", ax=ax[0])
     a.set_xlabel("# of components")
     a.set_ylabel("Accuracy")
     a.set_title("Pipeline Performance")

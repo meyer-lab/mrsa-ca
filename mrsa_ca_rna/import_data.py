@@ -327,7 +327,9 @@ def validation_data():
     mrsa_rna.insert(0, "status", mrsa_val_meta["status"])
     mrsa_rna.dropna(axis=0, inplace=True)
     mrsa_rna.insert(0, "disease", np.full(len(mrsa_rna.index), "mrsa"))
-    mrsa_rna["status"] = mrsa_rna["status"].astype(int) # astype did not work during insertion step above
+    mrsa_rna["status"] = mrsa_rna["status"].astype(
+        int
+    )  # astype did not work during insertion step above
 
     # import ca data for validation dataset generation
     ca_val_meta = import_ca_val_meta()
@@ -344,5 +346,3 @@ def validation_data():
     val_rna_combined.iloc[:, 2:] = scale(val_rna_combined.iloc[:, 2:].to_numpy())
 
     return val_rna_combined
-
-

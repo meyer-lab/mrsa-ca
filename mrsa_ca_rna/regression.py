@@ -11,8 +11,11 @@ Main issue: current function setup involves performing pca
     data.
 
 To-do:
-    Scale the data prior to running regression
-        Avoid data leakage?
+    Scale the data prior to running regression.
+        Scale PCA output prior to regression?
+            This removes Sigma?
+        Follow 'importance of feature scaling' using pipeline
+        just to try it out.
 
     All data PCA'd prior to use. Should I bring in a separate
         un-PCA'd validation set, PCA it alone, then predict
@@ -22,13 +25,17 @@ To-do:
         CA data using the probabilities plot present in the paper.
         "After 30 days patient is 30% more likely to be healthy"
         etc.
+    
+        
 
 """
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegressionCV
+from sklearn.pipeline import make_pipeline
 import pandas as pd
+import numpy as np
 
 from mrsa_ca_rna.pca import perform_PCA, perform_PCA_validation
 
@@ -53,8 +60,8 @@ def perform_mrsa_LR(
         training.columns[2] == "PC1"
     ), "Could not perform regression: concat PCA matrix shape has changed or scores matrix not passed."
 
-    mrsa_X = training.iloc[:, 2 : components + 2]
-    mrsa_y = training.loc[:, "status"]
+    mrsa_train_X = training.iloc[:, 2 : components + 2]
+    mrsa_train_y = training.loc[:, "status"]
 
     mrsa_test_X = validation.iloc[:, 2:components+2]
     mrsa_test_y = validation.loc[:, "status"].astype(str) # mrsa_y is stored as strings '0' and '1' regression trained on strings fails on ints
@@ -62,7 +69,13 @@ def perform_mrsa_LR(
     # create some randomization later
     rng = 42
 
+    Cs = np.logspace(-5, 5, 20)
     skf = StratifiedKFold(n_splits=10)
-    clf = LogisticRegressionCV(cv=skf, random_state=rng).fit(mrsa_X, mrsa_y)
+    scaler = StandardScaler().set_output(transform="pandas") # scaling again here removes sigma from T (scores) matrix that SVD produces?
 
-    return clf.score(mrsa_X, mrsa_y), clf.score(mrsa_test_X, mrsa_test_y), clf
+    scaled_clf = make_pipeline(scaler, LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=1000, random_state=rng))
+    scaled_clf.fit(mrsa_train_X, mrsa_train_y)
+
+    # clf = LogisticRegressionCV(Cs=Cs, cv=skf, random_state=rng).fit(mrsa_train_X, mrsa_train_y)
+
+    return scaled_clf.score(mrsa_train_X, mrsa_train_y), scaled_clf.score(mrsa_test_X, mrsa_test_y), scaled_clf

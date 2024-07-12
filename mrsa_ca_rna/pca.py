@@ -7,6 +7,8 @@ To-do:
 """
 
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 from mrsa_ca_rna.import_data import concat_datasets, validation_data
 import pandas as pd
 
@@ -24,7 +26,10 @@ def perform_PCA():
     rna_mat, meta_mat = concat_datasets()
     components = 100
     pca = PCA(n_components=components)
-    rna_decomp = pca.fit_transform(rna_mat)
+    scaler = StandardScaler().set_output(transform="pandas")
+
+    rna_scaled_mat = scaler.fit_transform(rna_mat)
+    rna_decomp = pca.fit_transform(rna_scaled_mat)
 
     column_labels = []
     for i in range(1, components + 1):
@@ -59,7 +64,9 @@ def perform_PCA_validation():
 
     components = 60
     pca = PCA(n_components=components)
-    val_decomp = pca.fit_transform(val_rna.iloc[:, 2:])
+    scaler = StandardScaler().set_output(transform="pandas")
+    val_scaled_rna = scaler.fit_transform(val_rna.iloc[:, 2:])
+    val_decomp = pca.fit_transform(val_scaled_rna)
 
     column_labels = []
     for i in range(1, components + 1):

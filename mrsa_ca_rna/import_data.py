@@ -346,4 +346,3 @@ def validation_data():
     return val_rna_combined
 
 
-validation_data()

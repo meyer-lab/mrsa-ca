@@ -33,61 +33,70 @@ To-do:
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegressionCV
-from sklearn.pipeline import make_pipeline
+from sklearn.exceptions import ConvergenceWarning
+
 import pandas as pd
 import numpy as np
+import random
+import warnings
 
-from mrsa_ca_rna.pca import perform_PCA, perform_PCA_validation
 
-
-def perform_mrsa_LR(
-    training: pd.DataFrame, validation: pd.DataFrame, components: int = 100
-):
+def perform_LR(annot_data: pd.DataFrame, components: int = 60):
     """
-    Performs a logistic regression with cross validation on the
-    PCA data of MRSA+CA+Healthy dataset.
+    Performs a logistic regression with cross validation on the passed data. Expects
+    data to be annotated rna expression dataframes with columns[0,1] = "status", "disease"
+    and all subsequent data rna expressions. Only performs regression on statused data,
+    anything not labeled as "NA" or "Unknown."
 
     Parameters:
-        training (pandas.DataFrame): scores matrix from PCA analysis
-        validation (pandas.DataFrame): scores matrix of a PCA'd validation set
-        components (int): first x components to run regression on, default=100
+        annot_data (pandas.DataFrame): annotated dataframe containing rna expression
+        components (int): first x components to run regression on, default=60
 
     Returns:
+        clf.score(X_train, y_train): the score of the model
         clf (object): fitted model using specified components
     """
 
+    # For now, we are expecting to be handling PCA'd data.
     assert (
-        training.columns[2] == "PC1"
+        annot_data.columns[2] == "PC1"
     ), "Could not perform regression: concat PCA matrix shape has changed or scores matrix not passed."
 
-    mrsa_train_X = training.iloc[:, 2 : components + 2]
-    mrsa_train_y = training.loc[:, "status"]
+    component_range = np.arange(2, components + 2)
 
-    mrsa_test_X = validation.iloc[:, 2 : components + 2]
-    mrsa_test_y = validation.loc[
-        :, "status"
-    ].astype(
-        str
-    )  # mrsa_y is stored as strings '0' and '1' regression trained on strings fails on ints
+    # we're grabbing the data relevant to our regression method, leaving out anything that cannot be regressed against.
+    X_train = annot_data.loc[
+        ~annot_data["status"].str.contains("Unknown|NA"),
+        annot_data.columns[component_range],
+    ]
+    y_train = annot_data.loc[~annot_data["status"].str.contains("Unknown|NA"), "status"]
 
-    # create some randomization later
-    rng = 42
+    # make space for randomization. Keep things fixed for now.
+    random.seed(42)
+    rng = random.randint(0, 10)
 
     Cs = np.logspace(-5, 5, 20)
     skf = StratifiedKFold(n_splits=10)
-    scaler = StandardScaler().set_output(
-        transform="pandas"
-    )  # scaling again here removes sigma from T (scores) matrix that SVD produces?
+    # scaler = StandardScaler().set_output(
+    #     transform="pandas"
+    # )  # scaling again just in case?
 
-    scaled_clf = make_pipeline(
-        scaler, LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=1000, random_state=rng)
-    )
-    scaled_clf.fit(mrsa_train_X, mrsa_train_y)
+    convergence_failure = 0
 
-    # clf = LogisticRegressionCV(Cs=Cs, cv=skf, random_state=rng).fit(mrsa_train_X, mrsa_train_y)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", ConvergenceWarning)
+        clf = LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=1000, random_state=rng).fit(
+            X_train, y_train
+        )
+
+        if any([issubclass(warning.category, ConvergenceWarning) for warning in w]):
+            print(f"ConvergenceWarning detected at {components} selected components")
+            convergence_failure = components
+        else:
+            print(f"Convergence achieved without issue at {components} components.")
 
     return (
-        scaled_clf.score(mrsa_train_X, mrsa_train_y),
-        scaled_clf.score(mrsa_test_X, mrsa_test_y),
-        scaled_clf,
+        clf.score(X_train, y_train),
+        convergence_failure,
+        clf,
     )

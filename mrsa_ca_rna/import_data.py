@@ -2,10 +2,18 @@
 Import mrsa and ca rna data from tfac-mrsa and ca-rna repos respectively.
 
 To-do:
-    Find longitudinal data in ca data since we know it should be there.
-        They will either have the same label if they denote patient or
-        they may just be offset by a constant value if they are samples
-        and come from the same patient. Take a look and see what's there.
+
+    Evaluate the need for the extra healthy data.
+        I am importing extra healthy data from a paper cited by the CA paper.
+        Do I really need to do this and might it break something? Cannot confirm
+        where and how that data was collected and this data may be particularly
+        context sensitive.
+
+    Impute CA presistence/resolving data:
+        Take paper information on probability of healthy vs. time and use that
+        probability distribution to assign patients as reolving or persisting
+        based on their "daysreltofirsttimepoint" data. Then mrsa regression
+        model to see performance.
 
     Get more data from healthy patients to include in this analysis to
         increase the power of the PCA analysis for finding real, not batch,
@@ -13,9 +21,6 @@ To-do:
         Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
         dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
         infection.
-
-    CA data does not contain resolving/persisting distinctions, but does contain mortality
-        rates. Consider using that for regression.
 
 """
 
@@ -171,12 +176,30 @@ def import_ca_series():
     for i in range(len(ca_series.index)):
         if ca_series["!Sample_title"].duplicated()[i]:
             j += 1
-            ca_series.iloc[i, 0] = ca_series.iloc[i, 0] + "." + str(j)
+            ca_series.iloc[i, 0] = (
+                ca_series.iloc[i, 0]
+                + "."
+                + str(j)
+                + "."
+                + ca_series.iloc[i, 1].split(": ")[0]
+            )
         elif j != 0:
-            ca_series.iloc[i - j - 1, 0] = ca_series.iloc[i - j - 1, 0] + ".0"
+            ca_series.iloc[i - j - 1, 0] = (
+                ca_series.iloc[i - j - 1, 0]
+                + ".0."
+                + ca_series.iloc[i - j - 1, 1].split(": ")[0]
+            )
             j = 0
 
     ca_series.set_index("!Sample_title", inplace=True)
+    ca_series = ca_series.T
+
+    for label in ca_series.columns[8:21]:
+        ca_series[label] = ca_series[label].str.split(": ").str[1]
+
+    ca_series.reset_index(names=["!Sample_title"], inplace=True)
+    ca_series["!Sample_title"] = ca_series["!Sample_title"].str.split(" ").str[0]
+    ca_series.set_index("!Sample_title", drop=True)
 
     return ca_series
 
@@ -271,51 +294,58 @@ def import_GSE_rna():
 
 def concat_datasets():
     """
-    concatenate the two datasets while trimming to shared genes (columns)
+    concatenate rna datasets of interest into a single dataframe for analysis
 
     Returns:
-        rna_combined (pandas.DataFrame): Concatenated MRSA, CA+, CA-, and extra healthy datasets
-        meta_combined (pandas.DataFrame): Concatenated MRSA, CA, and GSE datasets
+        rna_df (pandas.DataFrame): single annotated (status, disease) dataframe of rna data from the imported datasets
     """
-    # import relevant mrsa and ca data
+
+    # start a list of rna datasets to be concatenated at the end of this function
+    rna_list = list()
+
+    """import mrsa data and set up mrsa_rna df with all required annotations. Includes 'validation' dataset"""
     mrsa_meta = import_mrsa_meta()
+    mrsa_val_meta = import_mrsa_val_meta()
     mrsa_rna = import_mrsa_rna()
+
+    # insert a disease and status column, keeping status as strings to avoid data type mixing with CA status: "Unknown"
+    mrsa_rna.insert(0, column="disease", value=np.full(len(mrsa_rna.index), "MRSA"))
+    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str))
+    mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
+        "status"
+    ].astype(str)
+    rna_list.append(mrsa_rna)
+
+    """import ca data and set up ca_rna df with all required annotations. Includes 'validation' dataset"""
     ca_meta = import_ca_meta()
+    ca_val_meta = import_ca_val_meta()
     ca_rna = import_ca_rna()
+    ca_val_rna = import_ca_val_rna()
 
-    # import any addition healthy data to help with analysis power
-    gse_meta, _ = import_GSE_metadata()
-    gse_healthy = import_GSE_rna()
+    # combine the discovery and validation data together, then make the ca_rna df with annotations: Healthy->NA, CA->Unknown
+    ca_rna = pd.concat([ca_rna, ca_val_rna], axis=0, join="inner")
+    ca_meta = pd.concat([ca_meta, ca_val_meta], axis=0, join="inner")
+    ca_rna.insert(0, column="disease", value=ca_meta["characteristics_ch1.4.phenotype"])
+    ca_rna.insert(0, column="status", value=np.full(len(ca_rna.index), "NA"))
+    ca_rna.loc[ca_rna["disease"].str.contains("Candidemia"), "status"] = "Unknown"
+    rna_list.append(ca_rna)
 
-    # concatenate all the matrices to along patient axis, keeping only the overlapping columns (join="inner")
-    rna_combined = pd.concat([mrsa_rna, ca_rna, gse_healthy], axis=0, join="inner")
-    rna_combined = rna_combined.dropna(axis=1)
+    """Might be ditching the extra healthy data as context might be important"""
+    # # import any additional healthy data to help with analysis power
+    # gse_meta, _ = import_GSE_metadata()
+    # gse_healthy = import_GSE_rna()
 
-    # normalize and concatenate all the metadata
-    mrsa_meta.drop(mrsa_meta.columns.difference(["status"]), axis=1, inplace=True)
-    mrsa_meta["disease"] = "mrsa"
+    # gse_healthy.insert(0, column="disease", np.full(len(gse_healthy.index), "Healthy"))
+    # gse_healthy.insert(0, column="status", np.full(len(gse_healthy.index), "NA"))
+    # rna_list.append(gse_healthy)
 
-    ca_meta.drop(
-        ca_meta.columns.difference(["characteristics_ch1.4.phenotype"]),
-        axis=1,
-        inplace=True,
-    )
-    ca_meta.rename(columns={"characteristics_ch1.4.phenotype": "disease"}, inplace=True)
-    ca_meta.insert(0, "status", np.full(len(ca_meta.index), "N/A"))
-    ca_meta.loc[ca_meta["disease"].str.contains("Candidemia"), "status"] = "unknown"
+    # concat everything within the list we've been appending onto.
+    rna_df = pd.concat(rna_list, axis=0, join="inner")
 
-    gse_meta.drop(gse_meta.columns.difference(["!Sample_title"]), axis=1, inplace=True)
-    gse_meta.rename(columns={"!Sample_title": "disease"}, inplace=True)
-    gse_meta["disease"] = "Healthy"
-    gse_meta.insert(0, "status", np.full(len(gse_meta.index), "N/A"))
+    return rna_df
 
-    # CA data does not have persistant or resolving types
-    meta_combined = pd.concat([mrsa_meta, ca_meta, gse_meta], axis=0, join="inner")
 
-    # scale the matrix after all the data is added to it
-    rna_combined.loc[:, :] = scale(rna_combined.to_numpy())
-
-    return rna_combined, meta_combined
+"""Unclear whether this function will be valid after refactoring the concat_datasets function"""
 
 
 def validation_data():
@@ -333,7 +363,13 @@ def validation_data():
 
     # import ca data for validation dataset generation
     ca_val_meta = import_ca_val_meta()
+    # ca_series = import_ca_series()
     ca_val_rna = import_ca_val_rna()
+
+    """Will be used later when I get back to cross-checking ca_series data with the rest of the CA data"""
+    # df1 = pd.DataFrame(np.zeros(len(ca_val_rna.index)), index=ca_val_rna.index, columns=["id1"])
+    # df2 = pd.DataFrame(np.zeros(len(ca_series["!Sample_characteristics_ch1.0.subject_id"])), index=ca_series["!Sample_characteristics_ch1.0.subject_id"], columns=["id2"])
+    # df_comb = pd.concat([df1, df2]).dropna()
 
     # bring in CA validation data and attach disease ("Candidemia"/"Healthy") and statuses ("unknown"/"N/A")
     ca_val_rna.insert(0, "disease", ca_val_meta["characteristics_ch1.4.phenotype"])

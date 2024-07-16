@@ -8,8 +8,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-from mrsa_ca_rna.pca import perform_PCA, perform_PCA_validation
-from mrsa_ca_rna.regression import perform_mrsa_LR
+from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.figures.base import setupBase
 
 
@@ -19,26 +19,18 @@ def figure_03_setup():
     components = 60
     performance = pd.DataFrame(np.arange(1, components + 1), columns=["components"])
     scores_train = []
-    scores_test = []
+    failures = []
 
-    whole_scores, _, _ = perform_PCA()
-    mrsa_scores = whole_scores.loc[whole_scores["disease"] == "mrsa"]
-    mrsa_data = mrsa_scores.loc[~(mrsa_scores["status"] == "Unknown")]
-
-    val_scores, _, _ = perform_PCA_validation()
-    mrsa_val = val_scores.loc[val_scores["disease"] == "mrsa"]
+    pca_rna, _, _ = perform_PCA()
 
     for i in performance["components"]:
-        train_performance, test_performance, _ = perform_mrsa_LR(
-            mrsa_data, mrsa_val, components=i
-        )
+        train_performance, failed, _ = perform_LR(pca_rna, components=i)
         scores_train.append(train_performance)
-        scores_test.append(test_performance)
+        failures.append(failed)
 
     performance["Training performance"] = scores_train
-    performance["Testing performance"] = scores_test
 
-    return performance
+    return performance, failures
 
 
 def genFig():
@@ -46,16 +38,19 @@ def genFig():
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    data = figure_03_setup()
-    data_melt = pd.melt(data, ["components"])
+    data, failures = figure_03_setup()
+    data_melt = pd.melt(data, ["components"])  # convert wide df to tall df for sns.
 
     a = sns.lineplot(
         data=data_melt, x="components", y="value", hue="variable", ax=ax[0]
     )
+    for failure in failures:
+        a.axvline(x=failure, linewidth=0.37, color="red")
+
     a.set_xlabel("# of components")
-    a.set_ylabel("Accuracy")
+    a.set_ylabel("Score")
     a.set_title(
-        "Performance of Regression of MRSA outcome data given PCA across MRSA, CA, and Healthy data"
+        "Performance of Regression of MRSA outcome:\nPCA(MRSA+CA), max_iter=10k, scaled prior to PCA, all components"
     )
 
     return f

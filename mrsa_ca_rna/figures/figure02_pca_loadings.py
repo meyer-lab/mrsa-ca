@@ -5,7 +5,7 @@ This file may become obsolete post scores heatmap analysis currently
 planned.
 
 To-do:
-    change file to make loadings DataFrame
+    homogenize structure with figure01 once I figure that one out.
 """
 
 import numpy as np

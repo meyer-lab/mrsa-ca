@@ -9,8 +9,7 @@ To-do:
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-from mrsa_ca_rna.import_data import concat_datasets, validation_data
+from mrsa_ca_rna.import_data import concat_datasets
 import pandas as pd
 
 

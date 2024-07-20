@@ -345,6 +345,23 @@ def concat_datasets():
     return rna_df
 
 
+def import_rna_weights():
+    """
+    Imports the wights generated from the elasticnet logistic regression performed
+    on the RNA post-scaling.
+    """
+
+    rna_weights = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "rna_weights_scaled.csv"),
+        delimiter=",",
+        index_col=0,
+    )
+
+    return rna_weights
+
+
+import_rna_weights()
+
 """Unclear whether this function will be valid after refactoring the concat_datasets function"""
 
 

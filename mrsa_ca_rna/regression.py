@@ -67,7 +67,7 @@ def perform_PC_LR(annot_data: pd.DataFrame, components: int = 60):
 
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
-        clf = LogisticRegressionCV(Cs=Cs, cv=skf, max_iter=6000, random_state=rng).fit(
+        clf = LogisticRegressionCV(Cs=Cs, cv=skf, solver="saga", max_iter=6000, random_state=rng).fit(
             X_train, y_train
         )
 
@@ -154,3 +154,5 @@ def perform_whole_LR():
     weights.to_csv("./output/weights_scaled.csv")
 
     return whole_scaled_clf.score(X_scaled_train, y_train), weights, whole_scaled_clf
+
+perform_whole_LR()

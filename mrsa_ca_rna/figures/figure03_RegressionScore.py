@@ -68,7 +68,8 @@ def genFig():
     a.set_xlabel("# of components")
     a.set_ylabel("Score")
     a.set_title(
-        "Performance of Regression of MRSA outcome:\nPCA(MRSA+CA), max_iter=6k, scaled prior to PCA, all components"
+        "Performance of Regression of MRSA outcome:\nPCA(MRSA+CA), max_iter=6k, scaled prior to PCA, 'saga' solver"
     )
 
     return f
+genFig()

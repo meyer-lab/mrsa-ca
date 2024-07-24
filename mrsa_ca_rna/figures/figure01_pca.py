@@ -26,5 +26,5 @@ def genFig():
 
     scores, _, _ = perform_PCA()
 
-    f = sns.pairplot(scores.loc[:, "disease":"PC10"], hue="disease", palette="viridis")
+    f = sns.pairplot(scores.loc[:, "disease":"PC5"], hue="disease", palette="viridis")
     return f

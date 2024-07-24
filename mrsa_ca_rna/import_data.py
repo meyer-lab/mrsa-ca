@@ -86,12 +86,21 @@ def import_ca_disc_meta():
         delimiter="\t",
         index_col=0,
     )
-    ca_disc_meta.index.name = None # remove the name to reduce complication later
+    ca_disc_meta.index.name = None  # remove the name to reduce complication later
 
     # trim to just what we need
-    ca_disc_meta = ca_disc_meta.iloc[[0, 8, 10, 11, 12, 13, 14], :]
+    ca_disc_meta = ca_disc_meta.iloc[[0, 8, 9, 10, 11, 12, 13, 14], :]
     ca_disc_meta.reset_index(drop=True, inplace=True)
-    index_dict = {0:"sample_id", 1:"subject_id", 2:"disc_sample", 3:"days_rel_first_time", 4:"phenotype", 5:"gender", 6:"age"}
+    index_dict = {
+        0: "sample_id",
+        1: "subject_id",
+        2: "QC",
+        3: "analysis",
+        4: "days_rel_first_time",
+        5: "disease",
+        6: "gender",
+        7: "age",
+    }
     ca_disc_meta.rename(index=index_dict, inplace=True)
 
     # remove the labels from the values themselves by taking only what is after the ": "
@@ -100,11 +109,24 @@ def import_ca_disc_meta():
             if len(ca_disc_meta.loc[i, j].split(": ")) > 1:
                 ca_disc_meta.loc[i, j] = ca_disc_meta.loc[i, j].split(": ")[1]
 
-    ca_disc_meta = ca_disc_meta.T # index by sample instead of by label
+    ca_disc_meta = ca_disc_meta.T  # index by sample instead of by label
+
+    ca_disc_meta = ca_disc_meta.loc[ca_disc_meta["QC"].str.contains("Pass"), :].drop(
+        "QC", axis=1
+    )
 
     # index by sample_id instead of title. We may never need the title again from here
-    ca_disc_meta.reset_index(names=["sample_title"], inplace=True) # remove this line if we no longer need the title
+    ca_disc_meta.reset_index(
+        names=["sample_title"], inplace=True
+    )  # remove this line if we no longer need the title
     ca_disc_meta.set_index("sample_id", inplace=True)
+
+    # sorting by sibject_id and days_rel_first_time
+    for i in ca_disc_meta.index:
+        ca_disc_meta.loc[i, "days_rel_first_time"] = ca_disc_meta.loc[
+            i, "days_rel_first_time"
+        ].zfill(2)
+    ca_disc_meta.sort_values(by=["subject_id", "days_rel_first_time"], inplace=True)
 
     return ca_disc_meta
 
@@ -114,7 +136,7 @@ def import_ca_disc_rna():
     reads ca data from discovery_data_ca
 
     Returns:
-        
+
     """
     ca_disc_rna_GeneID = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "ca_discovery_TPM_RNA_GSE176260.tsv.gz"),
@@ -131,104 +153,170 @@ def import_ca_disc_rna():
     gene_conversion = dict(
         zip(ca_disc_rna_annot.index, ca_disc_rna_annot["EnsemblGeneID"])
     )
-    
-    ca_disc_rna = ca_disc_rna_GeneID.rename(gene_conversion, axis=0) # convert from GeneID to EnsemblGeneID
-    ca_disc_rna.rename(index=str, inplace=True) # convert nans to strings for subsequent compare
-    ca_disc_rna = ca_disc_rna.loc[ca_disc_rna.index.str.contains("ENSG"), :] # drop all unmapped (nan) genes
-    ca_disc_rna = ca_disc_rna.groupby(ca_disc_rna.index).last() # drop all but the last duplicate row indices (non-uniquely mapped EnsemblGeneIDs)
 
-    ca_disc_rna = ca_disc_rna.T # index by sample instead of by gene
+    ca_disc_rna = ca_disc_rna_GeneID.rename(
+        gene_conversion, axis=0
+    )  # convert from GeneID to EnsemblGeneID
+    ca_disc_rna.rename(
+        index=str, inplace=True
+    )  # convert nans to strings for subsequent compare
+    ca_disc_rna = ca_disc_rna.loc[
+        ca_disc_rna.index.str.contains("ENSG"), :
+    ]  # drop all unmapped (nan) genes
+    ca_disc_rna = ca_disc_rna.groupby(
+        ca_disc_rna.index
+    ).last()  # drop all but the last duplicate row indices (non-uniquely mapped EnsemblGeneIDs)
+    ca_disc_rna.index.name = None
+
+    ca_disc_rna = ca_disc_rna.T  # index by sample instead of by gene
 
     return ca_disc_rna
 
 
 def import_ca_val_meta():
     """import validation ca meta data to find longitudinal data"""
-    ca_val_meta = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "validation_metadata_ca.txt"),
-        delimiter=",",
+    ca_val_meta_full = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "ca_validation_meta_GSE176261.txt"),
+        delimiter="\t",
         index_col=0,
     )
 
-    ca_val_meta = ca_val_meta.loc[
-        ca_val_meta["characteristics_ch1.4.phenotype"].str.contains(
-            "Candidemia|Healthy"
-        )
-    ]
+    ca_val_meta_full.index.name = None  # remove the name to reduce complication later
+
+    # trim to just what we need
+    ca_val_meta = ca_val_meta_full.iloc[[0, 8, 9, 10, 11, 12, 13, 14], :]
+    ca_val_meta.reset_index(drop=True, inplace=True)
+    index_dict = {
+        0: "sample_id",
+        1: "subject_id",
+        2: "QC",
+        3: "analysis",
+        4: "days_rel_first_time",
+        5: "disease",
+        6: "gender",
+        7: "age",
+    }
+    ca_val_meta.rename(index=index_dict, inplace=True)
+
+    # remove the labels from the values themselves by taking only what is after the ": "
+    for i in ca_val_meta.index:
+        for j in ca_val_meta.columns:
+            if len(ca_val_meta.loc[i, j].split(": ")) > 1:
+                ca_val_meta.loc[i, j] = ca_val_meta.loc[i, j].split(": ")[1]
+
+    ca_val_meta = ca_val_meta.T  # index by sample instead of by label
+
+    ca_val_meta = ca_val_meta.loc[ca_val_meta["QC"].str.contains("Pass"), :].drop(
+        "QC", axis=1
+    )
+
+    # index by sample_id instead of title. We may never need the title again from here
+    ca_val_meta.reset_index(
+        names=["sample_title"], inplace=True
+    )  # remove this line if we no longer need the title
+    ca_val_meta.set_index("sample_id", inplace=True)
+
+    # sorting by sibject_id and days_rel_first_time
+    for i in ca_val_meta.index:
+        ca_val_meta.loc[i, "days_rel_first_time"] = ca_val_meta.loc[
+            i, "days_rel_first_time"
+        ].zfill(2)
+    ca_val_meta.sort_values(by=["subject_id", "days_rel_first_time"], inplace=True)
 
     return ca_val_meta
 
 
 def import_ca_val_rna():
     """import rna data from the validation group"""
-    ca_val_rna = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "validation_data_ca.txt.gz"),
-        delimiter=",",
+    ca_val_rna_GeneID = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "ca_validation_TPM_RNA_GSE176261.tsv.gz"),
+        delimiter="\t",
         index_col=0,
     )
 
-    ca_val_rna = ca_val_rna.mul(1000000 / ca_val_rna.sum(axis=1), axis=0)
+    ca_val_rna_annot = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
+        delimiter="\t",
+        index_col=0,
+    )
 
-    # trim ca_val_rna to just those patients with CA or are Healthy
-    ca_healthy_pats = import_ca_val_meta()
-    ca_val_rna = ca_val_rna.loc[ca_healthy_pats.index]
+    gene_conversion = dict(
+        zip(ca_val_rna_annot.index, ca_val_rna_annot["EnsemblGeneID"])
+    )
+
+    ca_val_rna = ca_val_rna_GeneID.rename(
+        gene_conversion, axis=0
+    )  # convert from GeneID to EnsemblGeneID
+    ca_val_rna.rename(
+        index=str, inplace=True
+    )  # convert nans to strings for subsequent compare
+    ca_val_rna = ca_val_rna.loc[
+        ca_val_rna.index.str.contains("ENSG"), :
+    ]  # drop all unmapped (nan) genes
+    ca_val_rna = ca_val_rna.groupby(
+        ca_val_rna.index
+    ).last()  # drop all but the last duplicate row indices (non-uniquely mapped EnsemblGeneIDs)
+    ca_val_rna.index.name = None
+
+    ca_val_rna = ca_val_rna.T  # index by sample instead of by gene
 
     return ca_val_rna
 
 
 # further digesting the full CA_series_matrix from the primary source required
-def import_ca_series():
-    ca_disc_meta = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "CA_series_matrix_compat.txt"),
-        delimiter="\t",
-        index_col=0,
-    )
+# def import_ca_series():
+#     ca_val_meta = pd.read_csv(
+#         join(BASE_DIR, "mrsa_ca_rna", "data", "CA_series_matrix_compat.txt"),
+#         delimiter="\t",
+#         index_col=0,
+#     )
 
-    ca_disc_meta.reset_index(inplace=True)
-    j = 0
-    for i in range(len(ca_disc_meta.index)):
-        if ca_disc_meta["!Sample_title"].duplicated()[i]:
-            j += 1
-            ca_disc_meta.iloc[i, 0] = (
-                ca_disc_meta.iloc[i, 0]
-                + "."
-                + str(j)
-                + "."
-                + ca_disc_meta.iloc[i, 1].split(": ")[0]
-            )
-        elif j != 0:
-            ca_disc_meta.iloc[i - j - 1, 0] = (
-                ca_disc_meta.iloc[i - j - 1, 0]
-                + ".0."
-                + ca_disc_meta.iloc[i - j - 1, 1].split(": ")[0]
-            )
-            j = 0
+#     ca_val_meta.reset_index(inplace=True)
+#     j = 0
+#     for i in range(len(ca_val_meta.index)):
+#         if ca_val_meta["!Sample_title"].duplicated()[i]:
+#             j += 1
+#             ca_val_meta.iloc[i, 0] = (
+#                 ca_val_meta.iloc[i, 0]
+#                 + "."
+#                 + str(j)
+#                 + "."
+#                 + ca_val_meta.iloc[i, 1].split(": ")[0]
+#             )
+#         elif j != 0:
+#             ca_val_meta.iloc[i - j - 1, 0] = (
+#                 ca_val_meta.iloc[i - j - 1, 0]
+#                 + ".0."
+#                 + ca_val_meta.iloc[i - j - 1, 1].split(": ")[0]
+#             )
+#             j = 0
 
-    ca_disc_meta.set_index("!Sample_title", inplace=True)
-    ca_disc_meta = ca_disc_meta.T
+#     ca_val_meta.set_index("!Sample_title", inplace=True)
+#     ca_val_meta = ca_val_meta.T
 
-    for label in ca_disc_meta.columns[8:21]:
-        ca_disc_meta[label] = ca_disc_meta[label].str.split(": ").str[1]
+#     for label in ca_val_meta.columns[8:21]:
+#         ca_val_meta[label] = ca_val_meta[label].str.split(": ").str[1]
 
-    ca_disc_meta.reset_index(names=["!Sample_title"], inplace=True)
-    ca_disc_meta["!Sample_title"] = ca_disc_meta["!Sample_title"].str.split(" ").str[0]
-    ca_disc_meta.set_index(keys="!Sample_title", drop=True, inplace=True)
+#     ca_val_meta.reset_index(names=["!Sample_title"], inplace=True)
+#     ca_val_meta["!Sample_title"] = ca_val_meta["!Sample_title"].str.split(" ").str[0]
+#     ca_val_meta.set_index(keys="!Sample_title", drop=True, inplace=True)
 
-    all_ca_data = pd.concat([import_ca_rna(), import_ca_val_rna()], axis=0)
-    
-    same_index = pd.concat([all_ca_data, ca_disc_meta], axis=1, join="inner") # empty DataFrame if none of the indices are the same between the two dataframes: True
+#     all_ca_data = pd.concat([import_ca_rna(), import_ca_val_rna()], axis=0)
 
-    same = 0 # stays 0 if no subject_id's overlap with index of rna data: True
-    for i in ca_disc_meta.index:
-        for j in range(len(all_ca_data.index)):
-            if ca_disc_meta.loc[i, "!Sample_characteristics_ch1.0.subject_id"] == all_ca_data.index[j]:
-                same += 1
+#     same_index = pd.concat([all_ca_data, ca_val_meta], axis=1, join="inner") # empty DataFrame if none of the indices are the same between the two dataframes: True
 
-    repeated_pats = ca_disc_meta.loc[ca_disc_meta["!Sample_characteristics_ch1.0.subject_id"].duplicated(), "!Sample_characteristics_ch1.3.daysreltofirsttimepoin"]
+#     same = 0 # stays 0 if no subject_id's overlap with index of rna data: True
+#     for i in ca_val_meta.index:
+#         for j in range(len(all_ca_data.index)):
+#             if ca_val_meta.loc[i, "!Sample_characteristics_ch1.0.subject_id"] == all_ca_data.index[j]:
+#                 same += 1
 
-    rna_repeated = pd.concat([repeated_pats, all_ca_data], axis=1)
+#     repeated_pats = ca_val_meta.loc[ca_val_meta["!Sample_characteristics_ch1.0.subject_id"].duplicated(), "!Sample_characteristics_ch1.3.daysreltofirsttimepoin"]
 
-    return ca_disc_meta
+#     rna_repeated = pd.concat([repeated_pats, all_ca_data], axis=1)
+
+#     return ca_val_meta
+
 
 def import_GSE_metadata():
     """
@@ -343,32 +431,66 @@ def concat_datasets():
     rna_list.append(mrsa_rna)
 
     """import ca data and set up ca_rna df with all required annotations. Includes 'validation' dataset"""
-    ca_meta = import_ca_meta()
+    ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
-    ca_rna = import_ca_rna()
+    ca_disc_rna = import_ca_disc_rna()
     ca_val_rna = import_ca_val_rna()
 
     # combine the discovery and validation data together, then make the ca_rna df with annotations: Healthy->NA, CA->Unknown
-    ca_rna = pd.concat([ca_rna, ca_val_rna], axis=0, join="inner")
-    ca_meta = pd.concat([ca_meta, ca_val_meta], axis=0, join="inner")
-    ca_rna.insert(0, column="disease", value=ca_meta["characteristics_ch1.4.phenotype"])
-    ca_rna.insert(0, column="status", value=np.full(len(ca_rna.index), "NA"))
-    ca_rna.loc[ca_rna["disease"].str.contains("Candidemia"), "status"] = "Unknown"
-    rna_list.append(ca_rna)
+    ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
+    ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
 
-    """Might be ditching the extra healthy data as context might be important"""
-    # # import any additional healthy data to help with analysis power
-    # gse_meta, _ = import_GSE_metadata()
-    # gse_healthy = import_GSE_rna()
+    ca_meta_ch = ca_meta.loc[
+        ca_meta["disease"].str.contains("Candidemia|Healthy"), :
+    ]  # grab just data marked as healthy or candidemia
+    # remove duplicated patients (ones with time points). Since we know it's ordered by time, we're keeping the first time point (0) for each duplicated patient
+    ca_meta_ch_nt = ca_meta_ch.loc[~ca_meta_ch["subject_id"].duplicated(), :]
+    ca_meta_ch_nt["status"] = "Unknown"
 
-    # gse_healthy.insert(0, column="disease", np.full(len(gse_healthy.index), "Healthy"))
-    # gse_healthy.insert(0, column="status", np.full(len(gse_healthy.index), "NA"))
-    # rna_list.append(gse_healthy)
+    ca_rna_meta = pd.concat(
+        [ca_meta_ch_nt.loc[:, ["status", "disease"]], ca_rna], axis=1, join="inner"
+    )  # trim the rna data down to our meta subset and concat them
+
+    rna_list.append(ca_rna_meta)
 
     # concat everything within the list we've been appending onto.
     rna_df = pd.concat(rna_list, axis=0, join="inner")
 
     return rna_df
+
+
+def extract_time_data():
+    ca_disc_meta = import_ca_disc_meta()
+    ca_val_meta = import_ca_val_meta()
+    ca_disc_rna = import_ca_disc_rna()
+    ca_val_rna = import_ca_val_rna()
+
+    ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
+    ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
+
+    ca_meta_ch = ca_meta.loc[
+        ca_meta["disease"].str.contains("Candidemia|Healthy"), :
+    ]  # grab just data marked as healthy or candidemia
+
+    # remove duplicated patients (ones with time points). Since we know it's ordered by time, we're keeping the first time point (0) for each duplicated patient
+    ca_meta_ch_t = ca_meta_ch.loc[ca_meta_ch["subject_id"].duplicated(keep=False), :]
+    ca_meta_ch_t["status"] = "Unknown"
+
+    ca_rna_timed = pd.concat(
+        [
+            ca_meta_ch_t.loc[
+                :, ["subject_id", "days_rel_first_time", "status", "disease"]
+            ],
+            ca_rna,
+        ],
+        axis=1,
+        join="inner",
+    )
+
+    return ca_rna_timed
+
+
+extract_time_data()
 
 
 def import_rna_weights():
@@ -383,4 +505,16 @@ def import_rna_weights():
         index_col=0,
     )
 
-    return rna_weights
+    new_weights = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "weights_scaled_newCA.csv"),
+        delimiter=",",
+        index_col=0,
+    )
+
+    nested_weights = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "nested_weights.csv"),
+        delimiter=",",
+        index_col=0,
+    )
+
+    return rna_weights, new_weights, nested_weights

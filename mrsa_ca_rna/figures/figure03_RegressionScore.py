@@ -25,7 +25,7 @@ def figure_03_setup(components: int = 60):
         scores_train.append(train_performance)
         failures.append(failed)
 
-    performance = pd.DataFrame(scores_train, columns=["Training performance"])
+    performance = pd.DataFrame(scores_train, columns=["Nested Accuracy"])
 
     return performance, failures
 
@@ -45,7 +45,7 @@ def genFig():
     for run in runs:
         data, failures = figure_03_setup(components=components)
         data.rename(
-            columns={"Training performance": f"Training performance, run: {run+1}"},
+            columns={"Nested Accuracy": f"Nested Accuracy, run: {run+1}"},
             inplace=True,
         )
         data_list.append(data)
@@ -68,8 +68,7 @@ def genFig():
     a.set_xlabel("# of components")
     a.set_ylabel("Score")
     a.set_title(
-        "Performance of Regression of MRSA outcome:\nPCA(MRSA+CA), max_iter=6k, scaled prior to PCA, 'saga' solver"
+        "Nested Score of Logistic Regression.\nPCA (MRSA+CA), 'saga' solver, 'l2' penalty"
     )
 
     return f
-genFig()

@@ -18,7 +18,7 @@ def figure04_setup():
 
     scaler = StandardScaler().set_output(transform="pandas")
 
-    scaled_weights = import_rna_weights()
+    scaled_weights, new_weights, nested_weights = import_rna_weights()
     rna_data = concat_datasets()
     rna_scaled_data = rna_data.copy()
 

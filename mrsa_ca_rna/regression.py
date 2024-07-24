@@ -11,8 +11,8 @@ To-do:
 """
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import StratifiedKFold
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.linear_model import LogisticRegressionCV, LogisticRegression
 from sklearn.exceptions import ConvergenceWarning
 
 import pandas as pd
@@ -65,26 +65,49 @@ def perform_PC_LR(annot_data: pd.DataFrame, components: int = 60):
 
     convergence_failure = 0
 
+    # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
-        clf = LogisticRegressionCV(Cs=Cs, cv=skf, solver="saga", max_iter=6000, random_state=rng).fit(
-            X_train, y_train
-        )
+        pre_clf = LogisticRegressionCV(
+            Cs=Cs,
+            l1_ratios=[0.8],
+            solver="saga",
+            penalty="elasticnet",
+            n_jobs=3,
+            cv=skf,
+            max_iter=100000,
+            scoring='balanced_accuracy',
+            multi_class='ovr',
+            random_state=rng
+        ).fit(X_train, y_train)
 
         if any([issubclass(warning.category, ConvergenceWarning) for warning in w]):
             print(
-                f"ConvergenceWarning detected using {components} components ({np.amax(clf.n_iter_)} iterations)"
+                f"ConvergenceWarning detected using {components} components ({np.amax(pre_clf.n_iter_)} iterations)"
             )
             convergence_failure = components
         else:
             print(
-                f"Convergence achieved within {np.amax(clf.n_iter_)} iterations using {components} components."
+                f"Convergence achieved within {np.amax(pre_clf.n_iter_)} iterations using {components} components."
             )
 
+    coef = pre_clf.coef_[0]
+    scores = np.mean(list(pre_clf.scores_.values())[0], axis=0)
+
+    clf = LogisticRegression(
+        C=pre_clf.C_[0],
+        l1_ratio=pre_clf.l1_ratio_[0],
+        solver="saga",
+        penalty="elasticnet",
+        max_iter=100000,
+    ).fit(X_train, y_train)
+
+    nested_score = cross_val_score(clf, X=X_train, y=y_train, cv=skf, scoring="balanced_accuracy").mean()
+
     return (
-        clf.score(X_train, y_train),
+        nested_score,
         convergence_failure,
-        clf,
+        clf
     )
 
 
@@ -122,13 +145,13 @@ def perform_whole_LR():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", ConvergenceWarning)
         whole_scaled_clf = LogisticRegressionCV(
-            verbose=True,
             Cs=Cs,
             cv=skf,
             penalty="elasticnet",
             solver="saga",
             l1_ratios=[0.75, 0.25],
-            max_iter=6000,
+            n_jobs=3,
+            max_iter=100000,
             random_state=rng,
         ).fit(X_scaled_train, y_train)
 
@@ -139,20 +162,32 @@ def perform_whole_LR():
             failure = 1
         else:
             print(f"Convergence achieved within {np.amax(whole_scaled_clf.n_iter_)}")
+    
+    coef = whole_scaled_clf.coef_[0]
+    scores = np.mean(list(whole_scaled_clf.scores_.values())[0], axis=0)
+
+    clf = LogisticRegression(
+        C=whole_scaled_clf.C_[0],
+        l1_ratio=whole_scaled_clf.l1_ratio_[0],
+        solver="saga",
+        penalty="elasticnet",
+        max_iter=100000,
+    ).fit(X_scaled_train, y_train)
+
+    nested_score = cross_val_score(clf, X=X_scaled_train, y=y_train, cv=skf, scoring="balanced_accuracy").mean()
 
     print(
-        f"score: {whole_scaled_clf.score(X_scaled_train, y_train)}. Failures to converge: {bool(failure)}"
+        f"score: {nested_score}. Failures to converge: {bool(failure)}"
     )
-    print(f"The coefficients of the fitting function are: {whole_scaled_clf.coef_}")
+    print(f"The coefficients of the fitting function are: {clf.coef_}")
 
-    coef_array = whole_scaled_clf.coef_
+    coef_array = clf.coef_
 
     weights = pd.DataFrame(
         coef_array, index=["Scaled Feature Coef"], columns=annot_data.columns[2:]
     )
 
-    weights.to_csv("./output/weights_scaled.csv")
+    weights.to_csv("./output/nested_weights.csv")
 
-    return whole_scaled_clf.score(X_scaled_train, y_train), weights, whole_scaled_clf
-
+    return nested_score, weights, clf
 perform_whole_LR()

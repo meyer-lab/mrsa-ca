@@ -13,7 +13,7 @@ from mrsa_ca_rna.import_data import concat_datasets
 import pandas as pd
 
 
-def perform_PCA():
+def perform_PCA(data :pd.DataFrame=None):
     """
     Perform pca analysis on concatenated rna matrix, then attach corresponding patient metadata
 
@@ -23,7 +23,10 @@ def perform_PCA():
         pca (object): the PCA object for further use in the code.
     """
 
-    rna_mat = concat_datasets()
+    if data is None:
+        rna_mat = concat_datasets()
+    else:
+        rna_mat = data
 
     components = 70
     pca = PCA(n_components=components)

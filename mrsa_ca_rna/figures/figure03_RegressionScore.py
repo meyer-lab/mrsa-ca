@@ -18,11 +18,12 @@ def figure_03_setup(components: int = 60):
     scores_train = []
     failures = []
 
-    pca_rna, _, _ = perform_PCA()
+    annot_scores, _, _ = perform_PCA()
 
     for i in range(1, components + 1):
-        train_performance, failed, _ = perform_PC_LR(pca_rna, components=i)
-        scores_train.append(train_performance)
+        desired_components = pd.IndexSlice["components", annot_scores["components"].columns[0:i]]
+        nested_performance, failed, _ = perform_PC_LR(annot_scores.loc["MRSA", desired_components], annot_scores.loc["MRSA", ("meta", "status")])
+        scores_train.append(nested_performance)
         failures.append(failed)
 
     performance = pd.DataFrame(scores_train, columns=["Nested Accuracy"])
@@ -68,7 +69,7 @@ def genFig():
     a.set_xlabel("# of components")
     a.set_ylabel("Score")
     a.set_title(
-        "Nested Score of Logistic Regression.\nPCA (MRSA+CA), 'saga' solver, 'l2' penalty"
+        "Nested Score of Logistic Regression (Refac)\nPCA (MRSA+CA), 'saga' solver, 'elasticnet' penalty"
     )
 
     return f

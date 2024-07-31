@@ -9,90 +9,59 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-from mrsa_ca_rna.import_data import import_rna_weights, concat_datasets
+from mrsa_ca_rna.regression import perform_PC_LR
+from mrsa_ca_rna.regression import concat_datasets
+from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 
 
 def figure04_setup():
     """Organize data for plotting"""
 
-    scaler = StandardScaler().set_output(transform="pandas")
 
-    scaled_weights, new_weights, nested_weights = import_rna_weights()
-    rna_data = concat_datasets()
-    rna_scaled_data = rna_data.copy()
+    scores, _, _ = perform_PCA()
 
-    rna_scaled_data.loc[:, ~rna_scaled_data.columns.str.contains("status|disease")] = (
-        scaler.fit_transform(
-            rna_scaled_data.loc[
-                :, ~rna_scaled_data.columns.str.contains("status|disease")
-            ]
+    whole_dataset = concat_datasets()
+    rna:pd.DataFrame = whole_dataset["rna"]
+
+    desired_components = pd.IndexSlice["components", scores["components"].columns[:26]]
+    component_data = scores.loc[:, desired_components]
+
+    nested_accuracy, _, model = perform_PC_LR(scores.loc["MRSA", desired_components], scores.loc["MRSA", ("meta", "status")], whole_dataset.loc["MRSA", "rna"], whole_dataset.loc["MRSA", ("meta", "status")])
+    weights = model.coef_
+    
+    weighted_rna = rna.copy()
+    for pat in range(len(weighted_rna.index.get_level_values(1))):
+        weighted_rna.iloc[pat, :] = weighted_rna.iloc[pat, :].values * weights
+    totals = []
+    for col in weighted_rna.columns:
+        totals.append(weighted_rna[col].sum())
+    total_df = pd.DataFrame(np.reshape(totals, (1, -1)), index=["Total"], columns=weighted_rna.columns)
+    largest_3 = total_df.T.nlargest(3, total_df.index, keep="all")
+    smallest_3 = total_df.T.nsmallest(3, total_df.index, keep="all")
+    largest_smallest = pd.concat([largest_3.T, smallest_3.T], axis=1)
+
+    weighted_data = pd.concat([largest_smallest, weighted_rna.droplevel(0)], axis=0, join="inner")
+
+    return (
+        component_data,
+        weighted_data,
+        nested_accuracy
         )
-    )
-
-    ca_data = rna_data.loc[
-        rna_data["disease"].str.contains("Candidemia"),
-        ~rna_data.columns.str.contains("status|disease"),
-    ]
-    ca_scaled_data = rna_scaled_data.loc[
-        rna_scaled_data["disease"].str.contains("Candidemia"),
-        ~rna_scaled_data.columns.str.contains("status|disease"),
-    ]
-
-    ca_weighted_data = ca_scaled_data.copy()
-    for index in ca_weighted_data.index:
-        ca_weighted_data.loc[index, :] = (
-            ca_weighted_data.loc[index, :].values * scaled_weights.values
-        )
-
-    return ca_data, ca_scaled_data, ca_weighted_data
-
 
 def genFig():
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (8, 4)
+    layout = {"ncols": 2, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    df_dict: pd.DataFrame = {"raw": 0, "scaled": 0, "weighted": 0}
+    
 
-    df_dict["raw"], df_dict["scaled"], df_dict["weighted"] = figure04_setup()
-    totals_dict = {"raw": 0, "scaled": 0, "weighted": 0}
+    component_data, weighted_data, nested_score = figure04_setup()
+    
+    a = sns.heatmap(component_data, cmap="viridis", center=0, ax=ax[0])
+    a.set_title("Component importance per patient")
 
-    for key in df_dict:
-        totals = []
-        for col in df_dict[key].columns:
-            totals.append(df_dict[key][col].sum())
-        totals = np.reshape(totals, (1, -1))
-        totals_dict[key] = pd.DataFrame(
-            totals, index=[key + " totals"], columns=df_dict[key].columns
-        )
-
-    largest_dict = {"raw": 0, "scaled": 0, "weighted": 0}
-    smallest_dict = {"raw": 0, "scaled": 0, "weighted": 0}
-
-    for key in largest_dict:
-        largest_dict[key] = totals_dict[key].T.nlargest(
-            3, totals_dict[key].index, keep="all"
-        )
-    for key in smallest_dict:
-        smallest_dict[key] = totals_dict[key].T.nsmallest(
-            3, totals_dict[key].index, keep="all"
-        )
-
-    exclusion_dict = {
-        "raw": np.concatenate((largest_dict["raw"].index, smallest_dict["raw"].index)),
-        "scaled": np.concatenate(
-            (largest_dict["scaled"].index, smallest_dict["scaled"].index)
-        ),
-        "weighted": np.concatenate(
-            ([largest_dict["weighted"].index, smallest_dict["weighted"].index])
-        ),
-    }
-
-    for i, key in enumerate(df_dict):
-        a = sns.heatmap(
-            df_dict[key][exclusion_dict[key]], cmap="viridis", center=0, ax=ax[i]
-        )
-        a.set_title(key + " ca rna data (3 most positively/negatively correlated)")
+    a = sns.heatmap(weighted_data, cmap="viridis", center=0, ax=ax[1])
+    a.set_title(f"Most correlated and anticorrelated gene expressions to MRSA outcome\nScore {nested_score}")
 
     return f

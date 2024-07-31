@@ -10,6 +10,7 @@ To-do:
 """
 
 import numpy as np
+import pandas as pd
 
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
@@ -26,5 +27,12 @@ def genFig():
 
     scores, _, _ = perform_PCA()
 
-    f = sns.pairplot(scores.loc[:, "disease":"PC5"], hue="disease", palette="viridis")
+    desired_components = pd.IndexSlice["components", scores["components"].columns[0:6]]
+
+    data:pd.DataFrame = scores.loc[:, desired_components]
+    data[("meta", "disease")] = scores.index.get_level_values(0) # seaborn likes long-form data, make a disease column
+
+    # seaborn only uses the top level so we need to remove our current one so it can see our lower one.
+    f = sns.pairplot(data.droplevel(0, 1), hue="disease", palette="viridis")
     return f
+genFig()

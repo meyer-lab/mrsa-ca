@@ -21,8 +21,13 @@ def figure_03_setup(components: int = 60):
     annot_scores, _, _ = perform_PCA()
 
     for i in range(1, components + 1):
-        desired_components = pd.IndexSlice["components", annot_scores["components"].columns[0:i]]
-        nested_performance, failed, _ = perform_PC_LR(annot_scores.loc["MRSA", desired_components], annot_scores.loc["MRSA", ("meta", "status")])
+        desired_components = pd.IndexSlice[
+            "components", annot_scores["components"].columns[0:i]
+        ]
+        nested_performance, failed, _ = perform_PC_LR(
+            annot_scores.loc["MRSA", desired_components],
+            annot_scores.loc["MRSA", ("meta", "status")],
+        )
         scores_train.append(nested_performance)
         failures.append(failed)
 

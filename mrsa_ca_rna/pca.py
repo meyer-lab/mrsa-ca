@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 
 
-def perform_PCA(data :pd.DataFrame=None):
+def perform_PCA(data: pd.DataFrame = None):
     """
     Perform pca decomposition on supplied data, or performs pca on data from concatenated
     databases if none given.
@@ -37,9 +37,7 @@ def perform_PCA(data :pd.DataFrame=None):
     pca = PCA(n_components=components)
     scaler = StandardScaler().set_output(transform="pandas")
 
-    scaled_rna = scaler.fit_transform(
-        rna_mat
-    )
+    scaled_rna = scaler.fit_transform(rna_mat)
     rna_decomp = pca.fit_transform(scaled_rna)
 
     column_labels = []

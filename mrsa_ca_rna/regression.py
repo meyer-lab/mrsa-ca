@@ -11,8 +11,19 @@ To-do:
 """
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, LeaveOneOut, cross_val_score
-from sklearn.linear_model import LogisticRegressionCV, LogisticRegression, ElasticNet, ElasticNetCV, LinearRegression
+from sklearn.model_selection import (
+    GridSearchCV,
+    StratifiedKFold,
+    LeaveOneOut,
+    cross_val_score,
+)
+from sklearn.linear_model import (
+    LogisticRegressionCV,
+    LogisticRegression,
+    ElasticNet,
+    ElasticNetCV,
+    LinearRegression,
+)
 from sklearn.exceptions import ConvergenceWarning
 
 import pandas as pd
@@ -26,7 +37,13 @@ from mrsa_ca_rna.pca import perform_PCA
 skf = StratifiedKFold(n_splits=10)
 loocv = LeaveOneOut()
 
-def perform_PC_LR(X_train: pd.DataFrame, y_train: pd.DataFrame, X_data: pd.DataFrame = None, y_data: pd.DataFrame = None):
+
+def perform_PC_LR(
+    X_train: pd.DataFrame,
+    y_train: pd.DataFrame,
+    X_data: pd.DataFrame = None,
+    y_data: pd.DataFrame = None,
+):
     """
     Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
     can be determined with different data by passing additional data that will not be used for regularization.
@@ -49,23 +66,25 @@ def perform_PC_LR(X_train: pd.DataFrame, y_train: pd.DataFrame, X_data: pd.DataF
     universal
     """
 
-    assert X_train.shape[0] == y_train.shape[0], "Passed X and y data must be the same length!"
+    assert (
+        X_train.shape[0] == y_train.shape[0]
+    ), "Passed X and y data must be the same length!"
 
     # check for additional X_data and y_data in case we are using different data for regaularization
     if X_data is None:
         X_data = X_train
         y_data = y_train
     else:
-        assert X_data.shape[0] == y_data.shape[0], "Passed X and y data must be the same length!"
-        
-    
+        assert (
+            X_data.shape[0] == y_data.shape[0]
+        ), "Passed X and y data must be the same length!"
 
     # make space for randomization. Keep things fixed for now.
     random.seed(42)
     rng = random.randint(0, 10)
 
     Cs = np.logspace(-5, 5, 20)
-    
+
     # scaler = StandardScaler().set_output(
     #     transform="pandas"
     # )  # scaling again just in case?
@@ -83,9 +102,9 @@ def perform_PC_LR(X_train: pd.DataFrame, y_train: pd.DataFrame, X_data: pd.DataF
             n_jobs=3,
             cv=skf,
             max_iter=100000,
-            scoring='balanced_accuracy',
-            multi_class='ovr',
-            random_state=rng
+            scoring="balanced_accuracy",
+            multi_class="ovr",
+            random_state=rng,
         ).fit(X_train, y_train)
 
         if any([issubclass(warning.category, ConvergenceWarning) for warning in w]):
@@ -109,28 +128,35 @@ def perform_PC_LR(X_train: pd.DataFrame, y_train: pd.DataFrame, X_data: pd.DataF
         max_iter=100000,
     ).fit(X_data, y_data)
 
-    nested_score = cross_val_score(clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy").mean()
+    nested_score = cross_val_score(
+        clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy"
+    ).mean()
 
-    return (
-        nested_score,
-        convergence_failure,
-        clf
-    )
+    return (nested_score, convergence_failure, clf)
 
-def perform_linear_regression(X_train:pd.DataFrame, y_train:pd.DataFrame):
 
-    assert X_train.shape[0] == y_train.shape[0], "Passed X and y data must be the same length!"
+def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
+    assert (
+        X_train.shape[0] == y_train.shape[0]
+    ), "Passed X and y data must be the same length!"
 
     lreg = LinearRegression()
 
     param_grid = {"positive": [True]}
-    tuning = GridSearchCV(
-        estimator=lreg,
-        param_grid=param_grid,
-        cv=skf
-    ).fit(X_train.to_numpy(dtype=float), y_train.to_numpy(dtype=float))
+    tuning = GridSearchCV(estimator=lreg, param_grid=param_grid, cv=skf).fit(
+        X_train.to_numpy(dtype=float), y_train.to_numpy(dtype=float)
+    )
     tuned_model = tuning.best_estimator_
 
-    nested_score = cross_val_score(tuned_model, X_train.to_numpy(dtype=float), y_train.to_numpy(dtype=float), cv=skf).mean()
+    nested_score = cross_val_score(
+        tuned_model,
+        X_train.to_numpy(dtype=float),
+        y_train.to_numpy(dtype=float),
+        cv=skf,
+    ).mean()
 
     return nested_score, tuned_model
+
+
+def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
+    return None

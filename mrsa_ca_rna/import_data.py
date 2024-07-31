@@ -107,16 +107,22 @@ def import_ca_disc_meta():
     for i in ca_disc_meta_relabeled.index:
         for j in ca_disc_meta_relabeled.columns:
             if len(ca_disc_meta_relabeled.loc[i, j].split(": ")) > 1:
-                ca_disc_meta_relabeled.loc[i, j] = ca_disc_meta_relabeled.loc[i, j].split(": ")[1]
+                ca_disc_meta_relabeled.loc[i, j] = ca_disc_meta_relabeled.loc[
+                    i, j
+                ].split(": ")[1]
 
-    ca_disc_meta_cleaned = ca_disc_meta_relabeled.T  # index by sample instead of by label
+    ca_disc_meta_cleaned = (
+        ca_disc_meta_relabeled.T
+    )  # index by sample instead of by label
 
-    ca_disc_meta_cleaned = ca_disc_meta_cleaned.loc[ca_disc_meta_cleaned["QC"].str.contains("Pass"), :].drop(
-        "QC", axis=1
-    )
+    ca_disc_meta_cleaned = ca_disc_meta_cleaned.loc[
+        ca_disc_meta_cleaned["QC"].str.contains("Pass"), :
+    ].drop("QC", axis=1)
 
     # index by sample_id instead of title. We may never need the title again from here
-    ca_disc_meta_untitled = ca_disc_meta_cleaned.reset_index(names=["sample_title"])  # remove this line if we no longer need the title
+    ca_disc_meta_untitled = ca_disc_meta_cleaned.reset_index(
+        names=["sample_title"]
+    )  # remove this line if we no longer need the title
     ca_disc_meta_reindexed = ca_disc_meta_untitled.set_index("sample_id")
 
     # sorting by sibject_id and time
@@ -146,7 +152,7 @@ def import_ca_disc_rna():
         join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
         delimiter="\t",
         index_col=0,
-        dtype=str
+        dtype=str,
     )
 
     gene_conversion = dict(
@@ -201,16 +207,20 @@ def import_ca_val_meta():
     for i in ca_val_meta_relabeled.index:
         for j in ca_val_meta_relabeled.columns:
             if len(ca_val_meta_relabeled.loc[i, j].split(": ")) > 1:
-                ca_val_meta_relabeled.loc[i, j] = ca_val_meta_relabeled.loc[i, j].split(": ")[1]
+                ca_val_meta_relabeled.loc[i, j] = ca_val_meta_relabeled.loc[i, j].split(
+                    ": "
+                )[1]
 
     ca_val_meta_cleaned = ca_val_meta_relabeled.T  # index by sample instead of by label
 
-    ca_val_meta_cleaned = ca_val_meta_cleaned.loc[ca_val_meta_cleaned["QC"].str.contains("Pass"), :].drop(
-        "QC", axis=1
-    )
+    ca_val_meta_cleaned = ca_val_meta_cleaned.loc[
+        ca_val_meta_cleaned["QC"].str.contains("Pass"), :
+    ].drop("QC", axis=1)
 
     # index by sample_id instead of title. We may never need the title again from here
-    ca_val_meta_untitled = ca_val_meta_cleaned.reset_index(names=["sample_title"])  # remove this line if we no longer need the title
+    ca_val_meta_untitled = ca_val_meta_cleaned.reset_index(
+        names=["sample_title"]
+    )  # remove this line if we no longer need the title
     ca_val_meta_reindexed = ca_val_meta_untitled.set_index("sample_id")
 
     # sorting by sibject_id and time
@@ -221,6 +231,7 @@ def import_ca_val_meta():
     ca_val_meta_sorted = ca_val_meta_reindexed.sort_values(by=["subject_id", "time"])
 
     return ca_val_meta_sorted
+
 
 def import_ca_val_rna():
     """import rna data from the validation group"""
@@ -234,7 +245,7 @@ def import_ca_val_rna():
         join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
         delimiter="\t",
         index_col=0,
-        dtype=str
+        dtype=str,
     )
 
     gene_conversion = dict(
@@ -402,6 +413,7 @@ def import_GSE_rna():
 
     return gse_rna
 
+
 def extract_time_data():
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
@@ -421,9 +433,7 @@ def extract_time_data():
 
     ca_rna_timed = pd.concat(
         [
-            ca_meta_ch_t.loc[
-                :, ["subject_id", "time", "status", "disease"]
-            ],
+            ca_meta_ch_t.loc[:, ["subject_id", "time", "status", "disease"]],
             ca_rna,
         ],
         axis=1,
@@ -456,7 +466,9 @@ def concat_datasets():
     mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
         "status"
     ].astype(str)
-    mrsa_rna = mrsa_rna.reset_index(names=["subject_id"]).set_index("subject_id", drop=False)
+    mrsa_rna = mrsa_rna.reset_index(names=["subject_id"]).set_index(
+        "subject_id", drop=False
+    )
     mrsa_rna.index.name = None
     rna_list.append(mrsa_rna)
 
@@ -480,16 +492,41 @@ def concat_datasets():
     ca_meta_ch_nt = ca_meta_ch_nt.loc[ca_meta_ch_nt["analysis"] == "Yes", :]
     ca_meta_ch_nt["status"] = "Unknown"
 
-    ca_rna = pd.concat([ca_meta_ch_nt.loc[ca_meta_ch_nt["disease"] == "Candidemia", ["subject_id", "disease", "status"]], cah_rna], axis=1, join="inner")
+    ca_rna = pd.concat(
+        [
+            ca_meta_ch_nt.loc[
+                ca_meta_ch_nt["disease"] == "Candidemia",
+                ["subject_id", "disease", "status"],
+            ],
+            cah_rna,
+        ],
+        axis=1,
+        join="inner",
+    )
     rna_list.append(ca_rna)
 
     ca_timed = extract_time_data()
-    desired_meta, desired_rna = pd.IndexSlice["meta", ["subject_id", "disease", "status"]], pd.IndexSlice["rna", :]
-    ca_timed:pd.DataFrame = ca_timed.loc[:, desired_meta].join(ca_timed.loc[:, desired_rna])
+    desired_meta, desired_rna = (
+        pd.IndexSlice["meta", ["subject_id", "disease", "status"]],
+        pd.IndexSlice["rna", :],
+    )
+    ca_timed: pd.DataFrame = ca_timed.loc[:, desired_meta].join(
+        ca_timed.loc[:, desired_rna]
+    )
     ca_timed.columns = ca_timed.columns.droplevel(0)
     rna_list.append(ca_timed)
 
-    healthy_rna = pd.concat([ca_meta_ch_nt.loc[ca_meta_ch_nt["disease"] == "Healthy", ["subject_id", "disease", "status"]], cah_rna], axis=1, join="inner")
+    healthy_rna = pd.concat(
+        [
+            ca_meta_ch_nt.loc[
+                ca_meta_ch_nt["disease"] == "Healthy",
+                ["subject_id", "disease", "status"],
+            ],
+            cah_rna,
+        ],
+        axis=1,
+        join="inner",
+    )
     rna_list.append(healthy_rna)
 
     # concat everything within the list we've been appending onto.

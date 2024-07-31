@@ -11,22 +11,31 @@ from mrsa_ca_rna.regression import perform_linear_regression
 from mrsa_ca_rna.figures.base import setupBase
 
 
-def figure05_setup(components: int=60):
-    
+def figure05_setup(components: int = 60):
     scores, _, _ = perform_PCA()
     time_meta = extract_time_data()
     time_meta = time_meta.loc[:, ("meta", ["subject_id", "time"])]
 
-    time_scores:pd.DataFrame = pd.concat([time_meta["meta"], scores.loc["Candidemia", "components"]], axis=1, keys=["meta", "components"], join="inner")
+    time_scores: pd.DataFrame = pd.concat(
+        [time_meta["meta"], scores.loc["Candidemia", "components"]],
+        axis=1,
+        keys=["meta", "components"],
+        join="inner",
+    )
 
     scores_train = []
-    for i in range(1, components+1):
-        desired_components = pd.IndexSlice["components", time_scores["components"].columns[0:i]]
-        nested_performance, _ = perform_linear_regression(time_scores.loc[:, desired_components], time_scores.loc[:, ("meta", "time")])
+    for i in range(1, components + 1):
+        desired_components = pd.IndexSlice[
+            "components", time_scores["components"].columns[0:i]
+        ]
+        nested_performance, _ = perform_linear_regression(
+            time_scores.loc[:, desired_components], time_scores.loc[:, ("meta", "time")]
+        )
         scores_train.append(nested_performance)
     performance = pd.DataFrame(scores_train, columns=["Nested Accuracy"])
 
     return performance
+
 
 def genFig():
     fig_size = (4, 4)
@@ -56,8 +65,6 @@ def genFig():
 
     a.set_xlabel("# of components")
     a.set_ylabel("Score")
-    a.set_title(
-        "Linear Regression nested cross validation\nR2 score"
-    )
+    a.set_title("Linear Regression nested cross validation\nR2 score")
 
     return f

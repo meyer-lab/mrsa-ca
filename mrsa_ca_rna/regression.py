@@ -14,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import (
     GridSearchCV,
     StratifiedKFold,
+    KFold,
     LeaveOneOut,
     cross_val_score,
 )
@@ -35,6 +36,7 @@ from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
 
 skf = StratifiedKFold(n_splits=10)
+kf = KFold(n_splits=10)
 loocv = LeaveOneOut()
 
 
@@ -159,4 +161,56 @@ def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
 
 
 def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
-    return None
+    assert (
+        X_train.shape[0] == y_train.shape[0]
+    ), "Passed X and y data must be the same length!"
+
+    X_train = X_train.to_numpy(dtype=float)
+    y_train = y_train.to_numpy(dtype=float)
+
+    # eNet = ElasticNet(max_iter=100000)
+    # param_grid = {
+    #     "alpha": [0.01, 0.1, 1, 10, 100],
+    #     "l1_ratio": np.arange(0.1, 1.0, 0.1),
+    #     "tol": [0.0001, 0.001],
+    #     "selection": ["random", "cyclic"],
+    # }
+
+    # grid_search = GridSearchCV(
+    #     eNet,
+    #     param_grid,
+    #     scoring="r2",
+    #     cv = skf,
+    #     return_train_score=True,
+    #     n_jobs=3
+    # ).fit(X_train, y_train)
+
+    # print("Finished hyperparameter fitting.")
+    # print(f"Best params: {grid_search.best_params_}\nBest score: {grid_search.best_score_}\nBest estimator: {grid_search.best_estimator_}")
+    # results_dict = {"params": grid_search.best_params_, "score": grid_search.best_score_, "estimator": grid_search.best_estimator_}
+
+    # tuned_eNet = grid_search.best_estimator_
+
+    tuned_eNet = ElasticNetCV(
+        l1_ratio=np.arange(0.1, 1, 0.1),
+        n_alphas=1000,
+        alphas=[0.01, 0.1, 1, 10, 100],
+        max_iter=100000,
+        cv=skf,
+        n_jobs=3,
+        selection="random",
+    ).fit(X_train, y_train)
+
+    eNet = ElasticNet(
+        alpha=tuned_eNet.alpha_,
+        l1_ratio=tuned_eNet.l1_ratio_,
+        max_iter=100000,
+        selection="random",
+    ).fit(X_train, y_train)
+
+    # nested cross val
+    nested_score = cross_val_score(
+        eNet, X_train, y_train, cv=skf, n_jobs=3, scoring="r2"
+    ).mean()
+
+    return nested_score, eNet

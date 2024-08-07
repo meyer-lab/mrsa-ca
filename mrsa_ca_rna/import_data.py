@@ -541,15 +541,23 @@ def concat_datasets():
 
     rna_dfmi.columns = mi_columns
 
+    # re-TPM the RNA data prior to z-scoring
+    rna_dfmi.iloc[:, 2:] = rna_dfmi.iloc[:, 2:].div(
+        rna_dfmi.iloc[:, 2:].sum(axis=1) / 1000000, axis=0
+    )
+
     # scale the rna values before returning
     rna_dfmi["rna"] = scale(rna_dfmi["rna"].to_numpy())
 
     return rna_dfmi
 
 
+concat_datasets()
+
+
 def import_rna_weights():
     """
-    Imports the wights generated from the elasticnet logistic regression performed
+    Imports the weights generated from the elasticnet logistic regression performed
     on the RNA post-scaling.
     """
 

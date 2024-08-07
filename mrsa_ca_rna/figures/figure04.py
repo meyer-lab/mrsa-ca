@@ -23,7 +23,7 @@ def figure04_setup():
     whole_dataset = concat_datasets()
     rna: pd.DataFrame = whole_dataset["rna"]
 
-    desired_components = pd.IndexSlice["components", scores["components"].columns[:26]]
+    desired_components = pd.IndexSlice["components", scores["components"].columns]
     component_data = scores.loc[:, desired_components]
 
     nested_accuracy, _, model = perform_PC_LR(

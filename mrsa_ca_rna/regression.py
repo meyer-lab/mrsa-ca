@@ -145,7 +145,7 @@ def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
     lreg = LinearRegression()
 
     param_grid = {"positive": [True]}
-    tuning = GridSearchCV(estimator=lreg, param_grid=param_grid, cv=skf).fit(
+    tuning = GridSearchCV(estimator=lreg, param_grid=param_grid, cv=kf).fit(
         X_train.to_numpy(dtype=float), y_train.to_numpy(dtype=float)
     )
     tuned_model = tuning.best_estimator_
@@ -154,7 +154,7 @@ def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
         tuned_model,
         X_train.to_numpy(dtype=float),
         y_train.to_numpy(dtype=float),
-        cv=skf,
+        cv=kf,
     ).mean()
 
     return nested_score, tuned_model
@@ -196,7 +196,7 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
         n_alphas=1000,
         alphas=[0.01, 0.1, 1, 10, 100],
         max_iter=100000,
-        cv=skf,
+        cv=kf,
         n_jobs=3,
         selection="random",
     ).fit(X_train, y_train)
@@ -210,7 +210,7 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
 
     # nested cross val
     nested_score = cross_val_score(
-        eNet, X_train, y_train, cv=skf, n_jobs=3, scoring="r2"
+        eNet, X_train, y_train, cv=kf, n_jobs=3, scoring="r2"
     ).mean()
 
     return nested_score, eNet

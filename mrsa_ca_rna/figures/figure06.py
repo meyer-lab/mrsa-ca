@@ -46,6 +46,3 @@ def genFig():
     a.tick_params(axis="x", rotation=45)
 
     return f
-
-
-genFig()

@@ -551,32 +551,3 @@ def concat_datasets():
 
     return rna_dfmi
 
-
-concat_datasets()
-
-
-def import_rna_weights():
-    """
-    Imports the weights generated from the elasticnet logistic regression performed
-    on the RNA post-scaling.
-    """
-
-    rna_weights = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "rna_weights_scaled.csv"),
-        delimiter=",",
-        index_col=0,
-    )
-
-    new_weights = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "weights_scaled_newCA.csv"),
-        delimiter=",",
-        index_col=0,
-    )
-
-    nested_weights = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "nested_weights.csv"),
-        delimiter=",",
-        index_col=0,
-    )
-
-    return rna_weights, new_weights, nested_weights

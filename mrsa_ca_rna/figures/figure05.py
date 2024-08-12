@@ -1,4 +1,4 @@
-"""plotting time dependent patients"""
+"""Regressing against time"""
 
 import pandas as pd
 import seaborn as sns

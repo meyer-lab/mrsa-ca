@@ -30,8 +30,10 @@ def perform_PCA(data: pd.DataFrame = None):
         rna_dfmi = concat_datasets()
         rna_mat = rna_dfmi["rna"]
         meta = rna_dfmi["meta"]
+        specific = True
     else:
         rna_mat = data
+        specific = False
 
     components = 70
     pca = PCA(n_components=components)
@@ -45,9 +47,6 @@ def perform_PCA(data: pd.DataFrame = None):
         column_labels.append("PC" + str(i))
 
     scores = pd.DataFrame(rna_decomp, index=rna_mat.index, columns=column_labels)
-
-    # add disease type (mrsa, ca, healthy) and persistance metadata to scores
-    scores = pd.concat([meta, scores], axis=1, keys=["meta", "components"])
 
     rows = []
     for i in range(pca.n_components_):

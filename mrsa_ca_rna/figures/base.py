@@ -101,6 +101,6 @@ def genFigure():
 
     exec("from mrsa_ca_rna.figures import " + nameOut)
     ff = eval(nameOut + ".genFig()")
-    ff.savefig(fdir + nameOut + ".svg", bbox_inches="tight", pad_inches=0)
+    ff.savefig(fdir + nameOut + ".svg", bbox_inches="tight", pad_inches=0.1)
 
     logging.info("%s is done after %s seconds.", nameOut, time.time() - start)

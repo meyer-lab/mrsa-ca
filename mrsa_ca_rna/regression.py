@@ -25,6 +25,7 @@ from sklearn.linear_model import (
     ElasticNetCV,
     LinearRegression,
 )
+from sklearn.cross_decomposition import PLSRegression
 from sklearn.exceptions import ConvergenceWarning
 
 import pandas as pd
@@ -84,40 +85,20 @@ def perform_PC_LR(
     # make space for randomization. Keep things fixed for now.
     random.seed(42)
     rng = random.randint(0, 10)
-
     Cs = np.logspace(-5, 5, 20)
 
-    # scaler = StandardScaler().set_output(
-    #     transform="pandas"
-    # )  # scaling again just in case?
-
-    convergence_failure = 0
-
     # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", ConvergenceWarning)
-        pre_clf = LogisticRegressionCV(
-            Cs=Cs,
-            l1_ratios=[0.8],
-            solver="saga",
-            penalty="elasticnet",
-            n_jobs=3,
-            cv=skf,
-            max_iter=100000,
-            scoring="balanced_accuracy",
-            multi_class="ovr",
-            random_state=rng,
-        ).fit(X_train, y_train)
-
-        if any([issubclass(warning.category, ConvergenceWarning) for warning in w]):
-            print(
-                f"ConvergenceWarning detected using {len(X_train.columns)} components ({np.amax(pre_clf.n_iter_)} iterations)"
-            )
-            convergence_failure = len(X_train.columns)
-        else:
-            print(
-                f"Convergence achieved within {np.amax(pre_clf.n_iter_)} iterations using {len(X_train.columns)} components."
-            )
+    pre_clf = LogisticRegressionCV(
+        Cs=Cs,
+        l1_ratios=[0.8],
+        solver="saga",
+        penalty="elasticnet",
+        n_jobs=3,
+        cv=skf,
+        max_iter=100000,
+        scoring="balanced_accuracy",
+        random_state=rng,
+    ).fit(X_train, y_train)
 
     coef = pre_clf.coef_[0]
     cv_scores = np.mean(list(pre_clf.scores_.values())[0], axis=0)
@@ -134,7 +115,7 @@ def perform_PC_LR(
         clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy"
     ).mean()
 
-    return (nested_score, convergence_failure, clf)
+    return (nested_score, clf)
 
 
 def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
@@ -168,29 +149,6 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
     X_train = X_train.to_numpy(dtype=float)
     y_train = y_train.to_numpy(dtype=float)
 
-    # eNet = ElasticNet(max_iter=100000)
-    # param_grid = {
-    #     "alpha": [0.01, 0.1, 1, 10, 100],
-    #     "l1_ratio": np.arange(0.1, 1.0, 0.1),
-    #     "tol": [0.0001, 0.001],
-    #     "selection": ["random", "cyclic"],
-    # }
-
-    # grid_search = GridSearchCV(
-    #     eNet,
-    #     param_grid,
-    #     scoring="r2",
-    #     cv = skf,
-    #     return_train_score=True,
-    #     n_jobs=3
-    # ).fit(X_train, y_train)
-
-    # print("Finished hyperparameter fitting.")
-    # print(f"Best params: {grid_search.best_params_}\nBest score: {grid_search.best_score_}\nBest estimator: {grid_search.best_estimator_}")
-    # results_dict = {"params": grid_search.best_params_, "score": grid_search.best_score_, "estimator": grid_search.best_estimator_}
-
-    # tuned_eNet = grid_search.best_estimator_
-
     tuned_eNet = ElasticNetCV(
         l1_ratio=np.arange(0.1, 1, 0.1),
         n_alphas=1000,
@@ -214,3 +172,50 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
     ).mean()
 
     return nested_score, eNet
+
+def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, components: int = 10):
+    """
+    Performs PLS Regression for given data at given component or defaults to performing
+    on transposed (genes x patients) mrsa and candidemia data with 10 components.
+
+    Parameters:
+        X_data: (pd.DataFrame) | X data for analysis. Default = MRSA data from concat_datasets()
+        y_data: (pd.DataFrame) | y data for analysis. Default = Candidemia data from concat_datasets()
+        components: (int) | number of components to use for decomposition.
+    
+    Returns:
+        pls (fitted object) | The PLSR object fitted to X_data and y_data
+    """
+
+    if X_data is None:
+
+        whole_data = concat_datasets()
+
+        mrsa_whole = whole_data.loc["MRSA", :]
+        ca_whole = whole_data.loc["Candidemia", :]
+
+        X_data = mrsa_whole["rna"].T
+        y_data = ca_whole["rna"].T
+    
+    explained = []
+
+    
+    # for each components added, we are going to calculate R2Y and Q2Y, then compare them
+
+    print(f"Performing PLSR for {components} components")
+    pls = PLSRegression(n_components=components)
+    pls.fit(X_data, y_data)
+    print(f"Finished for {components} components")
+
+    return pls
+
+def vip_efficient(model):
+    t = model.x_scores_
+    w = model.x_weights_ # replace with x_rotations_ if needed
+    q = model.y_loadings_ 
+    features_, _ = w.shape
+    vip = np.zeros(shape=(features_,))
+    inner_sum = np.diag(t.T @ t @ q.T @ q)
+    SS_total = np.sum(inner_sum)
+    vip = np.sqrt(features_*(w**2 @ inner_sum)/ SS_total)
+    return vip

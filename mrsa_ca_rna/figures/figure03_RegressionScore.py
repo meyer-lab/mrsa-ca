@@ -2,6 +2,12 @@
 This figure will show regression performance of the
 MRSA outcome data in the context of the full PCA'd data
 containing MRSA, CA, and Healthy patients.
+
+Running logistic regression here is broken. The current dataset
+being accessed needs to be recognized and handled case-by-case.
+For the MRSA+CA case, the data needs to be truncated to just MRSA,
+for the CA case, I need to figure out how to transform CA patient
+data to MRSA patient data (30x60) -> (88x60)
 """
 
 import pandas as pd
@@ -11,70 +17,72 @@ import seaborn as sns
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.regression import perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets
 
 
 def figure_03_setup(components: int = 60):
     """Create a dataFrame of regression performance over component #"""
-    scores_train = []
-    failures = []
 
-    annot_scores, _, _ = perform_PCA()
+    whole_data = concat_datasets()
 
-    for i in range(1, components + 1):
-        desired_components = pd.IndexSlice[
-            "components", annot_scores["components"].columns[0:i]
-        ]
-        nested_performance, failed, _ = perform_PC_LR(
-            annot_scores.loc["MRSA", desired_components],
-            annot_scores.loc["MRSA", ("meta", "status")],
-        )
-        scores_train.append(nested_performance)
-        failures.append(failed)
+    datasets = {"MRSA": whole_data.loc["MRSA", "rna"], "MRSA+CA+Healthy": None, "CA": whole_data.loc["Candidemia", "rna"]}
+    performance_dict = datasets.copy()
+    
+    comp_arr = np.arange(1, components+1)
 
-    performance = pd.DataFrame(scores_train, columns=["Nested Accuracy"])
+    for dataset in datasets:
+        print(f"Performing PCA on {dataset} dataset.")
+        scores_df, loadings_df, _ = perform_PCA(datasets[dataset])
 
-    return performance, failures
+        if dataset == "MRSA+CA+Healthy":
+            scores_df = scores_df.loc["MRSA"]
 
+        if dataset == "CA":
+            multed = np.matmul(whole_data.loc["MRSA", "rna"].to_numpy(), loadings_df.T.to_numpy())
+            scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
+
+        # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
+        performance = []
+        for i in range(components):
+            print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i} components")
+
+            # slice our X_data to our current components and set y_data to be MRSA status from whole data
+            X_data = scores_df.iloc[:, :i+1]
+            y_data = whole_data.loc["MRSA", ("meta", "status")]
+
+            # this will not run properly for datasets other than MRSA. Read note above!!!
+            nested_performance, _ = perform_PC_LR(
+                X_data,
+                y_data,
+            )
+            performance.append(nested_performance)
+
+        matrix = np.array([comp_arr.astype(int), performance]).T
+        performance_df = pd.DataFrame(matrix, columns=["Components", "Nested Performance"])
+
+        performance_dict[dataset] = performance_df
+
+    return performance_dict
+figure_03_setup()
 
 def genFig():
-    fig_size = (4, 4)
-    layout = {"ncols": 1, "nrows": 1}
+    fig_size = (12, 4)
+    layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    components = 60
-    runs = list(range(3))
-    linewidths = [1.3, 0.9, 0.5]
-    colors = ["red", "blue", "green"]
-    data_list = list()
-    failures_list = list()
 
-    for run in runs:
-        data, failures = figure_03_setup(components=components)
-        data.rename(
-            columns={"Nested Accuracy": f"Nested Accuracy, run: {run+1}"},
-            inplace=True,
+    data_dict = figure_03_setup()
+
+    for i, data in enumerate(data_dict):
+
+        a = sns.lineplot(
+            data=data_dict[data], x="Components", y="Nested Performance", ax=ax[i]
         )
-        data_list.append(data)
-        failures_list.append(failures)
 
-    data = pd.concat(data_list, axis=1)
-    data.insert(0, column="components", value=np.arange(1, components + 1))
-
-    data_melt = pd.melt(data, ["components"])  # convert wide df to tall df for sns.
-
-    a = sns.lineplot(
-        data=data_melt, x="components", y="value", hue="variable", ax=ax[0]
-    )
-
-    for failures, color, lw in zip(failures_list, colors, linewidths):
-        for failure in failures:
-            if failure != 0:
-                a.axvline(x=failure, linewidth=lw, color=color, linestyle="--")
-
-    a.set_xlabel("# of components")
-    a.set_ylabel("Score")
-    a.set_title(
-        "Nested Score of Logistic Regression (Refac)\nPCA (MRSA+CA), 'saga' solver, 'elasticnet' penalty"
-    )
+        a.set_xlabel("# of components")
+        a.set_ylabel("Balanced Accuracy")
+        a.set_title(
+            f"Nested-CV Score of Logistic Regression\nPCA ({data}), 'saga' solver, 'elasticnet' penalty"
+        )
 
     return f

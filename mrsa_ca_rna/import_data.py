@@ -20,6 +20,7 @@ To-do:
 from os.path import join, dirname, abspath
 import pandas as pd
 import numpy as np
+import anndata as ad
 from sklearn.preprocessing import scale
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
@@ -271,149 +272,6 @@ def import_ca_val_rna():
     return ca_val_rna
 
 
-# further digesting the full CA_series_matrix from the primary source required
-# def import_ca_series():
-#     ca_val_meta = pd.read_csv(
-#         join(BASE_DIR, "mrsa_ca_rna", "data", "CA_series_matrix_compat.txt"),
-#         delimiter="\t",
-#         index_col=0,
-#     )
-
-#     ca_val_meta.reset_index(inplace=True)
-#     j = 0
-#     for i in range(len(ca_val_meta.index)):
-#         if ca_val_meta["!Sample_title"].duplicated()[i]:
-#             j += 1
-#             ca_val_meta.iloc[i, 0] = (
-#                 ca_val_meta.iloc[i, 0]
-#                 + "."
-#                 + str(j)
-#                 + "."
-#                 + ca_val_meta.iloc[i, 1].split(": ")[0]
-#             )
-#         elif j != 0:
-#             ca_val_meta.iloc[i - j - 1, 0] = (
-#                 ca_val_meta.iloc[i - j - 1, 0]
-#                 + ".0."
-#                 + ca_val_meta.iloc[i - j - 1, 1].split(": ")[0]
-#             )
-#             j = 0
-
-#     ca_val_meta.set_index("!Sample_title", inplace=True)
-#     ca_val_meta = ca_val_meta.T
-
-#     for label in ca_val_meta.columns[8:21]:
-#         ca_val_meta[label] = ca_val_meta[label].str.split(": ").str[1]
-
-#     ca_val_meta.reset_index(names=["!Sample_title"], inplace=True)
-#     ca_val_meta["!Sample_title"] = ca_val_meta["!Sample_title"].str.split(" ").str[0]
-#     ca_val_meta.set_index(keys="!Sample_title", drop=True, inplace=True)
-
-#     all_ca_data = pd.concat([import_ca_rna(), import_ca_val_rna()], axis=0)
-
-#     same_index = pd.concat([all_ca_data, ca_val_meta], axis=1, join="inner") # empty DataFrame if none of the indices are the same between the two dataframes: True
-
-#     same = 0 # stays 0 if no subject_id's overlap with index of rna data: True
-#     for i in ca_val_meta.index:
-#         for j in range(len(all_ca_data.index)):
-#             if ca_val_meta.loc[i, "!Sample_characteristics_ch1.0.subject_id"] == all_ca_data.index[j]:
-#                 same += 1
-
-#     repeated_pats = ca_val_meta.loc[ca_val_meta["!Sample_characteristics_ch1.0.subject_id"].duplicated(), "!Sample_characteristics_ch1.3.daysreltofirsttimepoin"]
-
-#     rna_repeated = pd.concat([repeated_pats, all_ca_data], axis=1)
-
-#     return ca_val_meta
-
-
-def import_GSE_metadata():
-    """
-    Read metadata file to determine patient characteristics.
-
-    Returns:
-        gse_healthy_pats (pandas.DataFrame): DataFrame of just healthy patients
-        gene_conversion (python dict): mapping of GeneID to EmsemblGeneID provided by annot
-    """
-    # patient metadata for cross checking healthy patient data
-    gse_meta = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "GSE114192_modified_metadata.txt.gz"),
-        delimiter="\t",
-        index_col=0,
-    )
-    # gene annotation for converting between GeneID and EnsemblGeneID
-    gse_annot = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
-        delimiter="\t",
-        index_col=0,
-    )
-
-    # patients moved to index and reindexed to patient ID
-    gse_meta = gse_meta.T
-    gse_meta = (
-        gse_meta.reset_index(names="!Sample_title")
-        .set_index("ID_REF")
-        .dropna(axis="columns")
-    )
-    gse_meta.drop(
-        "GSM3137557", inplace=True
-    )  # This patient isn't in the rna data for some reason?
-
-    # make a gene conversion mapping to use for converting geneID to EnsemblGeneID
-    gene_conversion = pd.DataFrame(
-        gse_annot.loc[:, "EnsemblGeneID"],
-        index=gse_annot.index,
-        columns=["EnsemblGeneID"],
-    ).dropna(axis=0)
-    gene_conversion = dict(
-        zip(gene_conversion.index, gene_conversion["EnsemblGeneID"])
-    )  # multiple GeneID are mapped to the same EnsemblGeneID
-
-    # we only want healthy patients
-    gse_healthy_pat = gse_meta.loc[
-        gse_meta["!Sample_title"].str.contains("Healthy_Control")
-    ]
-
-    return gse_healthy_pat, gene_conversion
-
-
-def import_GSE_rna():
-    """
-    Read GSE rna data. We are looking for healthy samples to augment our power with mrsa-ca
-
-    Returns:
-        gse_rna (pandas.DataFrame): A DataFrame of shape (patient x gene)
-    """
-    gse_rna = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "GSE114192_norm_counts_TPM.tsv.gz"),
-        delimiter="\t",
-        index_col=0,
-    )
-    # transpose to get DataFrame into (patient x gene) form
-    gse_rna = gse_rna.T
-
-    gse_healthy_pat, gene_conversion = import_GSE_metadata()
-    # just need index of gse_healthy_pat
-    gse_healthy_index = gse_healthy_pat.index
-
-    # trim to healthy data only
-    gse_rna = gse_rna.loc[gse_healthy_index]
-    gse_rna.rename(
-        gene_conversion, axis=1, inplace=True
-    )  # this results in duplicate column labels
-
-    # must remove all newly generated duplicate columns because of the gene_conversion mapping (itself generated from their annotation file)
-    gse_rna = gse_rna.loc[:, ~gse_rna.columns.duplicated()]
-
-    # keep all the successfully mapped genes and discard anything using original convention
-    gse_rna = gse_rna.loc[:, gse_rna.columns.str.contains("ENSG", na=False)]
-    gse_rna.index.name, gse_rna.columns.name = (
-        None,
-        None,
-    )  # remove any possibly conflicting values before concat
-
-    return gse_rna
-
-
 def extract_time_data():
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
@@ -433,7 +291,7 @@ def extract_time_data():
 
     ca_rna_timed = pd.concat(
         [
-            ca_meta_ch_t.loc[:, ["subject_id", "time", "status", "disease"]],
+            ca_meta_ch_t.loc[:, ["subject_id", "gender", "age", "time", "disease", "status"]],
             ca_rna,
         ],
         axis=1,
@@ -441,10 +299,13 @@ def extract_time_data():
         join="inner",
     )
 
-    return ca_rna_timed
+    # put the time data into an anndata object using metadata as obs and rna as var
+    ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
+
+    return ca_rna_timed_ad
 
 
-def concat_datasets():
+def concat_datasets(scaled: bool=True, tpm: bool=True):
     """
     concatenate rna datasets of interest into a single dataframe for analysis
 
@@ -463,6 +324,9 @@ def concat_datasets():
     # insert a disease and status column, keeping status as strings to avoid data type mixing with CA status: "Unknown"
     mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str))
     mrsa_rna.insert(0, column="disease", value="MRSA")
+    mrsa_rna.insert(0, column="time", value="NA")
+    mrsa_rna.insert(0, column="age", value=mrsa_meta["age"])
+    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"])
     mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
         "status"
     ].astype(str)
@@ -470,7 +334,10 @@ def concat_datasets():
         "subject_id", drop=False
     )
     mrsa_rna.index.name = None
-    rna_list.append(mrsa_rna)
+
+    # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
+    mrsa_ad = ad.AnnData(mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")], obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")])
+    rna_list.append(mrsa_ad)
 
     """import ca data and set up ca_rna df with all required annotations. Includes 'validation' dataset"""
     ca_disc_meta = import_ca_disc_meta()
@@ -496,58 +363,64 @@ def concat_datasets():
         [
             ca_meta_ch_nt.loc[
                 ca_meta_ch_nt["disease"] == "Candidemia",
-                ["subject_id", "disease", "status"],
+                ["subject_id", "gender", "age", "time", "disease", "status"],
             ],
             cah_rna,
         ],
         axis=1,
         join="inner",
+        keys=["meta", "rna"]
     )
-    rna_list.append(ca_rna)
+    ca_rna_ad = ad.AnnData(ca_rna["rna"], obs=ca_rna["meta"])
+    rna_list.append(ca_rna_ad)
 
-    ca_timed = extract_time_data()
-    desired_meta, desired_rna = (
-        pd.IndexSlice["meta", ["subject_id", "disease", "status"]],
-        pd.IndexSlice["rna", :],
-    )
-    ca_timed: pd.DataFrame = ca_timed.loc[:, desired_meta].join(
-        ca_timed.loc[:, desired_rna]
-    )
-    ca_timed.columns = ca_timed.columns.droplevel(0)
-    rna_list.append(ca_timed)
+    ca_timed_ad = extract_time_data()
+    rna_list.append(ca_timed_ad)
 
     healthy_rna = pd.concat(
         [
             ca_meta_ch_nt.loc[
                 ca_meta_ch_nt["disease"] == "Healthy",
-                ["subject_id", "disease", "status"],
+                ["subject_id", "gender", "age", "time", "disease", "status"],
             ],
             cah_rna,
         ],
         axis=1,
         join="inner",
+        keys=["meta", "rna"]
     )
-    rna_list.append(healthy_rna)
+    healthy_rna_ad = ad.AnnData(healthy_rna["rna"], obs=healthy_rna["meta"])
+    rna_list.append(healthy_rna_ad)
 
-    # concat everything within the list we've been appending onto.
-    rna_df = pd.concat(rna_list, axis=0, join="inner")
+    # concat all anndata objects together keeping only the vars in common and expanding the obs to include all
+    rna_ad = ad.concat(rna_list, axis=0, join="inner")
 
-    rna_dfmi = rna_df.set_index(["disease", rna_df.index])
+    # re-TPM the RNA data by default by normalizing each row to 1,000,000
+    if tpm:
+        desired_value = 1000000
 
-    meta_arr = ["meta" for _ in range(2)]
-    rna_arr = ["rna" for _ in range(2, len(rna_dfmi.columns))]
-    meta_rna = list(np.concatenate((meta_arr, rna_arr), axis=None))
-    mi_columns = pd.MultiIndex.from_arrays([meta_rna, rna_dfmi.columns])
+        X = rna_ad.X
+        row_sums = X.sum(axis=1)
 
-    rna_dfmi.columns = mi_columns
+        scaling_factors = desired_value / row_sums
 
-    # re-TPM the RNA data prior to z-scoring
-    rna_dfmi.iloc[:, 2:] = rna_dfmi.iloc[:, 2:].div(
-        rna_dfmi.iloc[:, 2:].sum(axis=1) / 1000000, axis=0
-    )
+        X_normalized = X * scaling_factors[:, np.newaxis]
 
-    # scale the rna values before returning
-    rna_dfmi["rna"] = scale(rna_dfmi["rna"].to_numpy())
+        rna_ad.X = X_normalized
 
-    return rna_dfmi
+    if scaled:
+        rna_ad.X = scale(rna_ad.X)
 
+    # # re-TPM the RNA data by default. This is a per-row action and leaks nothing between datasets
+    # if tpm:
+        
+    #     rna_dfmi.iloc[:, 2:] = rna_dfmi.iloc[:, 2:].div(
+    #         rna_dfmi.iloc[:, 2:].sum(axis=1) / 1000000, axis=0
+    #     )
+
+    # # scale the rna values before returning, this forever entangles datasets together and must not be done if separately considering sections
+    # if scaled:
+        
+    #     rna_dfmi["rna"] = scale(rna_dfmi["rna"].to_numpy())
+
+    return rna_ad

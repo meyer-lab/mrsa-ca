@@ -18,19 +18,23 @@ from mrsa_ca_rna.figures.base import setupBase
 def figure04_setup():
     """Organize data for plotting"""
 
-    scores, _, _ = perform_PCA()
-
+    # push adata to df for compatibility with previously written code
     whole_dataset = concat_datasets()
-    rna: pd.DataFrame = whole_dataset["rna"]
+    df = whole_dataset.to_df()
+
+    scores, _, _ = perform_PCA(df)
+
+    # another compatibility line so I don't have to rewrite everything
+    rna = df
 
     desired_components = pd.IndexSlice["components", scores["components"].columns]
     component_data = scores.loc[:, desired_components]
 
-    nested_accuracy, _, model = perform_PC_LR(
+    nested_accuracy, model = perform_PC_LR(
         scores.loc["MRSA", desired_components],
         scores.loc["MRSA", ("meta", "status")],
-        whole_dataset.loc["MRSA", "rna"],
-        whole_dataset.loc["MRSA", ("meta", "status")],
+        whole_dataset[whole_dataset.obs["disease" == "MRSA"]],
+        whole_dataset[whole_dataset.obs.loc["disease" == "MRSA", "status"]],
     )
     weights = model.coef_
 

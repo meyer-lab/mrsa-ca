@@ -9,10 +9,11 @@ To-do:
 """
 
 import numpy as np
+import seaborn as sns
 
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
-import seaborn as sns
+from mrsa_ca_rna.import_data import concat_datasets
 
 
 def genFig():
@@ -23,7 +24,10 @@ def genFig():
     }
     ax, f, _ = setupBase(fig_size, layout)
 
-    _, loadings, _ = perform_PCA()
+    adata = concat_datasets(scaled=False, tpm=True)
+    df = adata.to_df()
+    
+    _, loadings, _ = perform_PCA(df)
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(

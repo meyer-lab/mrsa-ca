@@ -177,6 +177,10 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
     """
     Performs PLS Regression for given data at given component or defaults to performing
     on transposed (genes x patients) mrsa and candidemia data with 10 components.
+    ------------------------------------------------------------------
+    Function currently just 'uselessly' wraps pls=PLSRegression instantiation -> pls.fit()
+    Add more functionality later...
+    ------------------------------------------------------------------
 
     Parameters:
         X_data: (pd.DataFrame) | X data for analysis. Default = MRSA data from concat_datasets()
@@ -196,8 +200,6 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
 
         X_data = mrsa_whole["rna"].T
         y_data = ca_whole["rna"].T
-    
-    explained = []
 
     
     # for each components added, we are going to calculate R2Y and Q2Y, then compare them
@@ -207,7 +209,52 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
     pls.fit(X_data, y_data)
     print(f"Finished for {components} components")
 
-    return pls
+
+    pls_scores = {"X": pls.x_scores_, "Y": pls.y_scores_}
+    pls_loadings = {"X": pls.x_loadings_, "Y": pls.y_loadings_}
+
+    # set up DataFrames for scores and loadings
+    components = np.arange(1, components+1)
+    pls_scores["X"] = pd.DataFrame(pls_scores["X"], index=X_data.index, columns=components)
+    pls_scores["Y"] = pd.DataFrame(pls_scores["Y"], index=y_data.index, columns=components)
+    pls_loadings["X"] = pd.DataFrame(pls_loadings["X"], index=X_data.columns, columns=components)
+    pls_loadings["Y"] = pd.DataFrame(pls_loadings["Y"], index=y_data.columns, columns=components)
+
+    return pls_scores, pls_loadings, pls
+
+
+def caluclate_R2Y_Q2Y(model :PLSRegression, X_data :pd.DataFrame, y_data :pd.DataFrame):
+
+    assert isinstance(model, PLSRegression), "Passed model was not a PLSRegression object!"
+
+    # calculate R2Y using score()
+    R2Y = (model.score(X_data, y_data))
+
+    # calculate Q2Y using kFold cross-validation
+    leave = KFold(n_splits=10)
+    y_pred = y_data.copy()
+    y_press = 0
+    y_tss = 0
+
+    for train_index, test_index in leave.split(X_data, y_data):
+        # set up training data
+        X_train = X_data.iloc[train_index, :]
+        y_train = y_data.iloc[train_index, :]
+
+        # fit model with training data
+        trained_pls = model.fit(X_train, y_train)
+
+        # generate y-hat predictions
+        y_pred.iloc[test_index, :] = trained_pls.predict(X_data.iloc[test_index, :])
+
+        # calculate the predictive residual error sum of squares and total sum of squares
+        y_press += np.average((y_data.iloc[test_index, :] - y_pred.iloc[test_index, :])**2)
+        y_tss += np.average((y_data.iloc[test_index, :] - y_data.iloc[test_index, :].mean())**2)
+
+    # calculate Q2Y
+    Q2Y = (1-(y_press/y_tss))
+
+    return R2Y, Q2Y
 
 def vip_efficient(model):
     t = model.x_scores_

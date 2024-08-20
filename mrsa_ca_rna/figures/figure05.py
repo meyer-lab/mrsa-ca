@@ -12,12 +12,16 @@ from mrsa_ca_rna.figures.base import setupBase
 
 
 def figure05_setup(components: int = 60):
+
+    # for compatibility, I'm just going to remake the df from the adata object
     scores, _, _ = perform_PCA()
-    time_data = extract_time_data()
-    time_meta = time_data.loc[:, ("meta", ["subject_id", "time"])]
+    time_adata = extract_time_data()
+
+    time_meta = time_adata.obs.loc[:, ["subject_id", "time"]]
+    # time_meta = time_data.loc[:, ("meta", ["subject_id", "time"])]
 
     time_scores: pd.DataFrame = pd.concat(
-        [time_meta["meta"], scores.loc["Candidemia", "components"]],
+        [time_meta, scores],
         axis=1,
         keys=["meta", "components"],
         join="inner",
@@ -54,7 +58,6 @@ def figure05_setup(components: int = 60):
         )
 
     return linear_performance, eNet_performance, weighted_time
-
 
 def genFig():
     fig_size = (12, 4)

@@ -17,8 +17,8 @@ import numpy as np
 
 def perform_PCA(data: pd.DataFrame = None):
     """
-    Perform pca decomposition on supplied data, or performs pca on data from concatenated
-    databases if none given.
+    Scale and perform principle component analysis on either provided
+    data or on the default dataset returned by concat_dataset().
 
     Returns:
         scores (pd.DataFrame): the scores matrix of the data as a result of PCA
@@ -27,9 +27,9 @@ def perform_PCA(data: pd.DataFrame = None):
     """
 
     if data is None:
-        rna_dfmi = concat_datasets()
-        rna_mat = rna_dfmi["rna"]
-        meta = rna_dfmi["meta"]
+        adata = concat_datasets()
+        rna_mat = adata.to_df()
+        meta = adata.obs
         specific = True
     else:
         rna_mat = data

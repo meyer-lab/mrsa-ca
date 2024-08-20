@@ -11,10 +11,11 @@ To-do:
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
+from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
-import seaborn as sns
 
 
 def genFig():
@@ -25,7 +26,12 @@ def genFig():
     scores.
     """
 
-    scores, _, _ = perform_PCA()
+    # bring in the rna anndata objects and push them to dataframes for perform_PCA()
+    adata = concat_datasets(scaled=False, tpm=True)
+
+    df = adata.to_df()
+
+    scores, _, _ = perform_PCA(df)
 
     desired_components = pd.IndexSlice["components", scores["components"].columns[0:6]]
 
@@ -38,5 +44,3 @@ def genFig():
     f = sns.pairplot(data.droplevel(0, 1), hue="disease", palette="viridis")
     return f
 
-
-genFig()

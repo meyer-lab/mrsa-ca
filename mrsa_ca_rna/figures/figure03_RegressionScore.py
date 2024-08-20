@@ -13,6 +13,7 @@ data to MRSA patient data (30x60) -> (88x60)
 import pandas as pd
 import numpy as np
 import seaborn as sns
+from sklearn.preprocessing import scale
 
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.regression import perform_PC_LR
@@ -23,32 +24,44 @@ from mrsa_ca_rna.import_data import concat_datasets
 def figure_03_setup(components: int = 60):
     """Create a dataFrame of regression performance over component #"""
 
-    whole_data = concat_datasets()
+    whole_data = concat_datasets(scaled=False, tpm=True)
 
-    datasets = {"MRSA": whole_data.loc["MRSA", "rna"], "MRSA+CA+Healthy": None, "CA": whole_data.loc["Candidemia", "rna"]}
+    # send adata to df for compatibility with previously written code
+    mrsa_df = whole_data[whole_data.obs["disease"]=="MRSA"].to_df()
+    combined_df = whole_data.to_df()
+    ca_df = whole_data[whole_data.obs["disease"]=="Candidemia"].to_df()
+
+    datasets = {"MRSA": mrsa_df, "MRSA+CA+Healthy": combined_df, "CA": ca_df}
     performance_dict = datasets.copy()
     
     comp_arr = np.arange(1, components+1)
 
     for dataset in datasets:
         print(f"Performing PCA on {dataset} dataset.")
-        scores_df, loadings_df, _ = perform_PCA(datasets[dataset])
+        scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
             scores_df = scores_df.loc["MRSA"]
 
         if dataset == "CA":
-            multed = np.matmul(whole_data.loc["MRSA", "rna"].to_numpy(), loadings_df.T.to_numpy())
-            scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
+            ## transform the MRSA data using CA's loadings
+            # multed = np.matmul(whole_data.loc["MRSA", "rna"].to_numpy(), loadings_df.T.to_numpy())
+            # scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
+
+            # use sklearn PCA object's transform method to project CA data onto it
+            scaled_MRSA = scale(mrsa_df.to_numpy())
+            transformed_MRSA = pca.transform(scaled_MRSA)
+            scores_df = pd.DataFrame(transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns)
+            
 
         # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
         performance = []
         for i in range(components):
-            print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i} components")
+            print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
             X_data = scores_df.iloc[:, :i+1]
-            y_data = whole_data.loc["MRSA", ("meta", "status")]
+            y_data = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
 
             # this will not run properly for datasets other than MRSA. Read note above!!!
             nested_performance, _ = perform_PC_LR(
@@ -63,7 +76,7 @@ def figure_03_setup(components: int = 60):
         performance_dict[dataset] = performance_df
 
     return performance_dict
-figure_03_setup()
+
 
 def genFig():
     fig_size = (12, 4)

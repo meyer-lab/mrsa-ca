@@ -20,9 +20,9 @@ from mrsa_ca_rna.import_data import concat_datasets
 def figure_00_setup():
     """Make and organize the data to be used in genFig"""
 
-    whole_data = concat_datasets()
+    whole_data = concat_datasets(scaled=False, tpm=True)
 
-    datasets = {"MRSA": whole_data.loc["MRSA", "rna"], "MRSA+CA": None, "CA": whole_data.loc["Candidemia", "rna"]}
+    datasets = {"MRSA": whole_data[whole_data.obs["disease"]=="MRSA"].to_df(), "MRSA+CA+Healthy": whole_data.to_df(), "CA": whole_data[whole_data.obs["disease"]=="Candidemia"].to_df()}
 
 
     for dataset in datasets:
@@ -39,7 +39,6 @@ def figure_00_setup():
 
 
     return datasets
-
 
 def genFig():
     """

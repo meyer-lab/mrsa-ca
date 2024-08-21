@@ -1493,6 +1493,21 @@ files = [
 lxml = "*"
 
 [[package]]
+name = "tensorly"
+version = "0.8.1"
+description = "Tensor learning in Python."
+optional = false
+python-versions = "*"
+files = [
+    {file = "tensorly-0.8.1-py3-none-any.whl", hash = "sha256:08988dbc5e433c3f255d0e00855f99a613fe273d50a1627b7e82b03ff2a6da9a"},
+    {file = "tensorly-0.8.1.tar.gz", hash = "sha256:cf78e4ffe612feca3510214002845c6831b267b1f2c1181154d41430310b237d"},
+]
+
+[package.dependencies]
+numpy = "*"
+scipy = "*"
+
+[[package]]
 name = "threadpoolctl"
 version = "3.5.0"
 description = "threadpoolctl"
@@ -1562,7 +1577,31 @@ files = [
     {file = "widgetsnbextension-4.0.11.tar.gz", hash = "sha256:8b22a8f1910bfd188e596fe7fc05dcbd87e810c8a4ba010bdb3da86637398474"},
 ]
 
+[[package]]
+name = "xarray"
+version = "2024.7.0"
+description = "N-D labeled arrays and datasets in Python"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "xarray-2024.7.0-py3-none-any.whl", hash = "sha256:1b0fd51ec408474aa1f4a355d75c00cc1c02bd425d97b2c2e551fd21810e7f64"},
+    {file = "xarray-2024.7.0.tar.gz", hash = "sha256:4cae512d121a8522d41e66d942fb06c526bc1fd32c2c181d5fe62fe65b671638"},
+]
+
+[package.dependencies]
+numpy = ">=1.23"
+packaging = ">=23.1"
+pandas = ">=2.0"
+
+[package.extras]
+accel = ["bottleneck", "flox", "numbagg", "opt-einsum", "scipy"]
+complete = ["xarray[accel,dev,io,parallel,viz]"]
+dev = ["hypothesis", "mypy", "pre-commit", "pytest", "pytest-cov", "pytest-env", "pytest-timeout", "pytest-xdist", "ruff", "xarray[complete]"]
+io = ["cftime", "fsspec", "h5netcdf", "netCDF4", "pooch", "pydap", "scipy", "zarr"]
+parallel = ["dask[complete]"]
+viz = ["matplotlib", "nc-time-axis", "seaborn"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "a4a991a6f9eada9b330967e3940b0953f3482fbfc6833b772da24445d4b2eeca"
+content-hash = "dbc06c5fe026bac181a29b1e035385d08ee028fdf3f60a51f11ca79b8492d8a6"

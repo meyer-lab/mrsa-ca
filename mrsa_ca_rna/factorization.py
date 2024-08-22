@@ -16,8 +16,18 @@ from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
 def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
-    """Prepare the data for tensor factorization by importing the data as anndata
-    and converting to a multiindex pandas, then to an xarray dataset"""
+    """
+    Prepare data for parafac2 tensor factorization by pushing the anndata object
+    into an xarray dataset. Takes an expansion dimension to split the data into 
+    DataArrays for each expansion label.
+    
+    Parameters:
+        data_ad (anndata.AnnData): The anndata object to convert to an xarray dataset | default=None
+        expansion_dim (str): The dimension to split the data into DataArrays | default=None
+
+    Returns:
+        data_xr (xarray.Dataset): The xarray dataset of the rna data
+    """
     
     if data_ad is None:
         data_ad = concat_datasets(scaled=True, tpm=True)
@@ -45,7 +55,7 @@ def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
         genes = data.var.index
         data_ar = xr.DataArray(data.X, coords=[("sample_"+str(label), samples), ("gene", genes)])
         data_arrays.append(data_ar)
-    rna_xr = xr.Dataset({label: data_ar for label, data_ar in zip(expansion_labels, data_arrays)})
+    data_xr = xr.Dataset({label: data_ar for label, data_ar in zip(expansion_labels, data_arrays)})
 
     # # individually make DataArrays for each disease and then combine them into a dataset, aligned by genes
     # mrsa_data = data_ad[data_ad.obs["disease"]=="MRSA"]
@@ -60,10 +70,25 @@ def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
 
     # rna_xr = xr.Dataset({"MRSA": mrsa_ar, "Candidemia": ca_ar})
 
-    return rna_xr
+    return data_xr
 
 def perform_parafac2(data: xr.Dataset, rank: int = 10):
-    """Perform the parafac2 tensor factorization on the passed data"""
+    """
+    Perform the parafac2 tensor factorization on passed xarray dataset data, with a specified rank.
+    The data should be in the form of a dataset with DataArrays for each expansion label, chosen
+    during data preparation in the prepare_data method.
+    
+    Parameters:
+        data (xarray.Dataset): The xarray dataset of the rna data
+        rank (int): The rank of the tensor factorization | default=10
+        
+    Returns:
+        weights (np.ndarray): The weights of the factorization
+        factors (list): The list of factor matrices, ordered by slices, rows, and columns w.r.t. rank (R)
+                        The unaligned dimension is replaced with eigenvalues (lambda) of the factorization
+                        ex. rows unaligned: (slices*rows*columns) => (slices*R), (lambda*R), (columns*R)
+        projection_matrices (list): The list of projection matrices
+    """
 
     # convert the xarray dataset to a numpy list
     data_list = []
@@ -73,6 +98,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
     # data_np = [data["MRSA"].values, data["Candidemia"].values]
 
     # perform the factorization
-    weights, factors, projection_matrices = tl.decomposition.parafac2(data_list, rank=rank)
+    (weights, factors, projection_matrices), rec_errors = tl.decomposition.parafac2(data_list, rank=rank, n_iter_max=100, verbose=True, return_errors=True)
 
-    return weights, factors, projection_matrices
+    return (weights, factors, projection_matrices), rec_errors
+

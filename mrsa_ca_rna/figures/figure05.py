@@ -12,7 +12,6 @@ from mrsa_ca_rna.figures.base import setupBase
 
 
 def figure05_setup(components: int = 60):
-
     # for compatibility, I'm just going to remake the df from the adata object
     scores, _, _ = perform_PCA()
     time_adata = extract_time_data()
@@ -58,6 +57,7 @@ def figure05_setup(components: int = 60):
         )
 
     return linear_performance, eNet_performance, weighted_time
+
 
 def genFig():
     fig_size = (12, 4)

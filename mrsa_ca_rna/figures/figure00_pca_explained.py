@@ -22,11 +22,13 @@ def figure_00_setup():
 
     whole_data = concat_datasets(scaled=False, tpm=True)
 
-    datasets = {"MRSA": whole_data[whole_data.obs["disease"]=="MRSA"].to_df(), "MRSA+CA+Healthy": whole_data.to_df(), "CA": whole_data[whole_data.obs["disease"]=="Candidemia"].to_df()}
-
+    datasets = {
+        "MRSA": whole_data[whole_data.obs["disease"] == "MRSA"].to_df(),
+        "MRSA+CA+Healthy": whole_data.to_df(),
+        "CA": whole_data[whole_data.obs["disease"] == "Candidemia"].to_df(),
+    }
 
     for dataset in datasets:
-
         _, _, pca = perform_PCA(datasets[dataset])
 
         components = np.arange(1, pca.n_components_ + 1, dtype=int)
@@ -37,8 +39,8 @@ def figure_00_setup():
 
         datasets[dataset] = data
 
-
     return datasets
+
 
 def genFig():
     """
@@ -51,8 +53,9 @@ def genFig():
     datasets = figure_00_setup()
 
     for i, dataset in enumerate(datasets):
-
-        a = sns.lineplot(data=datasets[dataset], x="components", y="total_explained", ax=ax[i])
+        a = sns.lineplot(
+            data=datasets[dataset], x="components", y="total_explained", ax=ax[i]
+        )
         a.set_xlabel("# of Components")
         a.set_ylabel("Fraction of explained variance")
         a.set_title(f"PCA performance of {dataset} dataset")

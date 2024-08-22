@@ -43,4 +43,3 @@ def genFig():
     # seaborn only uses the top level so we need to remove our current one so it can see our lower one.
     f = sns.pairplot(data.droplevel(0, 1), hue="disease", palette="viridis")
     return f
-

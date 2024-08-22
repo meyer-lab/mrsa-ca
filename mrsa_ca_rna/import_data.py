@@ -291,7 +291,9 @@ def extract_time_data():
 
     ca_rna_timed = pd.concat(
         [
-            ca_meta_ch_t.loc[:, ["subject_id", "gender", "age", "time", "disease", "status"]],
+            ca_meta_ch_t.loc[
+                :, ["subject_id", "gender", "age", "time", "disease", "status"]
+            ],
             ca_rna,
         ],
         axis=1,
@@ -305,7 +307,7 @@ def extract_time_data():
     return ca_rna_timed_ad
 
 
-def concat_datasets(scaled: bool=True, tpm: bool=True):
+def concat_datasets(scaled: bool = True, tpm: bool = True):
     """
     concatenate rna datasets of interest into a single dataframe for analysis
 
@@ -336,7 +338,10 @@ def concat_datasets(scaled: bool=True, tpm: bool=True):
     mrsa_rna.index.name = None
 
     # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
-    mrsa_ad = ad.AnnData(mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")], obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")])
+    mrsa_ad = ad.AnnData(
+        mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")],
+        obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")],
+    )
     rna_list.append(mrsa_ad)
 
     """import ca data and set up ca_rna df with all required annotations. Includes 'validation' dataset"""
@@ -369,7 +374,7 @@ def concat_datasets(scaled: bool=True, tpm: bool=True):
         ],
         axis=1,
         join="inner",
-        keys=["meta", "rna"]
+        keys=["meta", "rna"],
     )
     ca_rna_ad = ad.AnnData(ca_rna["rna"], obs=ca_rna["meta"])
     rna_list.append(ca_rna_ad)
@@ -387,7 +392,7 @@ def concat_datasets(scaled: bool=True, tpm: bool=True):
         ],
         axis=1,
         join="inner",
-        keys=["meta", "rna"]
+        keys=["meta", "rna"],
     )
     healthy_rna_ad = ad.AnnData(healthy_rna["rna"], obs=healthy_rna["meta"])
     rna_list.append(healthy_rna_ad)
@@ -413,14 +418,14 @@ def concat_datasets(scaled: bool=True, tpm: bool=True):
 
     # # re-TPM the RNA data by default. This is a per-row action and leaks nothing between datasets
     # if tpm:
-        
+
     #     rna_dfmi.iloc[:, 2:] = rna_dfmi.iloc[:, 2:].div(
     #         rna_dfmi.iloc[:, 2:].sum(axis=1) / 1000000, axis=0
     #     )
 
     # # scale the rna values before returning, this forever entangles datasets together and must not be done if separately considering sections
     # if scaled:
-        
+
     #     rna_dfmi["rna"] = scale(rna_dfmi["rna"].to_numpy())
 
     return rna_ad

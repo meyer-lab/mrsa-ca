@@ -26,7 +26,7 @@ def genFig():
 
     adata = concat_datasets(scaled=False, tpm=True)
     df = adata.to_df()
-    
+
     _, loadings, _ = perform_PCA(df)
 
     # modify what components you want to compare to one another:

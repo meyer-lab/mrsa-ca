@@ -1,4 +1,4 @@
-""" Stripplot of time points for patients to get a sense of how our time data is distributed."""
+"""Stripplot of time points for patients to get a sense of how our time data is distributed."""
 
 from mrsa_ca_rna.import_data import extract_time_data
 from mrsa_ca_rna.figures.base import setupBase

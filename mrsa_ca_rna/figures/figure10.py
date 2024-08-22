@@ -8,13 +8,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+
 def figure10_setup():
     """Set up the data for the tensor factorization and return the results"""
-    
+
     time_data = extract_time_data()
-    
+
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
-    
+
     tensor_decomp, _ = perform_parafac2(time_xr, rank=2)
     time_factors = tensor_decomp[1]
 
@@ -44,14 +45,21 @@ def genFig():
 
     # plot heatmap of disease factors
     for i, factor in enumerate(time_factors):
-        a = sns.heatmap(factor, ax=ax[i], cmap="viridis", xticklabels=time_ranks, yticklabels=time_labels[i])
+        a = sns.heatmap(
+            factor,
+            ax=ax[i],
+            cmap="viridis",
+            xticklabels=time_ranks,
+            yticklabels=time_labels[i],
+        )
         a.set_title(f"Disease Factor Matrix {i+1}")
         a.set_xlabel(x_ax_label)
         a.set_ylabel(t_ax_labels[i])
         # a.set_xticklabels(disease_ranks)
         # a.set_yticklabels(disease_labels[i])
-    
+
     return f
+
 
 # d_f = [1, 2, 3]
 # t_f = [4, 5]

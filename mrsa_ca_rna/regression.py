@@ -173,7 +173,10 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
 
     return nested_score, eNet
 
-def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, components: int = 10):
+
+def perform_PLSR(
+    X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, components: int = 10
+):
     """
     Performs PLS Regression for given data at given component or defaults to performing
     on transposed (genes x patients) mrsa and candidemia data with 10 components.
@@ -186,13 +189,12 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
         X_data: (pd.DataFrame) | X data for analysis. Default = MRSA data from concat_datasets()
         y_data: (pd.DataFrame) | y data for analysis. Default = Candidemia data from concat_datasets()
         components: (int) | number of components to use for decomposition.
-    
+
     Returns:
         pls (fitted object) | The PLSR object fitted to X_data and y_data
     """
 
     if X_data is None:
-
         whole_data = concat_datasets()
 
         mrsa_whole = whole_data.loc["MRSA", :]
@@ -201,7 +203,6 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
         X_data = mrsa_whole["rna"].T
         y_data = ca_whole["rna"].T
 
-    
     # for each components added, we are going to calculate R2Y and Q2Y, then compare them
 
     print(f"Performing PLSR for {components} components")
@@ -209,26 +210,34 @@ def perform_PLSR(X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, compo
     pls.fit(X_data, y_data)
     print(f"Finished for {components} components")
 
-
     pls_scores = {"X": pls.x_scores_, "Y": pls.y_scores_}
     pls_loadings = {"X": pls.x_loadings_, "Y": pls.y_loadings_}
 
     # set up DataFrames for scores and loadings
-    components = np.arange(1, components+1)
-    pls_scores["X"] = pd.DataFrame(pls_scores["X"], index=X_data.index, columns=components)
-    pls_scores["Y"] = pd.DataFrame(pls_scores["Y"], index=y_data.index, columns=components)
-    pls_loadings["X"] = pd.DataFrame(pls_loadings["X"], index=X_data.columns, columns=components)
-    pls_loadings["Y"] = pd.DataFrame(pls_loadings["Y"], index=y_data.columns, columns=components)
+    components = np.arange(1, components + 1)
+    pls_scores["X"] = pd.DataFrame(
+        pls_scores["X"], index=X_data.index, columns=components
+    )
+    pls_scores["Y"] = pd.DataFrame(
+        pls_scores["Y"], index=y_data.index, columns=components
+    )
+    pls_loadings["X"] = pd.DataFrame(
+        pls_loadings["X"], index=X_data.columns, columns=components
+    )
+    pls_loadings["Y"] = pd.DataFrame(
+        pls_loadings["Y"], index=y_data.columns, columns=components
+    )
 
     return pls_scores, pls_loadings, pls
 
 
-def caluclate_R2Y_Q2Y(model :PLSRegression, X_data :pd.DataFrame, y_data :pd.DataFrame):
-
-    assert isinstance(model, PLSRegression), "Passed model was not a PLSRegression object!"
+def caluclate_R2Y_Q2Y(model: PLSRegression, X_data: pd.DataFrame, y_data: pd.DataFrame):
+    assert isinstance(
+        model, PLSRegression
+    ), "Passed model was not a PLSRegression object!"
 
     # calculate R2Y using score()
-    R2Y = (model.score(X_data, y_data))
+    R2Y = model.score(X_data, y_data)
 
     # calculate Q2Y using kFold cross-validation
     leave = KFold(n_splits=10)
@@ -248,21 +257,26 @@ def caluclate_R2Y_Q2Y(model :PLSRegression, X_data :pd.DataFrame, y_data :pd.Dat
         y_pred.iloc[test_index, :] = trained_pls.predict(X_data.iloc[test_index, :])
 
         # calculate the predictive residual error sum of squares and total sum of squares
-        y_press += np.average((y_data.iloc[test_index, :] - y_pred.iloc[test_index, :])**2)
-        y_tss += np.average((y_data.iloc[test_index, :] - y_data.iloc[test_index, :].mean())**2)
+        y_press += np.average(
+            (y_data.iloc[test_index, :] - y_pred.iloc[test_index, :]) ** 2
+        )
+        y_tss += np.average(
+            (y_data.iloc[test_index, :] - y_data.iloc[test_index, :].mean()) ** 2
+        )
 
     # calculate Q2Y
-    Q2Y = (1-(y_press/y_tss))
+    Q2Y = 1 - (y_press / y_tss)
 
     return R2Y, Q2Y
 
+
 def vip_efficient(model):
     t = model.x_scores_
-    w = model.x_weights_ # replace with x_rotations_ if needed
-    q = model.y_loadings_ 
+    w = model.x_weights_  # replace with x_rotations_ if needed
+    q = model.y_loadings_
     features_, _ = w.shape
     vip = np.zeros(shape=(features_,))
     inner_sum = np.diag(t.T @ t @ q.T @ q)
     SS_total = np.sum(inner_sum)
-    vip = np.sqrt(features_*(w**2 @ inner_sum)/ SS_total)
+    vip = np.sqrt(features_ * (w**2 @ inner_sum) / SS_total)
     return vip

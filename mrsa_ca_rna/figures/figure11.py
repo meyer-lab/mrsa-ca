@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+
 def figure11_setup():
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
@@ -17,7 +18,6 @@ def figure11_setup():
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
-
 
     ranks_d = range(1, 21)
     ranks_t = range(1, 3)
@@ -34,6 +34,7 @@ def figure11_setup():
         r2x_t.append(1 - min(rec_errors_t))
 
     return r2x_d, r2x_t
+
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""

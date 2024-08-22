@@ -26,8 +26,8 @@ def figure09_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (16, 8)
-    layout = {"ncols": 4, "nrows": 1}
+    fig_size = (12, 4)
+    layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
     disease_data = concat_datasets(scaled=True, tpm=True)
@@ -40,8 +40,18 @@ def genFig():
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Rank", "Genes"]
 
+    # push disease_factors[2] to a pandas and pick out the top 10 most correlated/anti-correlated genes and 10 least correlated genes, then trim the data
+    genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
+    top_genes = genes_df.abs().mean(axis=1).nlargest(10).index
+    bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
+    genes_df = genes_df.loc[top_genes.union(bottom_genes)]
+
+    # put the new genes_df back into the disease_factors[2]
+    disease_factors[2] = genes_df.values
+    
+
     # tick labels: disease, rank, genes
-    disease_labels = [disease_data.obs["disease"].unique(), disease_ranks, 500]
+    disease_labels = [disease_data.obs["disease"].unique(), disease_ranks, genes_df.index]
 
     # plot heatmap of disease factors
     for i, factor in enumerate(disease_factors):

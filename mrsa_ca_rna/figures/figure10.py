@@ -25,13 +25,13 @@ def figure10_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 8)
+    fig_size = (12, 4)
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
     time_data = extract_time_data()
 
-    time_factors, rec_errors = figure10_setup()
+    time_factors = figure10_setup()
 
     time_ranks = range(1, 3)
     # x axis label: rank
@@ -40,8 +40,17 @@ def genFig():
     # y axis labels: subject_id, eigen, genes
     t_ax_labels = ["Subject ID", "Rank", "Genes"]
 
+    # push time_factors[2] to a pandas and pick out the top 10 and bottom 10 genes, then trim the data
+    genes_df = pd.DataFrame(time_factors[2], index=time_data.var.index)
+    top_genes = genes_df.abs().mean(axis=1).nlargest(10).index
+    bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
+    genes_df = genes_df.loc[top_genes.union(bottom_genes)]
+
+    # put the new genes_df back into the time_factors[2]
+    time_factors[2] = genes_df.values
+
     # tick labels: subject_id, rank, genes
-    time_labels = [time_data.obs["subject_id"].unique(), time_ranks, 500]
+    time_labels = [time_data.obs["subject_id"].unique(), time_ranks, genes_df.index]
 
     # plot heatmap of disease factors
     for i, factor in enumerate(time_factors):
@@ -52,7 +61,7 @@ def genFig():
             xticklabels=time_ranks,
             yticklabels=time_labels[i],
         )
-        a.set_title(f"Disease Factor Matrix {i+1}")
+        a.set_title(f"Time Factor Matrix {i+1}")
         a.set_xlabel(x_ax_label)
         a.set_ylabel(t_ax_labels[i])
         # a.set_xticklabels(disease_ranks)

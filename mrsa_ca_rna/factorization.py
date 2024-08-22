@@ -106,7 +106,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     # perform the factorization
     (weights, factors, projection_matrices), rec_errors = tl.decomposition.parafac2(
-        data_list, rank=rank, n_iter_max=100, verbose=True, return_errors=True
+        data_list, rank=rank, n_iter_max=2000, verbose=True, return_errors=True
     )
 
     return (weights, factors, projection_matrices), rec_errors

@@ -272,7 +272,7 @@ def import_ca_val_rna():
     return ca_val_rna
 
 
-def extract_time_data():
+def extract_time_data(scaled: tuple = (True, 0)):
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
     ca_disc_rna = import_ca_disc_rna()
@@ -304,10 +304,25 @@ def extract_time_data():
     # put the time data into an anndata object using metadata as obs and rna as var
     ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
 
+    if scaled[0]:
+        match scaled[1]:
+            case 0:
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
+            case 1:
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
+            case "f":
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
+            case "s":
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
+                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
+            case _:
+                assert False, "Invalid scaling option"
+
     return ca_rna_timed_ad
 
 
-def concat_datasets(scaled: bool = True, tpm: bool = True):
+def concat_datasets(scaled: tuple = (True, 0), tpm: bool = True):
     """
     concatenate rna datasets of interest into a single dataframe for analysis
 
@@ -413,19 +428,19 @@ def concat_datasets(scaled: bool = True, tpm: bool = True):
 
         rna_ad.X = X_normalized
 
-    if scaled:
-        rna_ad.X = scale(rna_ad.X)
-
-    # # re-TPM the RNA data by default. This is a per-row action and leaks nothing between datasets
-    # if tpm:
-
-    #     rna_dfmi.iloc[:, 2:] = rna_dfmi.iloc[:, 2:].div(
-    #         rna_dfmi.iloc[:, 2:].sum(axis=1) / 1000000, axis=0
-    #     )
-
-    # # scale the rna values before returning, this forever entangles datasets together and must not be done if separately considering sections
-    # if scaled:
-
-    #     rna_dfmi["rna"] = scale(rna_dfmi["rna"].to_numpy())
+    if scaled[0]:
+        match scaled[1]:
+            case 0:
+                rna_ad.X = scale(rna_ad.X, axis=0)
+            case 1:
+                rna_ad.X = scale(rna_ad.X, axis=1)
+            case "f":
+                rna_ad.X = scale(rna_ad.X, axis=0)
+                rna_ad.X = scale(rna_ad.X, axis=1)
+            case "s":
+                rna_ad.X = scale(rna_ad.X, axis=1)
+                rna_ad.X = scale(rna_ad.X, axis=0)
+            case _:
+                assert False, "Invalid scaling option"
 
     return rna_ad

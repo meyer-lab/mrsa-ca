@@ -42,9 +42,9 @@ def genFig():
 
     # push time_factors[2] to a pandas and pick out the top 10 and bottom 10 genes, then trim the data
     genes_df = pd.DataFrame(time_factors[2], index=time_data.var.index)
-    top_genes = genes_df.abs().mean(axis=1).nlargest(10).index
-    bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
-    genes_df = genes_df.loc[top_genes.union(bottom_genes)]
+    top_genes = genes_df.abs().mean(axis=1).nlargest(20).index
+    # bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
+    genes_df = genes_df.loc[top_genes]
 
     # put the new genes_df back into the time_factors[2]
     time_factors[2] = genes_df.values
@@ -68,12 +68,3 @@ def genFig():
         # a.set_yticklabels(disease_labels[i])
 
     return f
-
-
-# d_f = [1, 2, 3]
-# t_f = [4, 5]
-# d_l = ["d1", "d2", "d3"]
-# t_l = ["t1", "t2"]
-
-# zip1, zip2 = zip([d_f, t_f], [d_l, t_l])
-# print(zip1, zip2)

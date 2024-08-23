@@ -9,12 +9,14 @@ import pandas as pd
 import seaborn as sns
 
 
-def figure11_setup():
+def figure11a_setup(disease_data=None, time_data=None):
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
 
-    disease_data = concat_datasets(scaled=(True, 0), tpm=True)
-    time_data = extract_time_data(scaled=True)
+    if disease_data is None:
+        disease_data = concat_datasets(scaled=(True, 0), tpm=True)
+    if time_data is None:
+        time_data = extract_time_data(scaled=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
@@ -39,23 +41,29 @@ def figure11_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (8, 4)
-    layout = {"ncols": 2, "nrows": 1}
+    fig_size = (8, 16)
+    layout = {"ncols": 2, "nrows": 4}
     ax, f, _ = setupBase(fig_size, layout)
 
-    r2x_d, r2x_t = figure11_setup()
+    cases = [0, 1, "f", "s"]
 
-    x_ax_label = "Rank"
-    y_ax_label = "R2X"
+    for j, case in enumerate(cases):
+        disease_data = concat_datasets(scaled=(True, case), tpm=True)
+        time_data = extract_time_data(scaled=(True, case))
 
-    a = sns.barplot(x=range(1, 21), y=r2x_d, ax=ax[0])
-    a.set_title("Disease Data R2X\nn_max_iter=100")
-    a.set_xlabel(x_ax_label)
-    a.set_ylabel(y_ax_label)
+        r2x_d, r2x_t = figure11a_setup()
 
-    b = sns.barplot(x=range(1, 3), y=r2x_t, ax=ax[1])
-    b.set_title("Time Data R2X\nn_max_iter=100")
-    b.set_xlabel(x_ax_label)
-    b.set_ylabel(y_ax_label)
+        x_ax_label = "Rank"
+        y_ax_label = "R2X"
+
+        a = sns.barplot(x=range(1, 21), y=r2x_d, ax=ax[0 + j * 2])
+        a.set_title("Disease Data R2X\nn_max_iter=2000")
+        a.set_xlabel(x_ax_label)
+        a.set_ylabel(y_ax_label)
+
+        b = sns.barplot(x=range(1, 3), y=r2x_t, ax=ax[1 + j * 2])
+        b.set_title("Time Data R2X\nn_max_iter=2000")
+        b.set_xlabel(x_ax_label)
+        b.set_ylabel(y_ax_label)
 
     return f

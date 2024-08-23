@@ -40,18 +40,21 @@ def genFig():
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Rank", "Genes"]
 
-    # push disease_factors[2] to a pandas and pick out the top 10 most correlated/anti-correlated genes and 10 least correlated genes, then trim the data
+    # push disease_factors[2] to a pandas and pick out the top 20 most correlated/anti-correlated, then trim the data
     genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-    top_genes = genes_df.abs().mean(axis=1).nlargest(10).index
-    bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
-    genes_df = genes_df.loc[top_genes.union(bottom_genes)]
+    top_genes = genes_df.abs().mean(axis=1).nlargest(20).index
+    # bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
+    genes_df = genes_df.loc[top_genes]
 
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values
-    
 
     # tick labels: disease, rank, genes
-    disease_labels = [disease_data.obs["disease"].unique(), disease_ranks, genes_df.index]
+    disease_labels = [
+        disease_data.obs["disease"].unique(),
+        disease_ranks,
+        genes_df.index,
+    ]
 
     # plot heatmap of disease factors
     for i, factor in enumerate(disease_factors):

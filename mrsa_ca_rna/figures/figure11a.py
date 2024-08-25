@@ -16,7 +16,7 @@ def figure11a_setup(disease_data=None, time_data=None):
     if disease_data is None:
         disease_data = concat_datasets(scaled=(True, 0), tpm=True)
     if time_data is None:
-        time_data = extract_time_data(scaled=True)
+        time_data = extract_time_data(scaled=(True, 0))
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")

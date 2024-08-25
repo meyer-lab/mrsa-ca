@@ -42,7 +42,7 @@ def genFig():
         # x axis label: rank
         x_ax_label = "Rank"
         # y axis labels: disease, eigen, genes
-        d_ax_labels = ["Disease", "Rank", "Genes"]
+        d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
         # push disease_factors[2] to a pandas and pick out the top 20 most correlated/anti-correlated, then trim the data
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)

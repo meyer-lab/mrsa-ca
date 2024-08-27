@@ -1,6 +1,8 @@
 """
 Graphing a heatmap of candidemia patient RNA signals prior to scaling, after scaling,
 and after weighting via regression coef output.
+
+Fails to build, needs to be rewritten.
 """
 
 from sklearn.preprocessing import StandardScaler
@@ -19,7 +21,7 @@ def figure04_setup():
     """Organize data for plotting"""
 
     # push adata to df for compatibility with previously written code
-    whole_dataset = concat_datasets()
+    whole_dataset = concat_datasets(scaled=(True, 0), tpm=True)
     df = whole_dataset.to_df()
 
     scores, _, _ = perform_PCA(df)

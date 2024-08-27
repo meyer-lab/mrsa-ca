@@ -57,12 +57,12 @@ def genFig():
         y_ax_label = "R2X"
 
         a = sns.barplot(x=range(1, 21), y=r2x_d, ax=ax[0 + j * 2])
-        a.set_title("Disease Data R2X\nn_max_iter=2000")
+        a.set_title(f"Disease Data R2X\ncase: {case}")
         a.set_xlabel(x_ax_label)
         a.set_ylabel(y_ax_label)
 
         b = sns.barplot(x=range(1, 3), y=r2x_t, ax=ax[1 + j * 2])
-        b.set_title("Time Data R2X\nn_max_iter=2000")
+        b.set_title(f"Time Data R2X\ncase: {case}")
         b.set_xlabel(x_ax_label)
         b.set_ylabel(y_ax_label)
 

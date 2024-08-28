@@ -37,7 +37,7 @@ def perform_PCA(data: pd.DataFrame = None):
 
     components = 70
     pca = PCA(n_components=components)
-    scaler = StandardScaler().set_output(transform="pandas")
+    scaler :StandardScaler = StandardScaler().set_output(transform="pandas")
 
     scaled_rna = scaler.fit_transform(rna_mat)
     rna_decomp = pca.fit_transform(scaled_rna)

@@ -21,7 +21,7 @@ from os.path import join, dirname, abspath
 import pandas as pd
 import numpy as np
 import anndata as ad
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -272,7 +272,7 @@ def import_ca_val_rna():
     return ca_val_rna
 
 
-def extract_time_data(scaled: tuple = (True, 0)):
+def extract_time_data(scale: bool = True, tpm: bool = True):
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
     ca_disc_rna = import_ca_disc_rna()
@@ -304,25 +304,26 @@ def extract_time_data(scaled: tuple = (True, 0)):
     # put the time data into an anndata object using metadata as obs and rna as var
     ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
 
-    if scaled[0]:
-        match scaled[1]:
-            case 0:
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
-            case 1:
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
-            case "f":
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
-            case "s":
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=1)
-                ca_rna_timed_ad.X = scale(ca_rna_timed_ad.X, axis=0)
-            case _:
-                assert False, "Invalid scaling option"
+    # re-TPM the RNA data by default by normalizing each row to 1,000,000
+    if tpm:
+        desired_value = 1000000
+
+        X = ca_rna_timed_ad.X
+        row_sums = X.sum(axis=1)
+
+        scaling_factors = desired_value / row_sums
+
+        X_normalized = X * scaling_factors[:, np.newaxis]
+
+        ca_rna_timed_ad.X = X_normalized
+
+    if scale:
+        ca_rna_timed_ad.X = StandardScaler().fit_transform(ca_rna_timed_ad.X)
 
     return ca_rna_timed_ad
 
 
-def concat_datasets(scaled: tuple = (True, 0), tpm: bool = True):
+def concat_datasets(scale: bool = True, tpm: bool = True):
     """
     concatenate rna datasets of interest into a single dataframe for analysis
 
@@ -394,7 +395,7 @@ def concat_datasets(scaled: tuple = (True, 0), tpm: bool = True):
     ca_rna_ad = ad.AnnData(ca_rna["rna"], obs=ca_rna["meta"])
     rna_list.append(ca_rna_ad)
 
-    ca_timed_ad = extract_time_data()
+    ca_timed_ad = extract_time_data(scale=False, tpm=True)
     rna_list.append(ca_timed_ad)
 
     healthy_rna = pd.concat(
@@ -428,19 +429,7 @@ def concat_datasets(scaled: tuple = (True, 0), tpm: bool = True):
 
         rna_ad.X = X_normalized
 
-    if scaled[0]:
-        match scaled[1]:
-            case 0:
-                rna_ad.X = scale(rna_ad.X, axis=0)
-            case 1:
-                rna_ad.X = scale(rna_ad.X, axis=1)
-            case "f":
-                rna_ad.X = scale(rna_ad.X, axis=0)
-                rna_ad.X = scale(rna_ad.X, axis=1)
-            case "s":
-                rna_ad.X = scale(rna_ad.X, axis=1)
-                rna_ad.X = scale(rna_ad.X, axis=0)
-            case _:
-                assert False, "Invalid scaling option"
+    if scale:
+        rna_ad.X = StandardScaler().fit_transform(rna_ad.X)
 
     return rna_ad

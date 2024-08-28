@@ -13,7 +13,7 @@ def figure10a_setup(time_data=None):
     """Set up the data for the tensor factorization and return the results"""
 
     if time_data is None:
-        time_data = extract_time_data()
+        time_data = extract_time_data(scale=True, tpm=True)
 
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 

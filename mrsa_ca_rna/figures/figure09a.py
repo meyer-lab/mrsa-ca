@@ -14,7 +14,7 @@ def figure09a_setup(disease_data=None):
     """Set up the data for the tensor factorization and return the results"""
 
     if disease_data is None:
-        disease_data = concat_datasets(scaled=True, tpm=True)
+        disease_data = concat_datasets(scale=True, tpm=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 

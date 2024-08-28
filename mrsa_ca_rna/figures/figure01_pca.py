@@ -27,19 +27,17 @@ def genFig():
     """
 
     # bring in the rna anndata objects and push them to dataframes for perform_PCA()
-    adata = concat_datasets(scaled=False, tpm=True)
+    adata = concat_datasets(scale=False, tpm=True)
 
     df = adata.to_df()
 
     scores, _, _ = perform_PCA(df)
 
-    desired_components = pd.IndexSlice["components", scores["components"].columns[0:6]]
+    desired_components = range(9)
 
-    data: pd.DataFrame = scores.loc[:, desired_components]
-    data[("meta", "disease")] = scores.index.get_level_values(
-        0
-    )  # seaborn likes long-form data, make a disease column
+    data: pd.DataFrame = scores.iloc[:, desired_components]
+    data["disease"] = adata.obs["disease"].values
 
     # seaborn only uses the top level so we need to remove our current one so it can see our lower one.
-    f = sns.pairplot(data.droplevel(0, 1), hue="disease", palette="viridis")
+    f = sns.pairplot(data, hue="disease", palette="viridis")
     return f

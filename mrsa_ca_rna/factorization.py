@@ -31,7 +31,7 @@ def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
     """
 
     if data_ad is None:
-        data_ad = concat_datasets(scaled=True, tpm=True)
+        data_ad = concat_datasets(scale=True, tpm=True)
         expansion_dim = "disease"
     assert (
         expansion_dim is not None
@@ -90,11 +90,14 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
         rank (int): The rank of the tensor factorization | default=10
 
     Returns:
+        tuple of:
         weights (np.ndarray): The weights of the factorization
         factors (list): The list of factor matrices, ordered by slices, rows, and columns w.r.t. rank (R)
                         The unaligned dimension is replaced with eigenvalues (lambda) of the factorization
                         ex. rows unaligned: (slices*rows*columns) => (slices*R), (lambda*R), (columns*R)
         projection_matrices (list): The list of projection matrices
+
+        rec_errors (list): The list of reconstruction errors at each iteration
     """
 
     # convert the xarray dataset to a numpy list
@@ -106,7 +109,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     # perform the factorization
     (weights, factors, projection_matrices), rec_errors = tl.decomposition.parafac2(
-        data_list, rank=rank, n_iter_max=2000, verbose=True, return_errors=True
+        data_list, rank=rank, n_iter_max=2000, init="svd", svd="randomized_svd", normalize_factors=True, verbose=True, return_errors=True
     )
 
     return (weights, factors, projection_matrices), rec_errors

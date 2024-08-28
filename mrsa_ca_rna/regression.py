@@ -180,10 +180,6 @@ def perform_PLSR(
     """
     Performs PLS Regression for given data at given component or defaults to performing
     on transposed (genes x patients) mrsa and candidemia data with 10 components.
-    ------------------------------------------------------------------
-    Function currently just 'uselessly' wraps pls=PLSRegression instantiation -> pls.fit()
-    Add more functionality later...
-    ------------------------------------------------------------------
 
     Parameters:
         X_data: (pd.DataFrame) | X data for analysis. Default = MRSA data from concat_datasets()

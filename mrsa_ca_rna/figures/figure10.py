@@ -12,7 +12,7 @@ import seaborn as sns
 def figure10_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    time_data = extract_time_data()
+    time_data = extract_time_data(scale=True, tpm=True)
 
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
@@ -29,7 +29,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    time_data = extract_time_data()
+    time_data = extract_time_data(scale=True, tpm=True)
 
     time_factors = figure10_setup()
 
@@ -38,7 +38,7 @@ def genFig():
     x_ax_label = "Rank"
 
     # y axis labels: subject_id, eigen, genes
-    t_ax_labels = ["Subject ID", "Rank", "Genes"]
+    t_ax_labels = ["Subject ID", "Eigen-states", "Genes"]
 
     # push time_factors[2] to a pandas and pick out the top 10 and bottom 10 genes, then trim the data
     genes_df = pd.DataFrame(time_factors[2], index=time_data.var.index)

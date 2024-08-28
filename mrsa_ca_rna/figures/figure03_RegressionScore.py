@@ -24,7 +24,7 @@ from mrsa_ca_rna.import_data import concat_datasets
 def figure_03_setup(components: int = 60):
     """Create a dataFrame of regression performance over component #"""
 
-    whole_data = concat_datasets(scaled=False, tpm=True)
+    whole_data = concat_datasets(scale=False, tpm=True)
 
     # send adata to df for compatibility with previously written code
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
@@ -41,7 +41,7 @@ def figure_03_setup(components: int = 60):
         scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
-            scores_df = scores_df.loc["MRSA"]
+            scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]
 
         if dataset == "CA":
             ## transform the MRSA data using CA's loadings

@@ -16,6 +16,7 @@ import matplotlib.patches as mpatches
 
 def figure08_setup():
 
+    # should I scale the data prior to splitting it and performing PLSR?
     whole_data = concat_datasets()
 
     mrsa_df = whole_data[whole_data.obs["disease"]=="MRSA"].to_df()
@@ -26,7 +27,7 @@ def figure08_setup():
     X_data = mrsa_df.T
     y_data = ca_df.T
 
-    scores, loadings, model = perform_PLSR(X_data, y_data, 10)
+    _, loadings, _ = perform_PLSR(X_data, y_data, 10)
 
     """
     Set up two dfs to pass to genFig(), one for the loadings of the components

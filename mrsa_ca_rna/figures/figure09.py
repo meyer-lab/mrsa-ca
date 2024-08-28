@@ -13,7 +13,7 @@ import seaborn as sns
 def figure09_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    disease_data = concat_datasets(scaled=True, tpm=True)
+    disease_data = concat_datasets(scale=True, tpm=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
@@ -30,7 +30,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    disease_data = concat_datasets(scaled=True, tpm=True)
+    disease_data = concat_datasets(scale=True, tpm=True)
 
     disease_factors = figure09_setup()
 
@@ -38,7 +38,7 @@ def genFig():
     # x axis label: rank
     x_ax_label = "Rank"
     # y axis labels: disease, eigen, genes
-    d_ax_labels = ["Disease", "Rank", "Genes"]
+    d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
     # push disease_factors[2] to a pandas and pick out the top 20 most correlated/anti-correlated, then trim the data
     genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)

@@ -13,8 +13,8 @@ def figure11_setup():
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
 
-    disease_data = concat_datasets(scaled=(True, 0), tpm=True)
-    time_data = extract_time_data(scaled=True)
+    disease_data = concat_datasets(scale=True, tpm=True)
+    time_data = extract_time_data(scale=True, tpm=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")

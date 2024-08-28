@@ -7,7 +7,7 @@ import seaborn as sns
 
 
 def figure06_setup():
-    ca_time_rna = extract_time_data()
+    ca_time_rna = extract_time_data(scale=True, tpm=True)
 
     pat_time_meta = ca_time_rna.obs.loc[:, ["subject_id", "time"]]
     # pat_time_meta = ca_time_rna.loc[:, [("meta", "subject_id"), ("meta", "time")]]
@@ -21,9 +21,6 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     data = figure06_setup()
-
-    # drop level 0 of the multiindex columns because seaborn can only see the exterior level
-    data.columns = data.columns.droplevel(0)
 
     # cast time as int so stipplot infers properly, and order by subject_id to line up plots
     data["time"] = data["time"].astype(int)

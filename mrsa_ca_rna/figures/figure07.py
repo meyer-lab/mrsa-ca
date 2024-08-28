@@ -10,6 +10,8 @@ import numpy as np
 
 
 def figure07_setup():
+
+    # do I want to not scale the data prior to splitting it and performing PLSR?
     whole_data = concat_datasets()
 
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()

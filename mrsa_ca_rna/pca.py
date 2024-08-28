@@ -12,10 +12,9 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.import_data import concat_datasets
 
 import pandas as pd
-import numpy as np
 
 
-def perform_PCA(data: pd.DataFrame = None):
+def perform_PCA(data: pd.DataFrame | None = None):
     """
     Scale and perform principle component analysis on either provided
     data or on the default dataset returned by concat_dataset().
@@ -29,15 +28,12 @@ def perform_PCA(data: pd.DataFrame = None):
     if data is None:
         adata = concat_datasets()
         rna_mat = adata.to_df()
-        meta = adata.obs
-        specific = True
     else:
         rna_mat = data
-        specific = False
 
     components = 70
     pca = PCA(n_components=components)
-    scaler :StandardScaler = StandardScaler().set_output(transform="pandas")
+    scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 
     scaled_rna = scaler.fit_transform(rna_mat)
     rna_decomp = pca.fit_transform(scaled_rna)

@@ -6,13 +6,11 @@ We will also introduce the xarray packages and the dataset class to
 hold our data in an all-in-one format to ease with manipulation.
 """
 
-import numpy as np
-import pandas as pd
 import tensorly as tl
 import xarray as xr
 import anndata as ad
 
-from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
+from mrsa_ca_rna.import_data import concat_datasets
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
@@ -109,7 +107,14 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     # perform the factorization
     (weights, factors, projection_matrices), rec_errors = tl.decomposition.parafac2(
-        data_list, rank=rank, n_iter_max=2000, init="svd", svd="randomized_svd", normalize_factors=True, verbose=True, return_errors=True
+        data_list,
+        rank=rank,
+        n_iter_max=2000,
+        init="svd",
+        svd="randomized_svd",
+        normalize_factors=True,
+        verbose=True,
+        return_errors=True,
     )
 
     return (weights, factors, projection_matrices), rec_errors

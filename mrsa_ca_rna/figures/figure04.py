@@ -5,8 +5,6 @@ and after weighting via regression coef output.
 Fails to build, needs to be rewritten.
 """
 
-from sklearn.preprocessing import StandardScaler
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -34,12 +32,7 @@ def figure04_setup():
     whole_x = whole_dataset[whole_dataset.obs["disease"] == "MRSA", :].X
     whole_y = whole_dataset.obs.loc[whole_dataset.obs["disease"] == "MRSA", "status"]
 
-    nested_accuracy, model = perform_PC_LR(
-        pca_x,
-        pca_y,
-        whole_x,
-        whole_y
-    )
+    nested_accuracy, model = perform_PC_LR(pca_x, pca_y, whole_x, whole_y)
     weights = model.coef_
 
     weighted_rna = df.copy()

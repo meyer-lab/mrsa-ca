@@ -2,10 +2,9 @@
 MRSA and CA rna data, either together or just CA in time."""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
+from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.figures.base import setupBase
 
-import numpy as np
 import pandas as pd
 import seaborn as sns
 

@@ -10,7 +10,6 @@ To-do:
     from the perform_whole_LR() func.
 """
 
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import (
     GridSearchCV,
     StratifiedKFold,
@@ -26,15 +25,12 @@ from sklearn.linear_model import (
     LinearRegression,
 )
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.exceptions import ConvergenceWarning
 
 import pandas as pd
 import numpy as np
 import random
-import warnings
 
 from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.pca import perform_PCA
 
 skf = StratifiedKFold(n_splits=10)
 kf = KFold(n_splits=10)
@@ -44,8 +40,8 @@ loocv = LeaveOneOut()
 def perform_PC_LR(
     X_train: pd.DataFrame,
     y_train: pd.DataFrame,
-    X_data: pd.DataFrame = None,
-    y_data: pd.DataFrame = None,
+    X_data: pd.DataFrame | None = None,
+    y_data: pd.DataFrame | None = None,
 ):
     """
     Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
@@ -100,8 +96,8 @@ def perform_PC_LR(
         random_state=rng,
     ).fit(X_train, y_train)
 
-    coef = pre_clf.coef_[0]
-    cv_scores = np.mean(list(pre_clf.scores_.values())[0], axis=0)
+    # coef = pre_clf.coef_[0]
+    # cv_scores = np.mean(list(pre_clf.scores_.values())[0], axis=0)
 
     clf = LogisticRegression(
         C=pre_clf.C_[0],
@@ -175,7 +171,9 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
 
 
 def perform_PLSR(
-    X_data: pd.DataFrame = None, y_data: pd.DataFrame = None, components: int = 10
+    X_data: pd.DataFrame | None = None,
+    y_data: pd.DataFrame = None | None,
+    components: int = 10,
 ):
     """
     Performs PLS Regression for given data at given component or defaults to performing

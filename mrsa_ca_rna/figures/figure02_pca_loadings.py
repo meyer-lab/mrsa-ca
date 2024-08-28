@@ -8,16 +8,13 @@ To-do:
     homogenize structure with figure01 once I figure that one out.
 """
 
-import numpy as np
 import seaborn as sns
 
 from mrsa_ca_rna.pca import perform_PCA
-from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
 
 
 def genFig():
-
     adata = concat_datasets(scale=True, tpm=True)
     df = adata.to_df()
 

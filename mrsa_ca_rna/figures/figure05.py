@@ -3,7 +3,6 @@
 import pandas as pd
 import seaborn as sns
 import numpy as np
-import matplotlib.pyplot as plt
 
 from mrsa_ca_rna.import_data import extract_time_data
 from mrsa_ca_rna.pca import perform_PCA
@@ -76,9 +75,7 @@ def genFig():
     #     )
     #     data_list.append(data)
 
-    linear_scores, eNet_scores, weighted_time = figure05_setup(
-        components=components
-    )
+    linear_scores, eNet_scores, weighted_time = figure05_setup(components=components)
     model_scores = {"linear": linear_scores, "eNet": eNet_scores}
 
     for i, model in enumerate(model_scores):

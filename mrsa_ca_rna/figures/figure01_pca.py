@@ -9,13 +9,11 @@ To-do:
 
 """
 
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
-from mrsa_ca_rna.figures.base import setupBase
 
 
 def genFig():

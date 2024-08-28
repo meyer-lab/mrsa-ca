@@ -76,10 +76,10 @@ def genFig():
     #     )
     #     data_list.append(data)
 
-    model_scores = {"linear": 0, "eNet": 0}
-    model_scores["linear"], model_scores["eNet"], weighted_time = figure05_setup(
+    linear_scores, eNet_scores, weighted_time = figure05_setup(
         components=components
     )
+    model_scores = {"linear": linear_scores, "eNet": eNet_scores}
 
     for i, model in enumerate(model_scores):
         model_scores[model].insert(

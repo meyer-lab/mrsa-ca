@@ -16,7 +16,7 @@ from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
-def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
+def prepare_data(data_ad: ad.AnnData | None = None, expansion_dim: str = "None"):
     """
     Prepare data for parafac2 tensor factorization by pushing the anndata object
     into an xarray dataset. Takes an expansion dimension to split the data into
@@ -34,7 +34,7 @@ def prepare_data(data_ad: ad.AnnData = None, expansion_dim: str = None):
         data_ad = concat_datasets(scale=True, tpm=True)
         expansion_dim = "disease"
     assert (
-        expansion_dim is not None
+        expansion_dim != "None"
     ), "Please provide the expansion dimension for the data"
 
     """Something is wrong with the .from_dataframe method in xarray. It takes too long to convert"""

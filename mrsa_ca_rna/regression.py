@@ -193,8 +193,8 @@ def perform_PLSR(
     if X_data is None:
         whole_data = concat_datasets()
 
-        mrsa_whole = whole_data.loc["MRSA", :]
-        ca_whole = whole_data.loc["Candidemia", :]
+        mrsa_whole = whole_data[whole_data.obs["disease"] == "MRSA"]
+        ca_whole = whole_data[whole_data.obs["disease"] == "Candidemia"]
 
         X_data = mrsa_whole["rna"].T
         y_data = ca_whole["rna"].T
@@ -210,18 +210,18 @@ def perform_PLSR(
     pls_loadings = {"X": pls.x_loadings_, "Y": pls.y_loadings_}
 
     # set up DataFrames for scores and loadings
-    components = np.arange(1, components + 1)
+    component_labels = np.arange(1, components + 1)
     pls_scores["X"] = pd.DataFrame(
-        pls_scores["X"], index=X_data.index, columns=components
+        pls_scores["X"], index=X_data.index, columns=component_labels
     )
     pls_scores["Y"] = pd.DataFrame(
-        pls_scores["Y"], index=y_data.index, columns=components
+        pls_scores["Y"], index=y_data.index, columns=component_labels
     )
     pls_loadings["X"] = pd.DataFrame(
-        pls_loadings["X"], index=X_data.columns, columns=components
+        pls_loadings["X"], index=X_data.columns, columns=component_labels
     )
     pls_loadings["Y"] = pd.DataFrame(
-        pls_loadings["Y"], index=y_data.columns, columns=components
+        pls_loadings["Y"], index=y_data.columns, columns=component_labels
     )
 
     return pls_scores, pls_loadings, pls

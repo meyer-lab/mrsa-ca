@@ -10,7 +10,6 @@ import tensorly as tl
 import xarray as xr
 import anndata as ad
 
-from mrsa_ca_rna.import_data import concat_datasets
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2

@@ -31,7 +31,6 @@ import pandas as pd
 import numpy as np
 import random
 
-from mrsa_ca_rna.import_data import concat_datasets
 
 skf = StratifiedKFold(n_splits=10)
 kf = KFold(n_splits=10)

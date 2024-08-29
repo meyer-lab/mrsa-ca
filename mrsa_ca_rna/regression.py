@@ -10,6 +10,7 @@ To-do:
     from the perform_whole_LR() func.
 """
 
+from typing import Optional
 from sklearn.model_selection import (
     GridSearchCV,
     StratifiedKFold,
@@ -40,8 +41,8 @@ loocv = LeaveOneOut()
 def perform_PC_LR(
     X_train: pd.DataFrame,
     y_train: pd.DataFrame,
-    X_data: pd.DataFrame | None = None,
-    y_data: pd.DataFrame | None = None,
+    X_data: Optional[pd.DataFrame] = None,
+    y_data: Optional[pd.DataFrame] = None,
 ):
     """
     Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
@@ -171,8 +172,8 @@ def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
 
 
 def perform_PLSR(
-    X_data: pd.DataFrame | None = None,
-    y_data: pd.DataFrame = None | None,
+    X_data: pd.DataFrame,
+    y_data: pd.DataFrame,
     components: int = 10,
 ):
     """
@@ -187,15 +188,6 @@ def perform_PLSR(
     Returns:
         pls (fitted object) | The PLSR object fitted to X_data and y_data
     """
-
-    if X_data is None:
-        whole_data = concat_datasets()
-
-        mrsa_whole = whole_data[whole_data.obs["disease"] == "MRSA"]
-        ca_whole = whole_data[whole_data.obs["disease"] == "Candidemia"]
-
-        X_data = mrsa_whole["rna"].T
-        y_data = ca_whole["rna"].T
 
     # for each components added, we are going to calculate R2Y and Q2Y, then compare them
 

@@ -14,10 +14,13 @@ from mrsa_ca_rna.import_data import concat_datasets
 import pandas as pd
 
 
-def perform_PCA(data: pd.DataFrame | None = None):
+def perform_PCA(data: pd.DataFrame):
     """
     Scale and perform principle component analysis on either provided
     data or on the default dataset returned by concat_dataset().
+
+    Parameters:
+        data (pd.DataFrame): the data to perform PCA on
 
     Returns:
         scores (pd.DataFrame): the scores matrix of the data as a result of PCA
@@ -25,29 +28,23 @@ def perform_PCA(data: pd.DataFrame | None = None):
         pca (object): the PCA object for further use in the code.
     """
 
-    if data is None:
-        adata = concat_datasets()
-        rna_mat = adata.to_df()
-    else:
-        rna_mat = data
-
     components = 70
     pca = PCA(n_components=components)
     scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 
-    scaled_rna = scaler.fit_transform(rna_mat)
+    scaled_rna = scaler.fit_transform(data)
     rna_decomp = pca.fit_transform(scaled_rna)
 
     column_labels = []
     for i in range(1, components + 1):
         column_labels.append("PC" + str(i))
 
-    scores = pd.DataFrame(rna_decomp, index=rna_mat.index, columns=column_labels)
+    scores = pd.DataFrame(rna_decomp, index=data.index, columns=column_labels)
 
     rows = []
     for i in range(pca.n_components_):
         rows.append("PC" + str(i + 1))
 
-    loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
+    loadings = pd.DataFrame(pca.components_, index=rows, columns=data.columns)
 
     return scores, loadings, pca

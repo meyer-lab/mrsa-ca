@@ -11,7 +11,6 @@ import xarray as xr
 import anndata as ad
 
 
-
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
 def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     """

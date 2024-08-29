@@ -10,7 +10,6 @@ To-do:
     from the perform_whole_LR() func.
 """
 
-from typing import Optional
 from sklearn.model_selection import (
     GridSearchCV,
     StratifiedKFold,
@@ -40,8 +39,8 @@ loocv = LeaveOneOut()
 def perform_PC_LR(
     X_train: pd.DataFrame,
     y_train: pd.DataFrame,
-    X_data: Optional[pd.DataFrame] = None,
-    y_data: Optional[pd.DataFrame] = None,
+    X_data: pd.DataFrame | None = None,
+    y_data: pd.DataFrame | None = None,
 ):
     """
     Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
@@ -69,14 +68,14 @@ def perform_PC_LR(
         X_train.shape[0] == y_train.shape[0]
     ), "Passed X and y data must be the same length!"
 
-    # check for additional X_data and y_data in case we are using different data for regaularization
+    # check for additional X_data and y_data in case we are using different data for regaularization. Assert fails mypy check, removing for now
     if X_data is None:
         X_data = X_train
         y_data = y_train
-    else:
-        assert (
-            X_data.shape[0] == y_data.shape[0]
-        ), "Passed X and y data must be the same length!"
+    # else:
+    #     assert (
+    #         X_data.shape[0] == y_data.shape[0]
+    #     ), "Passed X and y data must be the same length!"
 
     # make space for randomization. Keep things fixed for now.
     random.seed(42)

@@ -24,24 +24,24 @@ from mrsa_ca_rna.import_data import concat_datasets
 def figure_03_setup(components: int = 60):
     """Create a dataFrame of regression performance over component #"""
 
-    whole_data = concat_datasets(scaled=False, tpm=True)
+    whole_data = concat_datasets(scale=False, tpm=True)
 
     # send adata to df for compatibility with previously written code
-    mrsa_df = whole_data[whole_data.obs["disease"]=="MRSA"].to_df()
+    mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     combined_df = whole_data.to_df()
-    ca_df = whole_data[whole_data.obs["disease"]=="Candidemia"].to_df()
+    ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
 
     datasets = {"MRSA": mrsa_df, "MRSA+CA+Healthy": combined_df, "CA": ca_df}
     performance_dict = datasets.copy()
-    
-    comp_arr = np.arange(1, components+1)
+
+    comp_arr = np.arange(1, components + 1)
 
     for dataset in datasets:
         print(f"Performing PCA on {dataset} dataset.")
         scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
-            scores_df = scores_df.loc["MRSA"]
+            scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]
 
         if dataset == "CA":
             ## transform the MRSA data using CA's loadings
@@ -51,8 +51,9 @@ def figure_03_setup(components: int = 60):
             # use sklearn PCA object's transform method to project CA data onto it
             scaled_MRSA = scale(mrsa_df.to_numpy())
             transformed_MRSA = pca.transform(scaled_MRSA)
-            scores_df = pd.DataFrame(transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns)
-            
+            scores_df = pd.DataFrame(
+                transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns
+            )
 
         # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
         performance = []
@@ -60,7 +61,7 @@ def figure_03_setup(components: int = 60):
             print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
-            X_data = scores_df.iloc[:, :i+1]
+            X_data = scores_df.iloc[:, : i + 1]
             y_data = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
 
             # this will not run properly for datasets other than MRSA. Read note above!!!
@@ -71,7 +72,9 @@ def figure_03_setup(components: int = 60):
             performance.append(nested_performance)
 
         matrix = np.array([comp_arr.astype(int), performance]).T
-        performance_df = pd.DataFrame(matrix, columns=["Components", "Nested Performance"])
+        performance_df = pd.DataFrame(
+            matrix, columns=["Components", "Nested Performance"]
+        )
 
         performance_dict[dataset] = performance_df
 
@@ -83,11 +86,9 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-
     data_dict = figure_03_setup()
 
     for i, data in enumerate(data_dict):
-
         a = sns.lineplot(
             data=data_dict[data], x="Components", y="Nested Performance", ax=ax[i]
         )

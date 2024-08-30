@@ -1,4 +1,3 @@
-
 """
 Code copied from figure07 but plotting components of MRSA data against patient metadata
 Now, we use anndata to easily access the metadata and RNA data for MRSA patients
@@ -14,27 +13,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-def figure08_setup():
 
+def figure08_setup():
+    # should I scale the data prior to splitting it and performing PLSR?
     whole_data = concat_datasets()
 
-    mrsa_df = whole_data[whole_data.obs["disease"]=="MRSA"].to_df()
-    ca_df = whole_data[whole_data.obs["disease"]=="Candidemia"].to_df()
+    mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
+    ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
     # mrsa_whole = whole_data.loc["MRSA", :]
     # ca_whole = whole_data.loc["Candidemia", :]
 
     X_data = mrsa_df.T
     y_data = ca_df.T
 
-    scores, loadings, model = perform_PLSR(X_data, y_data, 10)
+    _, loadings, _ = perform_PLSR(X_data, y_data, 10)
 
     """
     Set up two dfs to pass to genFig(), one for the loadings of the components
     and one for the MRSA metadata
     """
 
-    mrsa_loadings :pd.DataFrame = loadings["X"]
-    mrsa_meta = whole_data.obs.loc[whole_data.obs["disease"]=="MRSA", ["gender", "age", "status"]]
+    mrsa_loadings: pd.DataFrame = loadings["X"]
+    mrsa_meta = whole_data.obs.loc[
+        whole_data.obs["disease"] == "MRSA", ["gender", "age", "status"]
+    ]
 
     # # start by plotting mrsa (x) loadings with status metadata to find components associated with outcome
     # mrsa_loadings :pd.DataFrame = pd.concat([mrsa_whole["meta"]["status"], loadings["X"]], axis=1)
@@ -46,26 +48,13 @@ def figure08_setup():
 
 
 def genFig():
-
     fig_size = (4, 4)
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-
     data, meta = figure08_setup()
 
     meta.loc[:, :] = meta.to_numpy(dtype=float)
-    
-    # gender_colors = [(0.1, 0.1, 0.1), (0.9, 0.9, 0.9)]
-    # status_colors = [(0.5, 0.5, 0.1), (0.9, 0.9, 0.1)]
-
-    # a = sns.heatmap(meta.loc[:, ["age"]].to_numpy(dtype=float), ax=ax[0])
-    # a = sns.heatmap(meta.loc[:, ["status"]].to_numpy(dtype=float), cmap=status_colors, ax=ax[1])
-    # colorbar = a.collections[0].colorbar
-    # M=meta["status"].max()
-    # colorbar.set_ticks([0, M])
-    # colorbar.set_ticklabels(["Negative", "Positive"])
-
 
     """For age coloring, we need to first sort the metadata by age so that our colormap
     is continuous in increasing age. Then we colormap all of our metadata before sorting again
@@ -82,9 +71,12 @@ def genFig():
     subset = np.linspace(0, 1, unique_age_values.size)
     new_cmap = original_cmap(subset)
 
+    # grab two paired subsets of "Paired" colormap to color the status and gender metadata
+    paired_cmap = plt.get_cmap("Paired")
+
     # create 3 color maps for age, gender, and status metadata
-    status_colors = dict(zip(meta["status"].unique(), "rb"))
-    gender_colors = dict(zip(meta["gender"].unique(), "gy"))
+    status_colors = dict(zip(meta["status"].unique(), paired_cmap([0, 1])))
+    gender_colors = dict(zip(meta["gender"].unique(), paired_cmap([2, 3])))
     age_colors = dict(zip(unique_age_values, new_cmap))
 
     """Now that the colors are mapped, we can sort the data and metadata before plotting"""
@@ -93,23 +85,40 @@ def genFig():
 
     # sort the data by status before plotting
     data = data.loc[meta.index]
-    
-    row_colors = pd.concat([meta["gender"].map(gender_colors), meta["age"].map(age_colors), meta["status"].map(status_colors)], axis=1)
-    f = sns.clustermap(data, row_cluster=False, col_cluster=False, row_colors=row_colors)
+
+    row_colors = pd.concat(
+        [
+            meta["gender"].map(gender_colors),
+            meta["status"].map(status_colors),
+            meta["age"].map(age_colors),
+        ],
+        axis=1,
+    )
+    f = sns.clustermap(data, row_cluster=False, col_cluster=True, row_colors=row_colors)
     f.ax_row_dendrogram.set_visible(False)
-    f.ax_col_dendrogram.set_visible(False)
+    f.ax_col_dendrogram.set_visible(True)
 
     legend_elements = []
     for label, color in status_colors.items():
-        legend_elements.append(mpatches.Patch(facecolor=color, edgecolor="black", label=f"Status: {label}"))
+        legend_elements.append(
+            mpatches.Patch(facecolor=color, edgecolor="black", label=f"Status: {label}")
+        )
     for label, color in gender_colors.items():
-        legend_elements.append(mpatches.Patch(facecolor=color, edgecolor="black", label=f"Gender: {label}" ))
+        legend_elements.append(
+            mpatches.Patch(facecolor=color, edgecolor="black", label=f"Gender: {label}")
+        )
     for label, color in age_colors.items():
-        legend_elements.append(mpatches.Patch(facecolor=color, edgecolor="black", label=f"Age: {label}" ))
+        legend_elements.append(
+            mpatches.Patch(facecolor=color, edgecolor="black", label=f"Age: {label}")
+        )
 
-    f.ax_heatmap.legend(handles=legend_elements, title="Metadata", bbox_to_anchor=[-0.35, 0], loc="lower left")
+    f.ax_heatmap.legend(
+        handles=legend_elements,
+        title="Metadata",
+        bbox_to_anchor=[-0.35, 0],
+        loc="lower left",
+    )
 
-    
     # # make a legend for all 3 metadata
     # handles1 = [Patch(facecolor=lut[name]) for name in lut]
     # plt.legend(handles1, lut.keys(), title="Status", loc="upper right")

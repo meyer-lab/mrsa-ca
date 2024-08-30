@@ -1,16 +1,16 @@
 """
 Graphing a heatmap of candidemia patient RNA signals prior to scaling, after scaling,
 and after weighting via regression coef output.
-"""
 
-from sklearn.preprocessing import StandardScaler
+Fails to build, needs to be rewritten.
+"""
 
 import pandas as pd
 import numpy as np
 import seaborn as sns
 
 from mrsa_ca_rna.regression import perform_PC_LR
-from mrsa_ca_rna.regression import concat_datasets
+from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 
@@ -19,27 +19,25 @@ def figure04_setup():
     """Organize data for plotting"""
 
     # push adata to df for compatibility with previously written code
-    whole_dataset = concat_datasets()
+    whole_dataset = concat_datasets(scale=True, tpm=True)
     df = whole_dataset.to_df()
 
     scores, _, _ = perform_PCA(df)
 
-    # another compatibility line so I don't have to rewrite everything
-    rna = df
+    whole_pca = scores.iloc[:, :]
 
-    desired_components = pd.IndexSlice["components", scores["components"].columns]
-    component_data = scores.loc[:, desired_components]
+    # perform regression fitting on MRSA pca scores against MRSA status, then use whole data for CV to get weights of each gene
+    pca_x = scores.loc[whole_dataset.obs["disease"] == "MRSA", :]
+    pca_y = whole_dataset.obs.loc[whole_dataset.obs["disease"] == "MRSA", "status"]
+    whole_x = whole_dataset[whole_dataset.obs["disease"] == "MRSA", :].X
+    whole_y = whole_dataset.obs.loc[whole_dataset.obs["disease"] == "MRSA", "status"]
 
-    nested_accuracy, model = perform_PC_LR(
-        scores.loc["MRSA", desired_components],
-        scores.loc["MRSA", ("meta", "status")],
-        whole_dataset[whole_dataset.obs["disease" == "MRSA"]],
-        whole_dataset[whole_dataset.obs.loc["disease" == "MRSA", "status"]],
-    )
+    nested_accuracy, model = perform_PC_LR(pca_x, pca_y, whole_x, whole_y)
     weights = model.coef_
 
-    weighted_rna = rna.copy()
-    for pat in range(len(weighted_rna.index.get_level_values(1))):
+    weighted_rna = df.copy()
+    # for every patient, multiply their gene expression values by the weights
+    for pat in range(weighted_rna.shape[0]):
         weighted_rna.iloc[pat, :] = weighted_rna.iloc[pat, :].values * weights
     totals = []
     for col in weighted_rna.columns:
@@ -51,11 +49,9 @@ def figure04_setup():
     smallest_3 = total_df.T.nsmallest(3, total_df.index, keep="all")
     largest_smallest = pd.concat([largest_3.T, smallest_3.T], axis=1)
 
-    weighted_data = pd.concat(
-        [largest_smallest, weighted_rna.droplevel(0)], axis=0, join="inner"
-    )
+    weighted_data = weighted_rna.loc[:, largest_smallest.columns]
 
-    return (component_data, weighted_data, nested_accuracy)
+    return (whole_pca, weighted_data, nested_accuracy)
 
 
 def genFig():

@@ -3,19 +3,18 @@
 import pandas as pd
 import seaborn as sns
 import numpy as np
-import matplotlib.pyplot as plt
 
-from mrsa_ca_rna.import_data import extract_time_data
+from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.regression import perform_linear_regression, perform_elastic_regression
 from mrsa_ca_rna.figures.base import setupBase
 
 
 def figure05_setup(components: int = 60):
-
     # for compatibility, I'm just going to remake the df from the adata object
-    scores, _, _ = perform_PCA()
-    time_adata = extract_time_data()
+    data_df = concat_datasets(scale=True, tpm=True).to_df()
+    scores, _, _ = perform_PCA(data_df)
+    time_adata = extract_time_data(scale=True, tpm=True)
 
     time_meta = time_adata.obs.loc[:, ["subject_id", "time"]]
     # time_meta = time_data.loc[:, ("meta", ["subject_id", "time"])]
@@ -59,6 +58,7 @@ def figure05_setup(components: int = 60):
 
     return linear_performance, eNet_performance, weighted_time
 
+
 def genFig():
     fig_size = (12, 4)
     layout = {"ncols": 3, "nrows": 1}
@@ -76,10 +76,8 @@ def genFig():
     #     )
     #     data_list.append(data)
 
-    model_scores = {"linear": 0, "eNet": 0}
-    model_scores["linear"], model_scores["eNet"], weighted_time = figure05_setup(
-        components=components
-    )
+    linear_scores, eNet_scores, weighted_time = figure05_setup(components=components)
+    model_scores = {"linear": linear_scores, "eNet": eNet_scores}
 
     for i, model in enumerate(model_scores):
         model_scores[model].insert(

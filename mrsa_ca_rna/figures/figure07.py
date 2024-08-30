@@ -4,6 +4,8 @@ from mrsa_ca_rna.regression import perform_PLSR, caluclate_R2Y_Q2Y
 from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.figures.base import setupBase
 
+from sklearn.preprocessing import StandardScaler
+
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -11,12 +13,15 @@ import numpy as np
 
 def figure07_setup():
     # do I want to not scale the data prior to splitting it and performing PLSR?
-    whole_data = concat_datasets()
+    whole_data = concat_datasets(scale=False, tpm=True)
 
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
-    # mrsa_whole = whole_data.loc["MRSA", :]
-    # ca_whole = whole_data.loc["Candidemia", :]
+    
+    # independently scale, using StandardScaler, the two datasets to avoid data leakage
+    scaler = StandardScaler()
+    mrsa_df.loc[:, :] = scaler.fit_transform(mrsa_df.values)
+    ca_df.loc[:, :] = scaler.fit_transform(ca_df.values)
 
     X_data = mrsa_df.T
     y_data = ca_df.T

@@ -194,22 +194,22 @@ def perform_PLSR(
     pls.fit(X_data, y_data)
     print(f"Finished for {components} components")
 
-    pls_scores = {"X": pls.x_scores_, "Y": pls.y_scores_}
-    pls_loadings = {"X": pls.x_loadings_, "Y": pls.y_loadings_}
+    pls_scores = {"X": pd.DataFrame(pls.x_scores_), "Y": pd.DataFrame(pls.y_scores_)}
+    pls_loadings = {"X": pd.DataFrame(pls.x_loadings_), "Y": pd.DataFrame(pls.y_loadings_)}
 
     # set up DataFrames for scores and loadings
     component_labels = np.arange(1, components + 1)
     pls_scores["X"] = pd.DataFrame(
-        pls_scores["X"], index=X_data.index, columns=component_labels
+        pls_scores["X"].values, index=X_data.index, columns=component_labels
     )
     pls_scores["Y"] = pd.DataFrame(
-        pls_scores["Y"], index=y_data.index, columns=component_labels
+        pls_scores["Y"].values, index=y_data.index, columns=component_labels
     )
     pls_loadings["X"] = pd.DataFrame(
-        pls_loadings["X"], index=X_data.columns, columns=component_labels
+        pls_loadings["X"].values, index=X_data.columns, columns=component_labels
     )
     pls_loadings["Y"] = pd.DataFrame(
-        pls_loadings["Y"], index=y_data.columns, columns=component_labels
+        pls_loadings["Y"].values, index=y_data.columns, columns=component_labels
     )
 
     return pls_scores, pls_loadings, pls

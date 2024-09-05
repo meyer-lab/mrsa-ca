@@ -319,7 +319,7 @@ def import_breast_cancer_meta():
     return breast_cancer_meta
 
 
-def import_breast_cancer():
+def import_breast_cancer(tpm: bool = True):
     """import breast cancer data from the GEO file"""
     breast_cancer = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "BreastCancer_GSE201085_tpm.csv.gz"),
@@ -346,6 +346,18 @@ def import_breast_cancer():
 
     # make an anndata object with the rna data and the metadata
     breast_cancer_ad = ad.AnnData(breast_cancer, obs=breast_cancer_meta)
+
+    if tpm:
+        desired_value = 1000000
+
+        X = breast_cancer_ad.X
+        row_sums = X.sum(axis=1)
+
+        scaling_factors = desired_value / row_sums
+
+        X_normalized = X * scaling_factors[:, np.newaxis]
+
+        breast_cancer_ad.X = X_normalized
 
     return breast_cancer_ad
 

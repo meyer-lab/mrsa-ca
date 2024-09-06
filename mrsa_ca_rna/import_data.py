@@ -361,6 +361,53 @@ def import_breast_cancer(tpm: bool = True):
 
     return breast_cancer_ad
 
+def import_healthy(tpm: bool = True):
+    """import and extract healthy data from healthy_source_GSE177044.csv.gz
+    
+    Parameters:
+        tpm (bool): whether to normalize the data to TPM
+        
+    Returns:
+        healthy_ad (AnnData): healthy data in an AnnData object
+    """
+    healthy = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "healthy_source_GSE177044.csv.gz"),
+        delimiter=",",
+        index_col=0,
+    )
+
+    # drop all the columns that are not controls, this also drops gene_name column
+    healthy = healthy.loc[:, healthy.columns.str.contains("Control")]
+
+    # # drop the gene name column
+    # healthy = healthy.drop("gene_name", axis=1)
+
+    # swap genes to columns and samples to rows
+    healthy = healthy.T
+
+    # make a metadata dataframe for the healthy data containing subject_id made from the index and disease as "Healthy"
+    healthy_meta = pd.DataFrame(index=healthy.index)
+    healthy_meta["subject_id"] = healthy_meta.index
+    healthy_meta["disease"] = "Healthy"
+
+
+    # make an anndata object with the rna data and the metadata
+    healthy_ad = ad.AnnData(healthy, obs=healthy_meta)
+
+    if tpm:
+        desired_value = 1000000
+
+        X = healthy_ad.X
+        row_sums = X.sum(axis=1)
+
+        scaling_factors = desired_value / row_sums
+
+        X_normalized = X * scaling_factors[:, np.newaxis]
+
+        healthy_ad.X = X_normalized
+
+    return healthy_ad
+
 def extract_time_data(scale: bool = True, tpm: bool = True):
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()

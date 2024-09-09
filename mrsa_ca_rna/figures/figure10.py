@@ -1,7 +1,7 @@
 """This file will plot the factor matrices of the CA time data"""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import extract_time_data
+from mrsa_ca_rna.import_data import ca_data_split
 from mrsa_ca_rna.figures.base import setupBase
 
 import pandas as pd
@@ -11,7 +11,7 @@ import seaborn as sns
 def figure10_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    time_data = extract_time_data(scale=True, tpm=True)
+    time_data, _, _ = ca_data_split(scale=True, tpm=True)
 
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
@@ -28,7 +28,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    time_data = extract_time_data(scale=True, tpm=True)
+    time_data, _, _ = ca_data_split(scale=True, tpm=True)
 
     time_factors = figure10_setup()
 

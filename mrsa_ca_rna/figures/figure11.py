@@ -1,7 +1,7 @@
 """This file will plot the variance explained by the factors of the tensor factorization"""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
+from mrsa_ca_rna.import_data import concat_datasets, ca_data_split
 from mrsa_ca_rna.figures.base import setupBase
 
 import seaborn as sns
@@ -12,7 +12,7 @@ def figure11_setup():
     and return the reconstruction errors to make R2X plots"""
 
     disease_data = concat_datasets(scale=True, tpm=True)
-    time_data = extract_time_data(scale=True, tpm=True)
+    time_data, _, _ = ca_data_split(scale=True, tpm=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")

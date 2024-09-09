@@ -93,7 +93,8 @@ def import_mrsa_rna():
     """
     reads mrsa rna data from rna_combat_tpm_mrsa
 
-    Reurns: mrsa_rna (pandas.DataFram)
+    Reurns:
+        mrsa_rna (anndata.AnnData): mrsa rna data with all required annotations
     """
     mrsa_rna = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "rna_combat_tpm_mrsa.txt.zip"),
@@ -106,7 +107,29 @@ def import_mrsa_rna():
     # patient # needs to be converted to int32
     mrsa_rna.index = mrsa_rna.index.astype("int32")
 
-    return mrsa_rna
+    mrsa_meta = import_mrsa_meta()
+    mrsa_val_meta = import_mrsa_val_meta()
+
+    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str))
+    mrsa_rna.insert(0, column="disease", value="MRSA")
+    mrsa_rna.insert(0, column="time", value="NA")
+    mrsa_rna.insert(0, column="age", value=mrsa_meta["age"])
+    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"])
+    mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
+        "status"
+    ].astype(str)
+    mrsa_rna = mrsa_rna.reset_index(names=["subject_id"]).set_index(
+        "subject_id", drop=False
+    )
+    mrsa_rna.index.name = None
+
+    # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
+    mrsa_ad = ad.AnnData(
+        mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")],
+        obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")],
+    )
+
+    return mrsa_ad
 
 
 def import_ca_disc_meta():
@@ -408,7 +431,7 @@ def import_healthy(tpm: bool = True):
 
     return healthy_ad
 
-def extract_time_data(scale: bool = True, tpm: bool = True):
+def ca_data_split(scale: bool = True, tpm: bool = True):
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
     ca_disc_rna = import_ca_disc_rna()
@@ -417,17 +440,23 @@ def extract_time_data(scale: bool = True, tpm: bool = True):
     ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
     ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
 
-    ca_meta_ch = ca_meta.loc[
-        ca_meta["disease"].str.contains("Candidemia|Healthy"), :
-    ]  # grab just data marked as healthy or candidemia
+    # seperate out the candidemia and healthy data
+    ca_meta_c = ca_meta.loc[ca_meta["disease"] == "Candidemia", :]
+    ca_meta_h = ca_meta.loc[ca_meta["disease"] == "Healthy", :]
 
-    # extract the time data by looking for duplicate subject_id
-    ca_meta_ch_t = ca_meta_ch.loc[ca_meta_ch["subject_id"].duplicated(keep=False), :]
-    ca_meta_ch_t["status"] = "Unknown"
+    # extract the time data by looking for duplicate subject_id. Duplicates = time points
+    ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
+    ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
 
+    # add a status column to all meta data
+    ca_meta_c_t["status"] = "Unknown"
+    ca_meta_c_nt["status"] = "Unknown"
+    ca_meta_h["status"] = "Unknown"
+
+    # make dataframes of the time, non-time, and healthy data
     ca_rna_timed = pd.concat(
         [
-            ca_meta_ch_t.loc[
+            ca_meta_c_t.loc[
                 :, ["subject_id", "gender", "age", "time", "disease", "status"]
             ],
             ca_rna,
@@ -437,117 +466,84 @@ def extract_time_data(scale: bool = True, tpm: bool = True):
         join="inner",
     )
 
-    # put the time data into an anndata object using metadata as obs and rna as var
+    ca_rna_nontimed = pd.concat(
+        [
+            ca_meta_c_nt.loc[
+                :, ["subject_id", "gender", "age", "time", "disease", "status"]
+            ],
+            ca_rna,
+        ],
+        axis=1,
+        keys=["meta", "rna"],
+        join="inner",
+    )
+
+    healthy_rna = pd.concat(
+        [
+            ca_meta_h.loc[
+                :, ["subject_id", "gender", "age", "time", "disease", "status"],
+            ],
+            ca_rna,
+        ],
+        axis=1,
+        join="inner",
+        keys=["meta", "rna"],
+    )
+    
+
+    # put the time and non-timed data into anndata objects using metadata as obs and rna as var
     ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
+    ca_rna_nontimed_ad = ad.AnnData(ca_rna_nontimed["rna"], obs=ca_rna_nontimed["meta"])
+    healthy_rna_ad = ad.AnnData(healthy_rna["rna"], obs=healthy_rna["meta"])
+
+    ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
 
     # re-TPM the RNA data by default by normalizing each row to 1,000,000
     if tpm:
         desired_value = 1000000
 
-        X = ca_rna_timed_ad.X
-        row_sums = X.sum(axis=1)
+        for ca_ad in ca_list:
 
-        scaling_factors = desired_value / row_sums
+            X = ca_ad.X
+            row_sums = X.sum(axis=1)
 
-        X_normalized = X * scaling_factors[:, np.newaxis]
+            scaling_factors = desired_value / row_sums
 
-        ca_rna_timed_ad.X = X_normalized
+            X_normalized = X * scaling_factors[:, np.newaxis]
+
+            ca_ad.X = X_normalized
 
     if scale:
-        ca_rna_timed_ad.X = StandardScaler().fit_transform(ca_rna_timed_ad.X)
+        for ca_ad in ca_list:
+            ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
 
-    return ca_rna_timed_ad
+    return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
 
 
 def concat_datasets(scale: bool = True, tpm: bool = True):
     """
-    concatenate rna datasets of interest into a single dataframe for analysis
+    Concatenate the MRSA and CA data along the patient axis and return an annotated AnnData object.
+
+    Parameters:
+        scale (bool): whether to z-score the data along features (genes)
+        tpm (bool): whether to normalize the data to TPM
 
     Returns:
-        rna_df (pandas.DataFrame): single annotated (status, disease) dataframe of rna data from the imported datasets
+        rna_ad (AnnData): concatenated RNA data with all required annotations.
     """
 
     # start a list of rna datasets to be concatenated at the end of this function
     rna_list = list()
 
     """import mrsa data and set up mrsa_rna df with all required annotations. Includes 'validation' dataset"""
-    mrsa_meta = import_mrsa_meta()
-    mrsa_val_meta = import_mrsa_val_meta()
-    mrsa_rna = import_mrsa_rna()
-
-    # insert a disease and status column, keeping status as strings to avoid data type mixing with CA status: "Unknown"
-    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str))
-    mrsa_rna.insert(0, column="disease", value="MRSA")
-    mrsa_rna.insert(0, column="time", value="NA")
-    mrsa_rna.insert(0, column="age", value=mrsa_meta["age"])
-    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"])
-    mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
-        "status"
-    ].astype(str)
-    mrsa_rna = mrsa_rna.reset_index(names=["subject_id"]).set_index(
-        "subject_id", drop=False
-    )
-    mrsa_rna.index.name = None
-
-    # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
-    mrsa_ad = ad.AnnData(
-        mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")],
-        obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")],
-    )
+    
+    mrsa_ad = import_mrsa_rna()
     rna_list.append(mrsa_ad)
 
-    """import ca data and set up ca_rna df with all required annotations. Includes 'validation' dataset"""
-    ca_disc_meta = import_ca_disc_meta()
-    ca_val_meta = import_ca_val_meta()
-    ca_disc_rna = import_ca_disc_rna()
-    ca_val_rna = import_ca_val_rna()
-
-    # combine the discovery and validation data together, then make the ca_rna df with annotations: Healthy->NA, CA->Unknown
-    cah_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
-    ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
-
-    ca_meta_ch = ca_meta.loc[
-        ca_meta["disease"].str.contains("Candidemia|Healthy"), :
-    ]  # grab just data marked as healthy or candidemia
-
-    # remove duplicated patients (ones with time points) so we're not doubling up when we add them back in.
-    ca_meta_ch_nt = ca_meta_ch.loc[~ca_meta_ch["subject_id"].duplicated(keep=False), :]
-    # remove any additional patients that the paper also exlcuded from their analysis.
-    ca_meta_ch_nt = ca_meta_ch_nt.loc[ca_meta_ch_nt["analysis"] == "Yes", :]
-    ca_meta_ch_nt["status"] = "Unknown"
-
-    ca_rna = pd.concat(
-        [
-            ca_meta_ch_nt.loc[
-                ca_meta_ch_nt["disease"] == "Candidemia",
-                ["subject_id", "gender", "age", "time", "disease", "status"],
-            ],
-            cah_rna,
-        ],
-        axis=1,
-        join="inner",
-        keys=["meta", "rna"],
-    )
-    ca_rna_ad = ad.AnnData(ca_rna["rna"], obs=ca_rna["meta"])
-    rna_list.append(ca_rna_ad)
-
-    ca_timed_ad = extract_time_data(scale=False, tpm=True)
-    rna_list.append(ca_timed_ad)
-
-    healthy_rna = pd.concat(
-        [
-            ca_meta_ch_nt.loc[
-                ca_meta_ch_nt["disease"] == "Healthy",
-                ["subject_id", "gender", "age", "time", "disease", "status"],
-            ],
-            cah_rna,
-        ],
-        axis=1,
-        join="inner",
-        keys=["meta", "rna"],
-    )
-    healthy_rna_ad = ad.AnnData(healthy_rna["rna"], obs=healthy_rna["meta"])
-    rna_list.append(healthy_rna_ad)
+    ca_timed, ca_nontimed, ca_healthy = ca_data_split(scale=False, tpm=False)
+    rna_list.append(ca_timed)
+    rna_list.append(ca_nontimed)
+    rna_list.append(ca_healthy)
 
     # concat all anndata objects together keeping only the vars in common and expanding the obs to include all
     rna_ad = ad.concat(rna_list, axis=0, join="inner")

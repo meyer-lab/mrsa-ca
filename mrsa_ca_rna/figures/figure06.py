@@ -1,13 +1,13 @@
 """Stripplot of time points for patients to get a sense of how our time data is distributed."""
 
-from mrsa_ca_rna.import_data import extract_time_data
+from mrsa_ca_rna.import_data import ca_data_split
 from mrsa_ca_rna.figures.base import setupBase
 
 import seaborn as sns
 
 
 def figure06_setup():
-    ca_time_rna = extract_time_data(scale=True, tpm=True)
+    ca_time_rna, _, _ = ca_data_split(scale=True, tpm=True)
 
     pat_time_meta = ca_time_rna.obs.loc[:, ["subject_id", "time"]]
     # pat_time_meta = ca_time_rna.loc[:, [("meta", "subject_id"), ("meta", "time")]]

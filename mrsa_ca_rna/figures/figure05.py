@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 
-from mrsa_ca_rna.import_data import concat_datasets, extract_time_data
+from mrsa_ca_rna.import_data import concat_datasets, ca_data_split
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.regression import perform_linear_regression, perform_elastic_regression
 from mrsa_ca_rna.figures.base import setupBase
@@ -14,7 +14,7 @@ def figure05_setup(components: int = 60):
     # for compatibility, I'm just going to remake the df from the adata object
     data_df = concat_datasets(scale=True, tpm=True).to_df()
     scores, _, _ = perform_PCA(data_df)
-    time_adata = extract_time_data(scale=True, tpm=True)
+    time_adata, _, _ = ca_data_split(scale=True, tpm=True)
 
     time_meta = time_adata.obs.loc[:, ["subject_id", "time"]]
     # time_meta = time_data.loc[:, ("meta", ["subject_id", "time"])]

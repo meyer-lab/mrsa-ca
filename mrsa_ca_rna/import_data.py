@@ -33,12 +33,12 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 # def filter_genes(data, threshold=0.01, rbc=True):
 #     """Filters out over-expressed genes that may not be indicative of the disease.
 #     Filters out under-expressed genes that may interfer with analysis.
-    
-#     Parameters: 
+
+#     Parameters:
 #         data (pandas.DataFrame): RNA data to filter
 #         threshold (float): threshold for filtering out genes
 #         rbc (bool): whether to filter out RBC genes
-        
+
 #     Returns:
 #         data (pandas.DataFrame): filtered RNA data
 #     """
@@ -50,6 +50,7 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 #                  "ALAS2", "BPGM", "OSBP2"]
 
 #     return data
+
 
 def import_human_annot():
     human_annot = pd.read_csv(
@@ -318,6 +319,7 @@ def import_ca_val_rna():
 
     return ca_val_rna
 
+
 def import_breast_cancer_meta():
     """import breast cancer metadata from the GEO file"""
     breast_cancer_meta = pd.read_csv(
@@ -333,7 +335,9 @@ def import_breast_cancer_meta():
     # change all instance of "NO" to 0 and "YES" or Nan to 1
     breast_cancer_meta = breast_cancer_meta.replace("NO", 0)
     breast_cancer_meta = breast_cancer_meta.replace("YES", 1)
-    breast_cancer_meta = breast_cancer_meta.fillna(1) # labeling all non-treated people as having recurred for now
+    breast_cancer_meta = breast_cancer_meta.fillna(
+        1
+    )  # labeling all non-treated people as having recurred for now
 
     # add subject_id and disease to the metadata
     breast_cancer_meta["subject_id"] = breast_cancer_meta.index
@@ -361,7 +365,9 @@ def import_breast_cancer(tpm: bool = True):
     breast_cancer = breast_cancer.rename(gene_conversion, axis=0)
 
     # drop all unmapped (NaN and non-ENSG) genes and drop all but the last duplicate row indices
-    breast_cancer = breast_cancer.loc[breast_cancer.index.str.contains("ENSG", na=False), :]
+    breast_cancer = breast_cancer.loc[
+        breast_cancer.index.str.contains("ENSG", na=False), :
+    ]
     breast_cancer = breast_cancer.groupby(breast_cancer.index).last()
 
     # swap genes to columns and samples to rows
@@ -384,12 +390,13 @@ def import_breast_cancer(tpm: bool = True):
 
     return breast_cancer_ad
 
+
 def import_healthy(tpm: bool = True):
     """import and extract healthy data from healthy_source_GSE177044.csv.gz
-    
+
     Parameters:
         tpm (bool): whether to normalize the data to TPM
-        
+
     Returns:
         healthy_ad (AnnData): healthy data in an AnnData object
     """
@@ -413,7 +420,6 @@ def import_healthy(tpm: bool = True):
     healthy_meta["subject_id"] = healthy_meta.index
     healthy_meta["disease"] = "Healthy"
 
-
     # make an anndata object with the rna data and the metadata
     healthy_ad = ad.AnnData(healthy, obs=healthy_meta)
 
@@ -430,6 +436,7 @@ def import_healthy(tpm: bool = True):
         healthy_ad.X = X_normalized
 
     return healthy_ad
+
 
 def ca_data_split(scale: bool = True, tpm: bool = True):
     ca_disc_meta = import_ca_disc_meta()
@@ -481,7 +488,8 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
     healthy_rna = pd.concat(
         [
             ca_meta_h.loc[
-                :, ["subject_id", "gender", "age", "time", "disease", "status"],
+                :,
+                ["subject_id", "gender", "age", "time", "disease", "status"],
             ],
             ca_rna,
         ],
@@ -489,7 +497,6 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
         join="inner",
         keys=["meta", "rna"],
     )
-    
 
     # put the time and non-timed data into anndata objects using metadata as obs and rna as var
     ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
@@ -503,7 +510,6 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
         desired_value = 1000000
 
         for ca_ad in ca_list:
-
             X = ca_ad.X
             row_sums = X.sum(axis=1)
 
@@ -536,7 +542,7 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
     rna_list = list()
 
     """import mrsa data and set up mrsa_rna df with all required annotations. Includes 'validation' dataset"""
-    
+
     mrsa_ad = import_mrsa_rna()
     rna_list.append(mrsa_ad)
 
@@ -566,16 +572,17 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
 
     return rna_ad
 
+
 def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool = True):
     """
     Concatenate any group of AnnData objects together along the genes axis.
     Truncates to shared genes and expands obs to include all observations, fillig in missing values with NaN.
-    
+
     Parameters:
         ad_list (list or list-like): list of AnnData objects to concatenate
         scale (bool): whether to scale the data
         tpm (bool): whether to normalize the data to TPM
-        
+
     Returns:
         ad (AnnData): concatenated AnnData object
     """
@@ -604,5 +611,5 @@ def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool =
 
     if scale:
         whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
-    
+
     return whole_ad

@@ -195,7 +195,10 @@ def perform_PLSR(
     print(f"Finished for {components} components")
 
     pls_scores = {"X": pd.DataFrame(pls.x_scores_), "Y": pd.DataFrame(pls.y_scores_)}
-    pls_loadings = {"X": pd.DataFrame(pls.x_loadings_), "Y": pd.DataFrame(pls.y_loadings_)}
+    pls_loadings = {
+        "X": pd.DataFrame(pls.x_loadings_),
+        "Y": pd.DataFrame(pls.y_loadings_),
+    }
 
     # set up DataFrames for scores and loadings
     component_labels = np.arange(1, components + 1)

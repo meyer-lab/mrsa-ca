@@ -36,22 +36,30 @@ def figure08a_setup():
 
     # make a transformed mrsa_X using CA PLSR scores, then scale since scores are not unit variance
     mrsa_Xform = mrsa_X.values @ scores["Y"].values
-    mrsa_Xform = pd.DataFrame(mrsa_Xform, index=mrsa_X.index, columns=range(1, components+1))
+    mrsa_Xform = pd.DataFrame(
+        mrsa_Xform, index=mrsa_X.index, columns=range(1, components + 1)
+    )
     mrsa_Xform.loc[:, :] = scaler.fit_transform(mrsa_Xform.values)
 
     datasets = {"MRSA": loadings["X"], "Xform": mrsa_Xform}
 
-    # # weight the MRSA data by the CA patients. 
+    # # weight the MRSA data by the CA patients.
     # datasets["Xform"] = pd.DataFrame(mrsa_X.values @ scores["Y"].values, index=datasets["MRSA"].index, columns=range(1, components+1))
 
     # perform logistic regression on mrsa_loadings data, with increasing components against MRSA outcomes
-    accuracies = {"MRSA (X)": [], "Xform from MRSA (X) transformed by CA (Y) scores": []}
-    for list, data in zip(accuracies, datasets): 
+    accuracies: dict = {
+        "MRSA (X)": [],
+        "Xform from MRSA (X) transformed by CA (Y) scores": [],
+    }
+    for list, data in zip(accuracies, datasets):
         for i in range(components):
-            nested_accuracy, _ = perform_PC_LR(X_train=datasets[data].iloc[:, :i+1], y_train=mrsa_y)
+            nested_accuracy, _ = perform_PC_LR(
+                X_train=datasets[data].iloc[:, : i + 1], y_train=mrsa_y
+            )
             accuracies[list].append(nested_accuracy)
 
     return accuracies
+
 
 def genFig():
     fig_size = (8, 4)
@@ -60,9 +68,13 @@ def genFig():
 
     accuracies = figure08a_setup()
     for i, data in enumerate(accuracies):
-        a = sns.lineplot(x=np.arange(1, len(accuracies[data])+1), y=accuracies[data], ax=ax[0 + i])
+        a = sns.lineplot(
+            x=np.arange(1, len(accuracies[data]) + 1), y=accuracies[data], ax=ax[0 + i]
+        )
 
-        a.set_title(f"Predicting MRSA Outcomes\nusing {data} PLSR components\nPLSR performed with: MRSA(X) CA(Y)")
+        a.set_title(
+            f"Predicting MRSA Outcomes\nusing {data} PLSR components\nPLSR performed with: MRSA(X) CA(Y)"
+        )
         a.set_xlabel(f"Components of {data} PLSR")
         a.set_ylabel("Balanced Accuracy")
 

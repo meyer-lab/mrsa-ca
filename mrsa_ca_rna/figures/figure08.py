@@ -22,7 +22,7 @@ def figure08_setup():
 
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
-    
+
     # independently scale, using StandardScaler, the two datasets to avoid data leakage
     scaler = StandardScaler()
     mrsa_df.loc[:, :] = scaler.fit_transform(mrsa_df.values)

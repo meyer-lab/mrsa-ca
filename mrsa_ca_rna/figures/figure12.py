@@ -2,7 +2,12 @@
 MRSA and CA rna data, either together or just CA in time."""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import import_healthy, import_breast_cancer, concat_datasets, concat_general
+from mrsa_ca_rna.import_data import (
+    import_healthy,
+    import_breast_cancer,
+    concat_datasets,
+    concat_general,
+)
 from mrsa_ca_rna.figures.base import setupBase
 
 import pandas as pd
@@ -15,7 +20,9 @@ def figure12_setup():
     old_data = concat_datasets(scale=False, tpm=True)
     bc_data = import_breast_cancer(tpm=True)
     healthy_data = import_healthy(tpm=True)
-    disease_data = concat_general([old_data, healthy_data, bc_data], shrink=True, scale=True, tpm=True)
+    disease_data = concat_general(
+        [old_data, healthy_data, bc_data], shrink=True, scale=True, tpm=True
+    )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
@@ -24,6 +31,7 @@ def figure12_setup():
     r2x = 1 - min(recon_err)
 
     return disease_factors, r2x, disease_data
+
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""

@@ -78,8 +78,8 @@ def perform_PC_LR(
     #     ), "Passed X and y data must be the same length!"
 
     # make space for randomization. Keep things fixed for now.
-    random.seed(42)
-    rng = random.randint(0, 10)
+    rng = random.seed(42)
+    # rng = random.randint(0, 10)
     Cs = np.logspace(-5, 5, 20)
 
     # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
@@ -104,13 +104,14 @@ def perform_PC_LR(
         solver="saga",
         penalty="elasticnet",
         max_iter=100000,
+        random_state=rng,
     ).fit(X_data, y_data)
 
     nested_score = cross_val_score(
         clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy"
     ).mean()
 
-    return (nested_score, clf)
+    return nested_score, clf
 
 
 def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):

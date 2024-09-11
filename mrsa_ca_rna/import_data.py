@@ -345,6 +345,29 @@ def import_breast_cancer_meta():
 
     return breast_cancer_meta
 
+def gene_converter(dataframe:pd.DataFrame, old_id:str, new_id:str, method:str="values"):
+    """Converts gene ids from one type to another in a dataframe
+    
+    Parameters:
+        dataframe (pd.DataFrame): dataframe containing gene ids to convert
+        old_id (str): column name of the current gene id
+        new_id (str): column name of the desired gene id
+        
+    Returns:
+        dataframe (pd.DataFrame): dataframe with gene ids converted"""
+
+    human_annot = import_human_annot()
+    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id]))
+
+    if method == "values":
+        dataframe = dataframe.replace(gene_conversion)
+    elif method == "index":
+        dataframe.index = dataframe.index.map(gene_conversion)
+    elif method == "columns":
+        dataframe.columns = dataframe.columns.map(gene_conversion)
+
+    return dataframe
+
 
 def import_breast_cancer(tpm: bool = True):
     """import breast cancer data from the GEO file"""

@@ -345,7 +345,7 @@ def import_breast_cancer_meta():
 
     return breast_cancer_meta
 
-def gene_converter(dataframe:pd.DataFrame, old_id:str, new_id:str, method:str="values"):
+def gene_converter(dataframe:pd.DataFrame, old_id:str, new_id:str, method:str="values") -> pd.DataFrame:
     """Converts gene ids from one type to another in a dataframe
     
     Parameters:

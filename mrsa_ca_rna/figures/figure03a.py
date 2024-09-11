@@ -58,9 +58,9 @@ def figure03a_setup():
         genes_series = top_comps.loc[comp].abs().nlargest(100)
         top_comp_genes[comp] = pd.DataFrame({"Gene": genes_series.index, "Weight": genes_series.values})
 
-        # convert EnsemblGeneID to Symbol, then print to csv
-        top_comp_genes[comp] = gene_converter(top_comp_genes[comp], "EnsemblGeneID", "Symbol")
-        top_comp_genes[comp].loc[:, "Gene"].to_csv(f"mrsa_ca_rna/figures/figure03a_top_genes_{comp}.csv", index=False, header=False)
+        # # convert EnsemblGeneID to Symbol, then print to csv
+        # top_comp_genes[comp] = gene_converter(top_comp_genes[comp], "EnsemblGeneID", "Symbol")
+        # top_comp_genes[comp].loc[:, "Gene"].to_csv(f"mrsa_ca_rna/figures/figure03a_top_genes_{comp}.csv", index=False, header=False)
 
 
     return y_proba, top_comp_weights, top_comp_genes
@@ -96,6 +96,5 @@ def genFig():
         a.set_xlabel("Gene")
         a.set_ylabel("Weight")
         a.set_title(f"Top 100 Genes for Component {comp}")
-        a.set_xticklabels(a.get_xticklabels(), rotation=90)
 
     return f

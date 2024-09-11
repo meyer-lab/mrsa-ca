@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+
 # setup figure
 def figure03a_setup():
     """Collect the data required for figure03a"""
@@ -41,29 +42,34 @@ def figure03a_setup():
     y_proba = model.predict_proba(mrsa_xform)
 
     # get the beta coefficients from the model
-    weights:np.ndarray = model.coef_[0]
+    weights: np.ndarray = model.coef_[0]
 
     # get the location of the top 5 most important components (absolute value to capture both directions)
     top_weights_locs = np.absolute(weights).argsort()[-5:]
 
     # get the top 5 components from the loadings matrix using the locations
-    top_comps:pd.DataFrame = ca_loadings.iloc[top_weights_locs]
+    top_comps: pd.DataFrame = ca_loadings.iloc[top_weights_locs]
 
     # get the weights of the top 5 components
     top_comp_weights = dict(zip(top_comps.index, weights[top_weights_locs]))
-    
+
     # get the top 100 genes for each of the top 5 components
     top_comp_genes = {}
     for comp in top_comps.index:
-        genes_series = top_comps.loc[comp].abs().nlargest(100)
-        top_comp_genes[comp] = pd.DataFrame({"Gene": genes_series.index, "Weight": genes_series.values})
+        gene_locs = top_comps.loc[comp].abs().nlargest(100).index
+        genes_series = top_comps.loc[comp, gene_locs]
+        top_comp_genes[comp] = pd.DataFrame(
+            {"Gene": genes_series.index, "Weight": genes_series.values}
+        )
 
-        # # convert EnsemblGeneID to Symbol, then print to csv
-        # top_comp_genes[comp] = gene_converter(top_comp_genes[comp], "EnsemblGeneID", "Symbol")
+        # convert EnsemblGeneID to Symbol, then print to csv
+        top_comp_genes[comp] = gene_converter(
+            top_comp_genes[comp], "EnsemblGeneID", "Symbol"
+        )
         # top_comp_genes[comp].loc[:, "Gene"].to_csv(f"mrsa_ca_rna/figures/figure03a_top_genes_{comp}.csv", index=False, header=False)
 
-
     return y_proba, top_comp_weights, top_comp_genes
+
 
 def genFig():
     fig_size = (8, 16)
@@ -85,16 +91,20 @@ def genFig():
     a.set_title(f"ROC Curve\nAUC: {roc_auc_score(y_true, y_proba[:, 1])}")
 
     # plot the top 5 components and their weights
-    a = sns.barplot(x=list(top_comp_weights.keys()), y=list(top_comp_weights.values()), ax=ax[1])
+    a = sns.barplot(
+        x=list(top_comp_weights.keys()), y=list(top_comp_weights.values()), ax=ax[1]
+    )
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
     a.set_title("Top 5 Components and Weights")
 
-    # plot the top 10 genes for each of the top 5 components
+    # plot the top 5 genes for each of the top 5 components
     for i, comp in enumerate(top_comp_genes):
-        a = sns.barplot(data=top_comp_genes[comp].loc[:5, :], x="Gene", y="Weight", ax=ax[i+2])
+        a = sns.barplot(
+            data=top_comp_genes[comp].loc[:5, :], x="Gene", y="Weight", ax=ax[i + 2]
+        )
         a.set_xlabel("Gene")
         a.set_ylabel("Weight")
-        a.set_title(f"Top 100 Genes for Component {comp}")
+        a.set_title(f"Top 5 Genes for Component {comp}")
 
     return f

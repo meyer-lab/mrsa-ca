@@ -56,13 +56,20 @@ def figure08b_setup():
         gene_locs = mrsa_scores.loc[:, comp].abs().nlargest(100).index
         # grab the genes and their real values
         genes_series = mrsa_scores.loc[gene_locs, comp]
-        top_genes[comp] = pd.DataFrame({"Gene": genes_series.index, "Weight": genes_series.values})
+        top_genes[comp] = pd.DataFrame(
+            {"Gene": genes_series.index, "Weight": genes_series.values}
+        )
 
-        # # convert EnsemblGeneID to Symbol, then print to csv
-        # top_genes[comp] = gene_converter(top_genes[comp], "EnsemblGeneID", "Symbol")
-        # top_genes[comp].loc[:, "Gene"].to_csv(f"mrsa_ca_rna/figures/figure08b_top_genes_{comp}.csv", index=False, header=False)
+        # convert EnsemblGeneID to Symbol, then print to csv
+        top_genes[comp] = gene_converter(top_genes[comp], "EnsemblGeneID", "Symbol")
+        top_genes[comp].loc[:, "Gene"].to_csv(
+            f"mrsa_ca_rna/figures/figure08b_top_genes_{comp}.csv",
+            index=False,
+            header=False,
+        )
 
     return y_proba, weighted_components, top_genes
+
 
 def genFig():
     fig_size = (8, 12)
@@ -70,7 +77,9 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     whole_data = concat_datasets(scale=False, tpm=True)
-    y_true = whole_data[whole_data.obs["disease"] == "MRSA"].obs["status"].values.astype(int)
+    y_true = (
+        whole_data[whole_data.obs["disease"] == "MRSA"].obs["status"].values.astype(int)
+    )
 
     y_proba, weighted_components, top_genes = figure08b_setup()
 
@@ -83,14 +92,20 @@ def genFig():
     a.set_ylabel("True Positive Rate")
 
     # plot the weighted components
-    a = sns.barplot(x=list(weighted_components.keys()), y=list(weighted_components.values()), ax=ax[1])
+    a = sns.barplot(
+        x=list(weighted_components.keys()),
+        y=list(weighted_components.values()),
+        ax=ax[1],
+    )
     a.set_title("Weighted Components")
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
 
     # plot the top 10 genes for each component
     for i, comp in enumerate(top_genes):
-        a = sns.barplot(x="Weight", y="Gene", data=top_genes[comp].loc[:10, :], ax=ax[2 + i])
+        a = sns.barplot(
+            x="Weight", y="Gene", data=top_genes[comp].loc[:10, :], ax=ax[2 + i]
+        )
         a.set_title(f"Top 100 Genes for Component {comp}")
         a.set_xlabel("Weight")
         a.set_ylabel("Gene")

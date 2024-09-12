@@ -13,9 +13,19 @@ ipympl = "^0.9.4"
 pandas = "^2.2.2"
 seaborn = "^0.13.2"
 svgutils = "^0.3.4"
-ruff = "^0.5.0"
+anndata = "^0.10.8"
+tensorly = "^0.8.1"
+xarray = "^2024.7.0"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^4.1"
+mypy = "^1.9"
+ruff = "^0.5"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]                                                           
+fbuild = "mrsa_ca_rna.figures.base:genFigure"

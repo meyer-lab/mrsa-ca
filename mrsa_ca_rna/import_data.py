@@ -63,7 +63,6 @@ def import_human_annot():
     return human_annot
 
 
-
 def import_mrsa_meta():
     """
     reads mrsa metadata from patient_metadata_mrsa.txt

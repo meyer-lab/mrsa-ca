@@ -15,19 +15,10 @@ To-do:
 """
 
 import numpy as np
-import pandas as pd
 
-from mrsa_ca_rna.import_data import (
-    import_mrsa_rna,
-    import_ca_rna,
-    import_GSE_rna,
-    concat_datasets,
-)
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.figures.base import setupBase
 import seaborn as sns
-import matplotlib.pyplot as plt
-
 
 
 def genFig():
@@ -38,7 +29,7 @@ def genFig():
     }
     ax, f, _ = setupBase(fig_size, layout)
 
-    scores, loadings, pca = perform_PCA()
+    scores, _, _ = perform_PCA()
 
     # modify what components you want to compare to one another:
     component_pairs = np.array(
@@ -63,23 +54,17 @@ def genFig():
         component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
     ), "component pairs to be graphed do not match figure layout size"
 
-
     for i, (j, k) in enumerate(component_pairs):
         a = sns.scatterplot(
-            data=scores.loc[:, (scores.columns[j+1], scores.columns[k+1])],
-            x=scores.columns[j+1],
-            y=scores.columns[k+1],
+            data=scores.loc[:, (scores.columns[j + 1], scores.columns[k + 1])],
+            x=scores.columns[j + 1],
+            y=scores.columns[k + 1],
             hue=scores.loc[:, "disease"],
             ax=ax[i],
         )
 
-        a.set_xlabel(scores.columns[j+1])
-        a.set_ylabel(scores.columns[k+1])
+        a.set_xlabel(scores.columns[j + 1])
+        a.set_ylabel(scores.columns[k + 1])
         a.set_title(f"Var Comp {scores.columns[j+1]} vs {scores.columns[k+1]}")
 
     return f
-
-
-"""Debug function call section"""
-fig = genFig()
-fig.savefig("./mrsa_ca_rna/output/fig01_NewPCA.png")

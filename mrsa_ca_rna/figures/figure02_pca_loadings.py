@@ -5,61 +5,27 @@ This file may become obsolete post scores heatmap analysis currently
 planned.
 
 To-do:
-    change file to make loadings DataFrame
+    homogenize structure with figure01 once I figure that one out.
 """
 
-import numpy as np
+import seaborn as sns
 
 from mrsa_ca_rna.pca import perform_PCA
-from mrsa_ca_rna.figures.base import setupBase
-import seaborn as sns
+from mrsa_ca_rna.import_data import concat_datasets
 
 
 def genFig():
-    fig_size = (12, 9)
-    layout = {
-        "ncols": 4,
-        "nrows": 3,
-    }
-    ax, f, _ = setupBase(fig_size, layout)
+    adata = concat_datasets(scale=True, tpm=True)
+    df = adata.to_df()
 
-    _, loadings, _ = perform_PCA()
+    _, loadings, _ = perform_PCA(df)
 
-    # modify what components you want to compare to one another:
-    component_pairs = np.array(
-        [
-            [1, 2],
-            [1, 3],
-            [2, 3],
-            [2, 4],
-            [3, 4],
-            [3, 5],
-            [4, 5],
-            [4, 6],
-            [5, 6],
-            [5, 7],
-            [6, 7],
-            [7, 8],
-        ],
-        dtype=int,
-    )
+    desired_components = range(4)
 
-    assert (
-        component_pairs.shape[0] == layout["ncols"] * layout["nrows"]
-    ), "component pairs to be graphed do not match figure layout size"
+    data = loadings.iloc[desired_components]
+    data = data.T
 
-    # reduce all readable component pair values by 1 since indexes start at 0
-    component_pairs -= 1
-
-    for i, (j, k) in enumerate(component_pairs):
-        a = sns.scatterplot(
-            data=loadings.loc[(loadings.index[j], loadings.index[k]), :].T,
-            x=loadings.index[j],
-            y=loadings.index[k],
-            ax=ax[i],
-        )
-        a.set_xlabel(loadings.index[j])
-        a.set_ylabel(loadings.index[k])
-        a.set_title(f"Feature Var by {loadings.index[j]} vs {loadings.index[k]}")
+    # pairplot of loadings
+    f = sns.pairplot(data)
 
     return f

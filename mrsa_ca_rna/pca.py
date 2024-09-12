@@ -2,48 +2,48 @@
 Perform the PCA analysis on the formed matrix from import_data.py
 
 To-do:
-    Relearn PCA and SVD to confirm I know what I'm graphing
-        and why. Also, get confirmation about what I'm
-        hoping to show (differences diseases across genes?).
-    After performing PCA, when creating scores and loadings df's,
-        add relevant metadata into these df's because they'll be
-        used for graphing all sorts of things and it will just be
-        easier to have the data available in the df's.
+    Make this prettier by starting out with fully concatenated datasets
+    from import data.
+
 """
 
 from sklearn.decomposition import PCA
-from mrsa_ca_rna.import_data import concat_datasets
+from sklearn.preprocessing import StandardScaler
+
 import pandas as pd
 
 
-def perform_PCA():
+def perform_PCA(data: pd.DataFrame):
     """
-    Perform pca analysis on concatenated rna matrix, then attach corresponding patient metadata
+    Scale and perform principle component analysis on either provided
+    data or on the default dataset returned by concat_dataset().
+
+    Parameters:
+        data (pd.DataFrame): the data to perform PCA on
 
     Returns:
-        scores (pd.DataFrame): the scores matrix of the concatenated datasets as a result of PCA
-        loadings (pd.DataFrame): the loadings matrix of the concatenated datasets as a result of PCA
-        pca (object): the PCA object for further use in the code. Might remove once I finish changing perform_PCA
+        scores (pd.DataFrame): the scores matrix of the data as a result of PCA
+        loadings (pd.DataFrame): the loadings matrix of the data as a result of PCA
+        pca (object): the PCA object for further use in the code.
     """
 
-    rna_mat, meta_mat = concat_datasets()
-    components = 100  # delta percent explained drops below 0.1% @ ~component 70
+    components = 70
     pca = PCA(n_components=components)
-    rna_decomp = pca.fit_transform(rna_mat)
+    scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
+
+    scaled_rna = scaler.fit_transform(data)
+    rna_decomp = pca.fit_transform(scaled_rna)
 
     column_labels = []
-    for i in range(1, 101):
+    for i in range(1, components + 1):
         column_labels.append("PC" + str(i))
 
-    scores = pd.DataFrame(rna_decomp, rna_mat.index, column_labels)
-
-    # add disease type (mrsa, ca, healthy) and persistance metadata to scores
-    scores = pd.concat([meta_mat, scores], axis=1, join="inner")
+    scores = pd.DataFrame(rna_decomp, index=data.index, columns=column_labels)
 
     rows = []
     for i in range(pca.n_components_):
         rows.append("PC" + str(i + 1))
 
-    loadings = pd.DataFrame(pca.components_, index=rows, columns=rna_mat.columns)
+    loadings = pd.DataFrame(pca.components_, index=rows, columns=data.columns)
 
     return scores, loadings, pca

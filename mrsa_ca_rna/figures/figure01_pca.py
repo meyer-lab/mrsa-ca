@@ -33,7 +33,7 @@ def genFig():
 
     desired_components = range(9)
 
-    data: pd.DataFrame = scores.iloc[:, desired_components]
+    data: pd.DataFrame = scores.iloc[:, desired_components].copy()
     data["disease"] = adata.obs["disease"].values
 
     # seaborn only uses the top level so we need to remove our current one so it can see our lower one.

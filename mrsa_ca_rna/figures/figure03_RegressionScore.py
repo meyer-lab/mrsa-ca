@@ -30,11 +30,10 @@ def figure_03_setup(components: int = 60):
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     combined_df = whole_data.to_df()
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
+    y_data = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
 
     datasets = {"MRSA": mrsa_df, "MRSA+CA+Healthy": combined_df, "CA": ca_df}
-    performance_dict = datasets.copy()
-
-    comp_arr = np.arange(1, components + 1)
+    performance_dict = {}
 
     for dataset in datasets:
         print(f"Performing PCA on {dataset} dataset.")
@@ -62,18 +61,16 @@ def figure_03_setup(components: int = 60):
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
             X_data = scores_df.iloc[:, : i + 1]
-            y_data = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
-
-            # this will not run properly for datasets other than MRSA. Read note above!!!
+            
+            # perform the logistic regression and store the nested CV performance
             nested_performance, _ = perform_PC_LR(
                 X_data,
                 y_data,
             )
             performance.append(nested_performance)
 
-        matrix = np.array([comp_arr.astype(int), performance]).T
         performance_df = pd.DataFrame(
-            matrix, columns=["Components", "Nested Performance"]
+            {"Components": np.arange(1, components + 1), "Nested Performance": performance}
         )
 
         performance_dict[dataset] = performance_df

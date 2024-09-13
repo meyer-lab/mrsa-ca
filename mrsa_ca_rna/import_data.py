@@ -447,6 +447,9 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
     ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
     ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
 
+    # add a status column to all meta data
+    ca_meta["status"] = "Unknown"
+
     # seperate out the candidemia and healthy data
     ca_meta_c = ca_meta.loc[ca_meta["disease"] == "Candidemia", :]
     ca_meta_h = ca_meta.loc[ca_meta["disease"] == "Healthy", :]
@@ -454,11 +457,6 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
     # extract the time data by looking for duplicate subject_id. Duplicates = time points
     ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
     ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
-
-    # add a status column to all meta data
-    ca_meta_c_t["status"] = "Unknown"
-    ca_meta_c_nt["status"] = "Unknown"
-    ca_meta_h["status"] = "Unknown"
 
     # make dataframes of the time, non-time, and healthy data
     ca_rna_timed = pd.concat(

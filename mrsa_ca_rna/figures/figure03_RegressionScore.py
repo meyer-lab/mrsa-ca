@@ -61,7 +61,7 @@ def figure_03_setup(components: int = 60):
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
             X_data = scores_df.iloc[:, : i + 1]
-            
+
             # perform the logistic regression and store the nested CV performance
             nested_performance, _ = perform_PC_LR(
                 X_data,
@@ -70,7 +70,10 @@ def figure_03_setup(components: int = 60):
             performance.append(nested_performance)
 
         performance_df = pd.DataFrame(
-            {"Components": np.arange(1, components + 1), "Nested Performance": performance}
+            {
+                "Components": np.arange(1, components + 1),
+                "Nested Performance": performance,
+            }
         )
 
         performance_dict[dataset] = performance_df

@@ -10,6 +10,7 @@ This will help tie the regression model back to the original data.
 # imports
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
 
 from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.regression import perform_PC_LR
@@ -19,6 +20,8 @@ from mrsa_ca_rna.import_data import concat_datasets, gene_converter
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+skf = StratifiedKFold(n_splits=10)
 
 
 # setup figure
@@ -39,7 +42,10 @@ def figure03a_setup():
 
     # perform logistic regression on transformed MRSA data
     _, model = perform_PC_LR(mrsa_xform, mrsa_data.obs["status"])
-    y_proba = model.predict_proba(mrsa_xform)
+    # y_proba = model.predict_proba(mrsa_xform)
+    y_proba = cross_val_predict(
+        model, X=mrsa_xform, y=mrsa_data.obs["status"], cv=skf, method="predict_proba"
+    )
 
     # get the beta coefficients from the model
     weights: np.ndarray = model.coef_[0]

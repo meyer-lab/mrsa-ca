@@ -32,9 +32,7 @@ def figure_03_setup(components: int = 60):
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
 
     datasets = {"MRSA": mrsa_df, "MRSA+CA+Healthy": combined_df, "CA": ca_df}
-    performance_dict = datasets.copy()
-
-    comp_arr = np.arange(1, components + 1)
+    performance_dict = {}
 
     for dataset in datasets:
         print(f"Performing PCA on {dataset} dataset.")
@@ -71,7 +69,7 @@ def figure_03_setup(components: int = 60):
             )
             performance.append(nested_performance)
 
-        matrix = np.array([comp_arr.astype(int), performance]).T
+        matrix = np.array([range(1, components + 1), performance]).T
         performance_df = pd.DataFrame(
             matrix, columns=["Components", "Nested Performance"]
         )

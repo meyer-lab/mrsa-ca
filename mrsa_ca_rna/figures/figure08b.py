@@ -16,6 +16,7 @@ import seaborn as sns
 
 skf = StratifiedKFold(n_splits=10)
 
+
 def figure08b_setup():
     """Organize data for plotting"""
 
@@ -43,7 +44,9 @@ def figure08b_setup():
 
     # perform logistic regression on mrsa_loadings data
     _, model = perform_PC_LR(mrsa_loadings, mrsa_y)
-    y_proba = cross_val_predict(model, X=mrsa_loadings, y=mrsa_y, cv=skf, method="predict_proba")
+    y_proba = cross_val_predict(
+        model, X=mrsa_loadings, y=mrsa_y, cv=skf, method="predict_proba"
+    )
 
     # get the beta coefficients from the model, arrange them by absolute value, then tie them back to the components
     weights: np.ndarray = model.coef_[0]

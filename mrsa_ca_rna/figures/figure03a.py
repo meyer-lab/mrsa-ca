@@ -94,7 +94,9 @@ def genFig():
     a = sns.lineplot(data, x="FPR", y="TPR", ax=ax[0])
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
-    a.set_title(f"ROC Curve\nAUC: {roc_auc_score(y_true, y_proba[:, 1])}")
+    a.set_title(
+        f"Classification of MRSA outcomes using 70 component PCA decomposition of Candidemia data\nAUC: {roc_auc_score(y_true, y_proba[:, 1])}"
+    )
 
     # plot the top 5 components and their weights
     a = sns.barplot(

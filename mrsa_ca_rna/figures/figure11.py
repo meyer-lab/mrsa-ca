@@ -1,8 +1,13 @@
-"""This file plots the data pf2 reconstruction for the disease and time datasets
-This must be updated with all the currently used disease data! (Everything included in figure12)"""
+"""This file plots the data pf2 reconstruction for the disease and time datasets"""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import concat_datasets, ca_data_split
+from mrsa_ca_rna.import_data import (
+    concat_datasets,
+    ca_data_split,
+    concat_general,
+    import_breast_cancer,
+    import_healthy,
+)
 from mrsa_ca_rna.figures.base import setupBase
 
 import seaborn as sns
@@ -12,13 +17,23 @@ def figure11_setup():
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
 
-    disease_data = concat_datasets(scale=True, tpm=True)
+    # import disease datasets of interest (MRSA, CA, BC, Healthy)
+    mrsa_ca = concat_datasets(scale=True, tpm=True)
+    bc_data = import_breast_cancer(tpm=True)
+    healthy_data = import_healthy(tpm=True)
+    disease_data = concat_general(
+        [mrsa_ca, bc_data, healthy_data], shrink=True, scale=True, tpm=True
+    )
+
+    # import time dataset (CA)
     time_data, _, _ = ca_data_split(scale=True, tpm=True)
 
+    # split and organize into xarray datasets along corresponding expansion dimensions (disease->disease, time->subject_id)
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
-    ranks_d = range(1, 21)
+    # change ranks_d back to range(1, 11) when running the full dataset!
+    ranks_d = range(1, 4)
     ranks_t = range(1, 3)
 
     r2x_d = []
@@ -48,12 +63,12 @@ def genFig():
     y_ax_label = "R2X"
 
     a = sns.barplot(x=range(1, 21), y=r2x_d, ax=ax[0])
-    a.set_title("Disease Data R2X\nn_max_iter=100")
+    a.set_title("Disease Data R2X")
     a.set_xlabel(x_ax_label)
     a.set_ylabel(y_ax_label)
 
     b = sns.barplot(x=range(1, 3), y=r2x_t, ax=ax[1])
-    b.set_title("Time Data R2X\nn_max_iter=100")
+    b.set_title("Time Data R2X")
     b.set_xlabel(x_ax_label)
     b.set_ylabel(y_ax_label)
 

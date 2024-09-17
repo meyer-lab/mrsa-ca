@@ -23,6 +23,8 @@ def figure08b_setup():
     # bring in whole dataset then split into MRSA (X, y) and CA (Y) sets
     whole_data = concat_datasets(scale=False, tpm=True)
 
+    # trim out RBC genes
+
     mrsa_X = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     mrsa_y = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
     ca_Y = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
@@ -67,11 +69,11 @@ def figure08b_setup():
 
         # convert EnsemblGeneID to Symbol, then print to csv
         top_genes[comp] = gene_converter(top_genes[comp], "EnsemblGeneID", "Symbol")
-        top_genes[comp].loc[:, "Gene"].to_csv(
-            f"mrsa_ca_rna/figures/figure08b_top_genes_{comp}.csv",
-            index=False,
-            header=False,
-        )
+        # top_genes[comp].loc[:, "Gene"].to_csv(
+        #     f"mrsa_ca_rna/figures/figure08b_top_genes_{comp}.csv",
+        #     index=False,
+        #     header=False,
+        # )
 
     return y_proba, weighted_components, top_genes
 
@@ -92,7 +94,9 @@ def genFig():
     fpr, tpr, _ = roc_curve(y_true, y_proba[:, 1])
     roc_auc = roc_auc_score(y_true, y_proba[:, 1])
     a = sns.lineplot(x=fpr, y=tpr, ax=ax[0])
-    a.set_title(f"ROC Curve (AUC = {roc_auc:.2f})")
+    a.set_title(
+        f"Covariance maximization between MRSA and CA data\npredicts MRSA outcome using 3 components\n(AUC = {roc_auc:.3f})"
+    )
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
 
@@ -102,7 +106,7 @@ def genFig():
         y=list(weighted_components.values()),
         ax=ax[1],
     )
-    a.set_title("Weighted Components")
+    a.set_title("Component relevance to prediction")
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
 
@@ -111,7 +115,7 @@ def genFig():
         a = sns.barplot(
             x="Weight", y="Gene", data=top_genes[comp].loc[:10, :], ax=ax[2 + i]
         )
-        a.set_title(f"Top 100 Genes for Component {comp}")
+        a.set_title(f"Top 10 Gene Factors for Component {comp}")
         a.set_xlabel("Weight")
         a.set_ylabel("Gene")
 

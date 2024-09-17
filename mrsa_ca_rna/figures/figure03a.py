@@ -95,7 +95,7 @@ def genFig():
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
     a.set_title(
-        f"Classification of MRSA outcomes using 70 component PCA decomposition of Candidemia data\nAUC: {roc_auc_score(y_true, y_proba[:, 1])}"
+        f"Classification of MRSA outcomes using 70 component\nPCA decomposition of Candidemia data\nAUC: {roc_auc_score(y_true, y_proba[:, 1]):.3f}"
     )
 
     # plot the top 5 components and their weights
@@ -104,7 +104,7 @@ def genFig():
     )
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
-    a.set_title("Top 5 Components and Weights")
+    a.set_title("Top 5 Components determining prediction accuracy")
 
     # plot the top 5 genes for each of the top 5 components
     for i, comp in enumerate(top_comp_genes):

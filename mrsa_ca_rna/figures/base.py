@@ -71,7 +71,7 @@ def setupBase(figsize, gridd, style="whitegrid"):
     """
     sns.set_theme(
         style=style,
-        font_scale=0.7,
+        font_scale=1.0,
         color_codes=True,
         palette="viridis",
         rc=plt.rcParams,

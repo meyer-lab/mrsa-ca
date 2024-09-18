@@ -62,12 +62,13 @@ def genFig():
     x_ax_label = "Rank"
     y_ax_label = "R2X"
 
-    a = sns.barplot(x=range(1, 21), y=r2x_d, ax=ax[0])
+    # change range(1, 4) back to range(1, 11) when running the full dataset!
+    a = sns.barplot(x=range(1, len(r2x_d) + 1), y=r2x_d, ax=ax[0])
     a.set_title("Disease Data R2X")
     a.set_xlabel(x_ax_label)
     a.set_ylabel(y_ax_label)
 
-    b = sns.barplot(x=range(1, 3), y=r2x_t, ax=ax[1])
+    b = sns.barplot(x=range(1, len(r2x_t) + 1), y=r2x_t, ax=ax[1])
     b.set_title("Time Data R2X")
     b.set_xlabel(x_ax_label)
     b.set_ylabel(y_ax_label)

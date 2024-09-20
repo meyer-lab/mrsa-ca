@@ -11,7 +11,7 @@ import seaborn as sns
 def figure10_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    time_data, _, _ = ca_data_split(scale=True, tpm=True)
+    time_data, _, _ = ca_data_split()
 
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
@@ -28,7 +28,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    time_data, _, _ = ca_data_split(scale=True, tpm=True)
+    time_data, _, _ = ca_data_split()
 
     time_factors = figure10_setup()
 

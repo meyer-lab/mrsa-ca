@@ -2,7 +2,7 @@
 It will also plot the beta coefficients of the logistic regression model for each component.
 Then, it will barplot the most important genes that map to the most important components."""
 
-from mrsa_ca_rna.import_data import concat_datasets, gene_converter
+from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
 from mrsa_ca_rna.regression import perform_PLSR, perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
 
@@ -24,6 +24,7 @@ def figure08b_setup():
     whole_data = concat_datasets(scale=False, tpm=True)
 
     # trim out RBC genes
+    whole_data = trim_RBC(whole_data)
 
     mrsa_X = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     mrsa_y = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]

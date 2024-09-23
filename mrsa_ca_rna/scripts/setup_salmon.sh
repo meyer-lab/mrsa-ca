@@ -78,16 +78,3 @@ gzip -d mappings.gtf.gz
 cd ..
 
 exit 0
-##UC Davis version
-#zcat human_transcripts.fa.gz |zcat - human_genome.fa.gz > decoy_aware_transcripts.fa.gz
-#zgrep "^>" human_genome.fa.gz |cut -d " " -f 1 > decoays.txt
-#sed -i -e 's/>//g' decoys.txt
-
-
-##non decoy-aware index and annotation generation
-##set up salmon reference transcriptome by downloading the human genome and indexing it
-#mkdir salmon_ref
-#cd ./salmon_ref
-#curl https://ftp.ensembl.org/pub/release-112/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz -o human.fa.gz
-#salmon index -t human.fa.gz -i human_index
-#curl https://ftp.ensembl.org/pub/release-112/gtf/homo_sapiens/Homo_sapiens.GRCh38.112.gtf.gz -o human.gtf

@@ -98,7 +98,27 @@ for i in $(seq 1 $batchCount); do
     #remove the batch_accessions.txt file
     rm batch_accessions.txt
 
+    #navigate back to the main directory
+    cd ..
+
 done
+
+# aggregate all the gene counts into a single file
+echo "Aggregating gene counts..."
+
+# create simplified gene count files for each sample
+while IFS="" read -r sample || [ -n "$sample" ]; do
+    tail -n +2 ./salmon_gene_counts/${sample}/quant.genes.sf | cut -f 4 > ./salmon_gene_counts/${sample}.count
+done < ./sra_out/accession_list.txt
+# create a list of all the genes
+tail -n +2 ./salmon_gene_counts/${sample}/quant.genes.sf | cut -f 1 > ./salmon_gene_counts/genes.txt
+# combine all the gene counts into a single file, with gene names as the first column
+paste ./salmon_gene_counts/genes.txt ./salmon_gene_counts/*.count > ./salmon_gene_counts/all_counts.txt
+# create a header for the file with sorted sample names (since we pasted them with a wildcard)
+sed -i "1i gene\t$(sort ./sra_out/accession_list.txt | tr '\n' '\t')" ./salmon_gene_counts/all_counts.txt
+
+#clean up the gene count files
+rm ./salmon_gene_counts/*.count
 
 echo "All SRA accessions processed and expression quantified with Salmon"
 echo "Results can be found in the salmon_gene_counts directory"

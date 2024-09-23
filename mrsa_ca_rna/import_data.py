@@ -438,7 +438,7 @@ def import_healthy(tpm: bool = True):
     return healthy_ad
 
 
-def ca_data_split(scale: bool = True, tpm: bool = True):
+def ca_data_split():
     ca_disc_meta = import_ca_disc_meta()
     ca_val_meta = import_ca_val_meta()
     ca_disc_rna = import_ca_disc_rna()
@@ -504,22 +504,21 @@ def ca_data_split(scale: bool = True, tpm: bool = True):
     ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
 
     # re-TPM the RNA data by default by normalizing each row to 1,000,000
-    if tpm:
-        desired_value = 1000000
+    desired_value = 1000000
 
-        for ca_ad in ca_list:
-            X = ca_ad.X
-            row_sums = X.sum(axis=1)
+    for ca_ad in ca_list:
+        X = ca_ad.X
+        row_sums = X.sum(axis=1)
 
-            scaling_factors = desired_value / row_sums
+        scaling_factors = desired_value / row_sums
 
-            X_normalized = X * scaling_factors[:, np.newaxis]
+        X_normalized = X * scaling_factors[:, np.newaxis]
 
-            ca_ad.X = X_normalized
+        ca_ad.X = X_normalized
 
-    if scale:
-        for ca_ad in ca_list:
-            ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
+    # scale the data by feature
+    for ca_ad in ca_list:
+        ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
 
     return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
 
@@ -544,7 +543,7 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
     mrsa_ad = import_mrsa_rna()
     rna_list.append(mrsa_ad)
 
-    ca_timed, ca_nontimed, ca_healthy = ca_data_split(scale=False, tpm=False)
+    ca_timed, ca_nontimed, ca_healthy = ca_data_split()
     rna_list.append(ca_timed)
     rna_list.append(ca_nontimed)
     rna_list.append(ca_healthy)

@@ -60,18 +60,18 @@ mkdir salmon_ref
 cd ./salmon_ref
 #grab the human transcriptome and genome, make a decoy.txt file, and concatenate the transcriptome and genome
 echo "Downloading human transcriptome and genome..."
-curl https://ftp.ensembl.org/pub/release-112/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz -o human_transcripts.fa.gz
-curl https://ftp.ensembl.org/pub/release-112/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz -o human_genome.fa.gz
+curl https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.transcripts.fa.gz -o human_transcripts.fa.gz
+curl https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/GRCh38.p14.genome.fa.gz -o human_genome.fa.gz
 echo "Generating decoy.txt"
 grep "^>" <(gunzip -c human_genome.fa.gz) | cut -d " " -f 1 > decoys.txt
 sed -i.bak -e 's/>//g' decoys.txt
 cat human_transcripts.fa.gz human_genome.fa.gz > human_gentrome.fa.gz
 #make a decoy-aware index by salmon indexing while providing the decoy.txt
 echo "Making salmon_index (RAM intensive. May fail if not enough RAM)"
-salmon index -t human_gentrome.fa.gz -d decoys.txt -p $THREADS -i salmon_index
+salmon index -t human_gentrome.fa.gz -d decoys.txt --gencode -p $THREADS -i salmon_index
 
 #grab the transcripts -> gene mapping file
-curl https://ftp.ensembl.org/pub/release-112/gtf/homo_sapiens/Homo_sapiens.GRCh38.112.gtf.gz -o mappings.gtf.gz
+curl https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.annotation.gtf.gz -o mappings.gtf.gz
 gzip -d mappings.gtf.gz
 
 #go back to the main dir

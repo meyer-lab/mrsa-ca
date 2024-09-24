@@ -13,9 +13,6 @@ if [ ! -d "./salmon_processing" ]; then
     exit 1
 fi
 
-#navigate to sra_out to prefetch
-cd ./salmon_processing/sra_out
-
 #ask for single or paired end reads
 echo "Is this [single] end or [paired] end data?"
 read endType
@@ -31,6 +28,9 @@ fi
 #ask for the number of SRA accessions to process at a time
 echo "How many SRA accessions would you like to process at time?"
 read batchSize
+
+#navigate to sra_out to begin processing the SRA accessions
+cd ./salmon_processing/sra_out
 
 #break the accession list into batches and process them indicidually
 #count the number of lines in the given accession list
@@ -98,10 +98,10 @@ for i in $(seq 1 $batchCount); do
     #remove the batch_accessions.txt file
     rm batch_accessions.txt
 
-    #navigate back to the main directory
-    cd ..
-
 done
+
+#navigate back to the main directory
+cd ..
 
 # aggregate all the gene counts into a single file
 echo "Aggregating gene counts..."

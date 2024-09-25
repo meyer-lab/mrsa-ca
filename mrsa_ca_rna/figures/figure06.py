@@ -7,7 +7,7 @@ import seaborn as sns
 
 
 def figure06_setup():
-    ca_time_rna, _, _ = ca_data_split(scale=True, tpm=True)
+    ca_time_rna, _, _ = ca_data_split()
 
     pat_time_meta = ca_time_rna.obs.loc[:, ["subject_id", "time"]]
     # pat_time_meta = ca_time_rna.loc[:, [("meta", "subject_id"), ("meta", "time")]]

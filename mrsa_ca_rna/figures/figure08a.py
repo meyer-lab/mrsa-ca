@@ -62,8 +62,8 @@ def figure08a_setup():
 
 
 def genFig():
-    fig_size = (4, 8)
-    layout = {"ncols": 1, "nrows": 2}
+    fig_size = (8, 4)
+    layout = {"ncols": 2, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
     accuracies = figure08a_setup()
@@ -73,7 +73,7 @@ def genFig():
         )
 
         a.set_title(
-            f"PLSR components of {data} predicting MRSA outcomes"
+            f"Predicting MRSA Outcomes\nusing {data} PLSR components\nPLSR performed with: MRSA(X) CA(Y)"
         )
         a.set_xlabel(f"Components of {data} PLSR")
         a.set_ylabel("Balanced Accuracy")

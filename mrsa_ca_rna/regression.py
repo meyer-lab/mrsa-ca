@@ -16,6 +16,7 @@ from sklearn.model_selection import (
     KFold,
     LeaveOneOut,
     cross_val_score,
+    cross_val_predict,
 )
 from sklearn.linear_model import (
     LogisticRegressionCV,
@@ -233,38 +234,12 @@ def caluclate_R2Y_Q2Y(model: PLSRegression, X_data: pd.DataFrame, y_data: pd.Dat
     y_press = 0
     y_tss = 0
 
-    for train_index, test_index in leave.split(X_data, y_data):
-        # set up training data
-        X_train = X_data.iloc[train_index, :]
-        y_train = y_data.iloc[train_index, :]
-
-        # fit model with training data
-        trained_pls = model.fit(X_train, y_train)
-
-        # generate y-hat predictions
-        y_pred.iloc[test_index, :] = trained_pls.predict(X_data.iloc[test_index, :])
-
-        # calculate the predictive residual error sum of squares and total sum of squares
-        y_press += np.average(
-            (y_data.iloc[test_index, :] - y_pred.iloc[test_index, :]) ** 2
-        )
-        y_tss += np.average(
-            (y_data.iloc[test_index, :] - y_data.iloc[test_index, :].mean()) ** 2
-        )
+    # calculate Q2Y using sklearn's cross_val_predict
+    y_pred = cross_val_predict(model, X_data, y_data, cv=leave)
+    y_press = np.average((y_data - y_pred) ** 2)
+    y_tss = np.average((y_data - y_data.mean()) ** 2)
 
     # calculate Q2Y
     Q2Y = 1 - (y_press / y_tss)
 
     return R2Y, Q2Y
-
-
-def vip_efficient(model):
-    t = model.x_scores_
-    w = model.x_weights_  # replace with x_rotations_ if needed
-    q = model.y_loadings_
-    features_, _ = w.shape
-    vip = np.zeros(shape=(features_,))
-    inner_sum = np.diag(t.T @ t @ q.T @ q)
-    SS_total = np.sum(inner_sum)
-    vip = np.sqrt(features_ * (w**2 @ inner_sum) / SS_total)
-    return vip

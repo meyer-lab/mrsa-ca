@@ -14,7 +14,7 @@ def figure05_setup(components: int = 60):
     # for compatibility, I'm just going to remake the df from the adata object
     data_df = concat_datasets(scale=True, tpm=True).to_df()
     scores, _, _ = perform_PCA(data_df)
-    time_adata, _, _ = ca_data_split(scale=True, tpm=True)
+    time_adata, _, _ = ca_data_split()
 
     time_meta = time_adata.obs.loc[:, ["subject_id", "time"]]
     # time_meta = time_data.loc[:, ("meta", ["subject_id", "time"])]

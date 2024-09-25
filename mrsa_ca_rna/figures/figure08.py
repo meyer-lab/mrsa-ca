@@ -1,6 +1,5 @@
 """
-Code copied from figure07 but plotting components of MRSA data against patient metadata
-Now, we use anndata to easily access the metadata and RNA data for MRSA patients
+Plotting components of MRSA data against patient metadata
 """
 
 from mrsa_ca_rna.regression import perform_PLSR

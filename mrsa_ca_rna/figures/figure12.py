@@ -1,5 +1,4 @@
-"""This file will plot the results of the tensor factorization of
-MRSA and CA rna data, either together or just CA in time."""
+"""This file plots the pf2 factor matrices for the disease datasets"""
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.import_data import (

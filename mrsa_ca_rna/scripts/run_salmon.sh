@@ -13,9 +13,6 @@ if [ ! -d "./salmon_processing" ]; then
     exit 1
 fi
 
-#navigate to sra_out to prefetch
-cd ./salmon_processing/sra_out
-
 #ask for single or paired end reads
 echo "Is this [single] end or [paired] end data?"
 read endType
@@ -31,6 +28,18 @@ fi
 #ask for the number of SRA accessions to process at a time
 echo "How many SRA accessions would you like to process at time?"
 read batchSize
+
+#navigate to sra_out to begin processing the SRA accessions
+cd ./salmon_processing/sra_out
+
+#check if the accession list exists
+if [ ! -f "accession_list.txt" ]; then
+    echo "accession_list.txt not found. Please run setup_salmon.sh first"
+    exit 1
+fi
+
+#remove empty lines from the accession_list.txt file
+sed -i '/^$/d' accession_list.txt
 
 #break the accession list into batches and process them indicidually
 #count the number of lines in the given accession list
@@ -57,7 +66,10 @@ for i in $(seq 1 $batchCount); do
     #If text file is generated through gui or Windows, remove \r after each line. Maybe not needed with sed making separate batch_accession.txt?
     sed -i 's/\r$//' batch_accessions.txt
 
-    #loop through the batch of accessions, fetch samples and fastq format them
+    # Remove empty lines from the batch_accessions.txt file
+    sed -i '/^$/d' batch_accessions.txt
+    
+    # Loop through the batch of accessions, fetch samples and fastq format them
     while IFS="" read -r line || [ -n "$line" ]; do
         echo "Processing $line"
         if [ "$endType" = "single" ]; then
@@ -99,6 +111,30 @@ for i in $(seq 1 $batchCount); do
     rm batch_accessions.txt
 
 done
+
+#navigate back to the main directory
+cd ..
+
+# aggregate all the gene counts into a single file
+echo "Aggregating gene counts..."
+
+# create simplified gene count files for each sample
+while IFS="" read -r sample || [ -n "$sample" ]; do
+    tail -n +2 ./salmon_gene_counts/${sample}/quant.genes.sf | cut -f 4 > ./salmon_gene_counts/${sample}.count
+done < ./sra_out/accession_list.txt
+
+# Set ${sample} to the first line of accession_list.txt
+sample=$(head -n 1 ./sra_out/accession_list.txt)
+# create a list of all the genes
+tail -n +2 ./salmon_gene_counts/${sample}/quant.genes.sf | cut -f 1 > ./salmon_gene_counts/genes.txt
+
+# combine all the gene counts into a single file, with gene names as the first column
+paste ./salmon_gene_counts/genes.txt ./salmon_gene_counts/*.count > ./salmon_gene_counts/all_counts.txt
+# create a header for the file with sorted sample names (since we pasted them with a wildcard)
+sed -i "1i gene\t$(sort ./sra_out/accession_list.txt | tr '\n' '\t')" ./salmon_gene_counts/all_counts.txt
+
+#clean up the gene count files
+rm ./salmon_gene_counts/*.count
 
 echo "All SRA accessions processed and expression quantified with Salmon"
 echo "Results can be found in the salmon_gene_counts directory"

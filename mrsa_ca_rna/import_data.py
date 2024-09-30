@@ -105,7 +105,7 @@ def import_mrsa_rna():
         dtype="float64",
     )
 
-    # patient # needs to be converted to int32
+    # patient # needs to be converted to str
     mrsa_rna.index = mrsa_rna.index.astype("int32")
 
     mrsa_meta = import_mrsa_meta()
@@ -123,6 +123,7 @@ def import_mrsa_rna():
         "subject_id", drop=False
     )
     mrsa_rna.index.name = None
+    mrsa_rna.index = mrsa_rna.index.astype("str") # anndata requires string index
 
     # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
     mrsa_ad = ad.AnnData(

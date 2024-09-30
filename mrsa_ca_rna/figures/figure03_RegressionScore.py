@@ -36,7 +36,7 @@ def figure_03_setup(components: int = 60):
     performance_dict = {}
 
     for dataset in datasets:
-        print(f"Performing PCA on {dataset} dataset.")
+        # print(f"Performing PCA on {dataset} dataset.")
         scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
@@ -57,7 +57,7 @@ def figure_03_setup(components: int = 60):
         # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
         performance = []
         for i in range(components):
-            print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
+            # print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
             X_data = scores_df.iloc[:, : i + 1]

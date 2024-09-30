@@ -9,6 +9,7 @@ hold our data in an all-in-one format to ease with manipulation.
 import tensorly as tl
 import xarray as xr
 import anndata as ad
+import cupy as cp
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
@@ -88,28 +89,30 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
         factors (list): The list of factor matrices, ordered by slices, rows, and columns w.r.t. rank (R)
                         The unaligned dimension is replaced with eigenvalues (lambda) of the factorization
                         ex. rows unaligned: (slices*rows*columns) => (slices*R), (lambda*R), (columns*R)
-        projection_matrices (list): The list of projection matrices
+        projections (list): The list of projection matrices
 
         rec_errors (list): The list of reconstruction errors at each iteration
     """
 
     # convert the xarray dataset to a numpy list
-    data_list = []
-    for data_var in data.data_vars:
-        data_list.append(data[data_var].values)
+    data_list = [data[slc].values for slc in data.data_vars]
 
-    # data_np = [data["MRSA"].values, data["Candidemia"].values]
+    tl.set_backend("cupy")
 
     # perform the factorization
-    (weights, factors, projection_matrices), rec_errors = tl.decomposition.parafac2(
-        data_list,
+    (weights, factors, projections), rec_errors = tl.decomposition.parafac2(
+        [cp.array(X) for X in data_list],
         rank=rank,
-        n_iter_max=2000,
+        n_iter_max=200,
         init="svd",
         svd="randomized_svd",
         normalize_factors=True,
         verbose=False,
         return_errors=True,
+        n_iter_parafac=20,
+        linesearch=True,
     )
 
-    return (weights, factors, projection_matrices), rec_errors
+    tl.set_backend("numpy")
+
+    return (cp.asnumpy(weights), [cp.asnumpy(f) for f in factors], [cp.asnumpy(p) for p in projections]), rec_errors

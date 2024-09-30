@@ -115,4 +115,8 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     tl.set_backend("numpy")
 
-    return (cp.asnumpy(weights), [cp.asnumpy(f) for f in factors], [cp.asnumpy(p) for p in projections]), rec_errors
+    return (
+        cp.asnumpy(weights),
+        [cp.asnumpy(f) for f in factors],
+        [cp.asnumpy(p) for p in projections],
+    ), rec_errors

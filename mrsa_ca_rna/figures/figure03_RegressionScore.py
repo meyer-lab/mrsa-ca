@@ -48,8 +48,8 @@ def figure_03_setup(components: int = 60):
             # scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
 
             # use sklearn PCA object's transform method to project CA data onto it
-            scaled_MRSA = scale(mrsa_df.to_numpy())
-            transformed_MRSA = pca.transform(scaled_MRSA)
+            mrsa_df.loc[:,:] = scale(mrsa_df.to_numpy())
+            transformed_MRSA = pca.transform(mrsa_df)
             scores_df = pd.DataFrame(
                 transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns
             )

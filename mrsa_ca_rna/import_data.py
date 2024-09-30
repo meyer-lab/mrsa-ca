@@ -330,15 +330,20 @@ def import_breast_cancer_meta():
     )
 
     breast_cancer_meta = breast_cancer_meta.loc[:, ["ER", "PR", "HER2", "Recur"]]
+
+    # pandas currently performs a silent casting during replace, altering the column types
+    # in the future, this will no longer occur, but it currently throws a warning
+    # to opt-in to the future behavior, we use the following context manager
+    with pd.option_context('future.no_silent_downcasting', True):
     # change all instances of "neg" to 0 and "pos" to 1
-    breast_cancer_meta = breast_cancer_meta.replace("neg", 0)
-    breast_cancer_meta = breast_cancer_meta.replace("pos", 1)
-    # change all instance of "NO" to 0 and "YES" or Nan to 1
-    breast_cancer_meta = breast_cancer_meta.replace("NO", 0)
-    breast_cancer_meta = breast_cancer_meta.replace("YES", 1)
-    breast_cancer_meta = breast_cancer_meta.fillna(
-        1
-    )  # labeling all non-treated people as having recurred for now
+        breast_cancer_meta = breast_cancer_meta.replace("neg", 0)
+        breast_cancer_meta = breast_cancer_meta.replace("pos", 1)
+        # change all instance of "NO" to 0 and "YES" or Nan to 1
+        breast_cancer_meta = breast_cancer_meta.replace("NO", 0)
+        breast_cancer_meta = breast_cancer_meta.replace("YES", 1)
+        breast_cancer_meta = breast_cancer_meta.fillna(
+            1
+        )  # labeling all non-treated people as having recurred for now
 
     # add subject_id and disease to the metadata
     breast_cancer_meta["subject_id"] = breast_cancer_meta.index

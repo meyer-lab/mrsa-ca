@@ -108,7 +108,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
         init="svd",
         svd="randomized_svd",
         normalize_factors=True,
-        verbose=True,
+        verbose=False,
         return_errors=True,
     )
 

@@ -36,7 +36,7 @@ def figure_03_setup(components: int = 60):
     performance_dict = {}
 
     for dataset in datasets:
-        print(f"Performing PCA on {dataset} dataset.")
+        # print(f"Performing PCA on {dataset} dataset.")
         scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
@@ -48,8 +48,8 @@ def figure_03_setup(components: int = 60):
             # scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
 
             # use sklearn PCA object's transform method to project CA data onto it
-            scaled_MRSA = scale(mrsa_df.to_numpy())
-            transformed_MRSA = pca.transform(scaled_MRSA)
+            mrsa_df.loc[:, :] = scale(mrsa_df.to_numpy())
+            transformed_MRSA = pca.transform(mrsa_df)
             scores_df = pd.DataFrame(
                 transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns
             )
@@ -57,7 +57,7 @@ def figure_03_setup(components: int = 60):
         # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
         performance = []
         for i in range(components):
-            print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
+            # print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
 
             # slice our X_data to our current components and set y_data to be MRSA status from whole data
             X_data = scores_df.iloc[:, : i + 1]

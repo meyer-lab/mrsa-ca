@@ -11,53 +11,39 @@ To-do:
 """
 
 from sklearn.model_selection import (
-    GridSearchCV,
     StratifiedKFold,
     KFold,
-    LeaveOneOut,
     cross_val_score,
     cross_val_predict,
 )
 from sklearn.linear_model import (
     LogisticRegressionCV,
     LogisticRegression,
-    ElasticNet,
-    ElasticNetCV,
-    LinearRegression,
 )
 from sklearn.cross_decomposition import PLSRegression
 from typing import Sequence
 
 import pandas as pd
 import numpy as np
-import random
 
 
 skf = StratifiedKFold(n_splits=10)
-kf = KFold(n_splits=10)
-loocv = LeaveOneOut()
 
 
 def perform_PC_LR(
-    X_train: pd.DataFrame,
-    y_train: pd.DataFrame,
-    X_data: pd.DataFrame | None = None,
-    y_data: pd.DataFrame | None = None,
+    X_data: pd.DataFrame,
+    y_data: pd.DataFrame,
 ):
     """
     Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
     can be determined with different data by passing additional data that will not be used for regularization.
 
     Parameters:
-        X_train (pd.DataFrame): training X data for regularization and subsequent nested cross validation
-        y_train (pd.DataFrame): training y data for regularization and subsequent nested cross validation
-        X_data (pd.DataFrame): [Optional] final model fitted with this data after training is used for regularization
-        y_data (pd.DataFrame): [Optional] final model fitted with this data after training is used for regularization
+        X_data (pd.DataFrame): training X data for regularization and subsequent nested cross validation
+        y_data (pd.DataFrame): training y data for regularization and subsequent nested cross validation
 
     Returns:
         nested_score (float): nested cross validation score of the final model
-        convergence_failure (int): when not 0, indicates a convergence failure occurred, at indicated data size
-        clf (object): final fitted model using X_data and y_data variables (X_train and y_train if not specified)
     """
 
     """
@@ -65,40 +51,20 @@ def perform_PC_LR(
     by supplying it with pre-determined X and y data to regress. This makes it the most
     universal
     """
-
     assert (
-        X_train.shape[0] == y_train.shape[0]
+        X_data.shape[0] == y_data.shape[0]
     ), "Passed X and y data must be the same length!"
-
-    # check for additional X_data and y_data in case we are using different data for regaularization. Assert fails mypy check, removing for now
-    if X_data is None:
-        X_data = X_train
-        y_data = y_train
-    # else:
-    #     assert (
-    #         X_data.shape[0] == y_data.shape[0]
-    #     ), "Passed X and y data must be the same length!"
-
-    # make space for randomization. Keep things fixed for now.
-    random.seed(42)
-    rng = random.randint(0, 10)
-    Cs: np.ndarray = np.logspace(-5, 5, 20)
 
     # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
     pre_clf = LogisticRegressionCV(
-        Cs=Cs,
         l1_ratios=[0.8],
         solver="saga",
         penalty="elasticnet",
-        n_jobs=3,
+        n_jobs=10,
         cv=skf,
         max_iter=100000,
         scoring="balanced_accuracy",
-        random_state=rng,
-    ).fit(X_train, y_train)
-
-    # coef = pre_clf.coef_[0]
-    # cv_scores = np.mean(list(pre_clf.scores_.values())[0], axis=0)
+    ).fit(X_data, y_data)
 
     clf = LogisticRegression(
         C=pre_clf.C_[0],
@@ -109,66 +75,10 @@ def perform_PC_LR(
     ).fit(X_data, y_data)
 
     nested_score = cross_val_score(
-        clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy"
+        clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
     ).mean()
 
-    return (nested_score, clf)
-
-
-def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
-    assert (
-        X_train.shape[0] == y_train.shape[0]
-    ), "Passed X and y data must be the same length!"
-
-    lreg = LinearRegression()
-
-    param_grid = {"positive": [True]}
-    tuning = GridSearchCV(estimator=lreg, param_grid=param_grid, cv=kf).fit(
-        X_train.to_numpy(dtype=float), y_train.to_numpy(dtype=float)
-    )
-    tuned_model = tuning.best_estimator_
-
-    nested_score = cross_val_score(
-        tuned_model,
-        X_train.to_numpy(dtype=float),
-        y_train.to_numpy(dtype=float),
-        cv=kf,
-    ).mean()
-
-    return nested_score, tuned_model
-
-
-def perform_elastic_regression(X_df: pd.DataFrame, y_df: pd.DataFrame):
-    assert (
-        X_df.shape[0] == y_df.shape[0]
-    ), "Passed X and y data must be the same length!"
-
-    X_train = X_df.to_numpy(dtype=float)
-    y_train = y_df.to_numpy(dtype=float)
-
-    tuned_eNet = ElasticNetCV(
-        l1_ratio=np.arange(0.1, 1, 0.1),
-        n_alphas=1000,
-        alphas=[0.01, 0.1, 1, 10, 100],
-        max_iter=100000,
-        cv=kf,
-        n_jobs=3,
-        selection="random",
-    ).fit(X_train, y_train)
-
-    eNet = ElasticNet(
-        alpha=tuned_eNet.alpha_,
-        l1_ratio=tuned_eNet.l1_ratio_,
-        max_iter=100000,
-        selection="random",
-    ).fit(X_train, y_train)
-
-    # nested cross val
-    nested_score = cross_val_score(
-        eNet, X_train, y_train, cv=kf, n_jobs=3, scoring="r2"
-    ).mean()
-
-    return nested_score, eNet
+    return nested_score
 
 
 def perform_PLSR(
@@ -229,13 +139,12 @@ def caluclate_R2Y_Q2Y(model: PLSRegression, X_data: pd.DataFrame, y_data: pd.Dat
     R2Y = model.score(X_data, y_data)
 
     # calculate Q2Y using kFold cross-validation
-    leave = KFold(n_splits=10)
     y_pred = y_data.copy()
-    y_press = 0
-    y_tss = 0
+    y_press = 0.0
+    y_tss = 0.0
 
     # calculate Q2Y using sklearn's cross_val_predict
-    y_pred = cross_val_predict(model, X_data, y_data, cv=leave)
+    y_pred = cross_val_predict(model, X_data, y_data, cv=KFold(n_splits=10), n_jobs=10)
     y_press = np.average((y_data - y_pred) ** 2)
     y_tss = np.average((y_data - y_data.mean()) ** 2)
 

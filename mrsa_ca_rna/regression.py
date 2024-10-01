@@ -12,6 +12,7 @@ To-do:
 
 from sklearn.model_selection import (
     StratifiedKFold,
+    KFold,
     cross_val_score,
     cross_val_predict,
 )
@@ -142,7 +143,7 @@ def caluclate_R2Y_Q2Y(model: PLSRegression, X_data: pd.DataFrame, y_data: pd.Dat
     y_tss = 0.0
 
     # calculate Q2Y using sklearn's cross_val_predict
-    y_pred = cross_val_predict(model, X_data, y_data, cv=skf, n_jobs=10)
+    y_pred = cross_val_predict(model, X_data, y_data, cv=KFold(n_splits=10), n_jobs=10)
     y_press = np.average((y_data - y_pred) ** 2)
     y_tss = np.average((y_data - y_data.mean()) ** 2)
 

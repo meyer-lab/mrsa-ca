@@ -17,6 +17,7 @@ import matplotlib.figure
 import seaborn as sns
 import matplotlib
 from matplotlib import gridspec, pyplot as plt
+from typing import Literal
 
 # C++ anti-grain geometry backend
 matplotlib.use("AGG")

@@ -26,6 +26,7 @@ from sklearn.linear_model import (
     LinearRegression,
 )
 from sklearn.cross_decomposition import PLSRegression
+from typing import Sequence
 
 import pandas as pd
 import numpy as np
@@ -81,7 +82,7 @@ def perform_PC_LR(
     # make space for randomization. Keep things fixed for now.
     random.seed(42)
     rng = random.randint(0, 10)
-    Cs = np.logspace(-5, 5, 20)
+    Cs: np.ndarray = np.logspace(-5, 5, 20)
 
     # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
     pre_clf = LogisticRegressionCV(
@@ -137,13 +138,13 @@ def perform_linear_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
     return nested_score, tuned_model
 
 
-def perform_elastic_regression(X_train: pd.DataFrame, y_train: pd.DataFrame):
+def perform_elastic_regression(X_df: pd.DataFrame, y_df: pd.DataFrame):
     assert (
-        X_train.shape[0] == y_train.shape[0]
+        X_df.shape[0] == y_df.shape[0]
     ), "Passed X and y data must be the same length!"
 
-    X_train = X_train.to_numpy(dtype=float)
-    y_train = y_train.to_numpy(dtype=float)
+    X_train = X_df.to_numpy(dtype=float)
+    y_train = y_df.to_numpy(dtype=float)
 
     tuned_eNet = ElasticNetCV(
         l1_ratio=np.arange(0.1, 1, 0.1),

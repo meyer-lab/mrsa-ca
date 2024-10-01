@@ -26,6 +26,7 @@ import pandas as pd
 import numpy as np
 import anndata as ad
 from sklearn.preprocessing import StandardScaler
+from typing import cast
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -107,11 +108,12 @@ def import_mrsa_rna():
     mrsa_meta = import_mrsa_meta()
     mrsa_val_meta = import_mrsa_val_meta()
 
-    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str))
+    # add the metadata to the rna data. value columns should be converted to list-like
+    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str).to_numpy())
     mrsa_rna.insert(0, column="disease", value="MRSA")
     mrsa_rna.insert(0, column="time", value="NA")
-    mrsa_rna.insert(0, column="age", value=mrsa_meta["age"])
-    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"])
+    mrsa_rna.insert(0, column="age", value=mrsa_meta["age"].astype(str).to_numpy())
+    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"].astype(str).to_numpy())
     mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
         "status"
     ].astype(str)
@@ -381,7 +383,10 @@ def import_breast_cancer(tpm: bool = True):
     if tpm:
         desired_value = 1000000
 
-        X = breast_cancer_ad.X
+        # I know breast_cancer_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, breast_cancer_ad.X)
+        
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums
@@ -428,7 +433,9 @@ def import_healthy(tpm: bool = True):
     if tpm:
         desired_value = 1000000
 
-        X = healthy_ad.X
+        # I know healthy_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, healthy_ad.X)
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums
@@ -460,11 +467,15 @@ def ca_data_split():
     ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
     ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
 
+    gene_labels = list(ca_rna.columns)
+    meta_labels = ["subject_id", "gender", "age", "time", "disease", "status"]
+
     # make dataframes of the time, non-time, and healthy data
+    # easily keep only shared samples by using the join="inner" argument
     ca_rna_timed = pd.concat(
         [
             ca_meta_c_t.loc[
-                :, ["subject_id", "gender", "age", "time", "disease", "status"]
+                :, meta_labels
             ],
             ca_rna,
         ],
@@ -476,7 +487,7 @@ def ca_data_split():
     ca_rna_nontimed = pd.concat(
         [
             ca_meta_c_nt.loc[
-                :, ["subject_id", "gender", "age", "time", "disease", "status"]
+                :, meta_labels
             ],
             ca_rna,
         ],
@@ -489,7 +500,7 @@ def ca_data_split():
         [
             ca_meta_h.loc[
                 :,
-                ["subject_id", "gender", "age", "time", "disease", "status"],
+                meta_labels
             ],
             ca_rna,
         ],
@@ -498,10 +509,20 @@ def ca_data_split():
         keys=["meta", "rna"],
     )
 
-    # put the time and non-timed data into anndata objects using metadata as obs and rna as var
-    ca_rna_timed_ad = ad.AnnData(ca_rna_timed["rna"], obs=ca_rna_timed["meta"])
-    ca_rna_nontimed_ad = ad.AnnData(ca_rna_nontimed["rna"], obs=ca_rna_nontimed["meta"])
-    healthy_rna_ad = ad.AnnData(healthy_rna["rna"], obs=healthy_rna["meta"])
+    # put the time and non-timed data into anndata objects
+    # use the lables with loc to allow pyright to know they are dataframes
+    ca_rna_timed_ad = ad.AnnData(
+        ca_rna_timed.loc[:, ("rna", gene_labels)],
+        obs=ca_rna_timed.loc[:, ("meta", meta_labels)]
+        )
+    ca_rna_nontimed_ad = ad.AnnData(
+        ca_rna_nontimed.loc[:, ("rna", gene_labels)],
+        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)]
+        )
+    healthy_rna_ad = ad.AnnData(
+        healthy_rna.loc[:, ("rna", gene_labels)],
+        obs=healthy_rna.loc[:, ("meta", meta_labels)]
+        )
 
     ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
 
@@ -509,7 +530,9 @@ def ca_data_split():
     desired_value = 1000000
 
     for ca_ad in ca_list:
-        X = ca_ad.X
+        # I know ca_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, ca_ad.X)
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums
@@ -556,8 +579,9 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
     # re-TPM the RNA data by default by normalizing each row to 1,000,000
     if tpm:
         desired_value = 1000000
-
-        X = rna_ad.X
+        # I know rna_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, rna_ad.X)
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums
@@ -598,8 +622,9 @@ def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool =
 
     if tpm:
         desired_value = 1000000
-
-        X = whole_ad.X
+        # I know whole_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, whole_ad.X)
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums

@@ -7,43 +7,46 @@ To-do:
 
 """
 
+from typing import List
+import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-import pandas as pd
-
-
-def perform_PCA(data: pd.DataFrame):
+def perform_pca(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
     """
-    Scale and perform principle component analysis on either provided
-    data or on the default dataset returned by concat_dataset().
+    Perform PCA on the given data.
 
-    Parameters:
-        data (pd.DataFrame): the data to perform PCA on
+    Args:
+        data (pd.DataFrame): The input data for PCA.
 
     Returns:
-        scores (pd.DataFrame): the scores matrix of the data as a result of PCA
-        loadings (pd.DataFrame): the loadings matrix of the data as a result of PCA
-        pca (object): the PCA object for further use in the code.
+        scores (pd.DataFrame): The scores matrix of the data as a result of PCA.
+        loadings (pd.DataFrame): The loadings matrix of the data as a result of PCA.
+        pca (PCA): The PCA object for further use in the code.
     """
-
-    components = 70
+    components: int = 70
     pca = PCA(n_components=components)
     scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 
     scaled_rna = scaler.fit_transform(data)
     rna_decomp = pca.fit_transform(scaled_rna)
 
-    column_labels = []
-    for i in range(1, components + 1):
-        column_labels.append("PC" + str(i))
+    # Create column labels for the scores DataFrame
+    column_labels: List[str] = [f"PC{i}" for i in range(1, components + 1)]
 
-    scores = pd.DataFrame(rna_decomp, index=data.index, columns=column_labels)
+    # Explicitly cast column_labels to pd.Index for pyright
+    column_labels_index = pd.Index(column_labels)
 
-    rows = []
-    for i in range(pca.n_components_):
-        rows.append("PC" + str(i + 1))
+    # Create the scores DataFrame
+    scores = pd.DataFrame(rna_decomp, index=data.index, columns=column_labels_index)
 
-    loadings = pd.DataFrame(pca.components_, index=rows, columns=data.columns)
+    # Create row labels for the loadings DataFrame
+    rows_labels: List[str] = [f"PC{i + 1}" for i in range(pca.n_components_)]
+
+    # Explicitly cast rows_labels to pd.Index for pyright
+    rows_labels_index = pd.Index(rows_labels)
+    
+    # Create the loadings DataFrame
+    loadings = pd.DataFrame(pca.components_, index=rows_labels_index, columns=data.columns)
 
     return scores, loadings, pca

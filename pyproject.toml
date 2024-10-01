@@ -4,8 +4,9 @@ version = "0.1.0"
 description = ""
 authors = [{name = "James Popoli"}, {name = "Aaron Meyer", email = "git@asmlab.org"}]
 readme = "README.md"
+requires-python = ">=3.11"
 
-[tool.poetry.dependencies]
+dependencies = [
 python = "^3.12"
 scikit-learn = "^1.5.0"
 matplotlib = "^3.9.0"
@@ -16,19 +17,9 @@ svgutils = "^0.3.4"
 anndata = "^0.10.8"
 tensorly = { git = "https://github.com/tensorly/tensorly.git", rev = "041cd699d08ae846acbc4e921e0f490e39269760" }
 xarray = "^2024.7.0"
-cupy-cuda12x = "^13.3.0"
+cupy-cuda12x = "^13.3.0"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-cov = "^4.1"
-mypy = "^1.9"
-ruff = "^0.5"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]                                                           
+[project.scripts]                                                        
 fbuild = "mrsa_ca_rna.figures.base:genFigure"
 
 [build-system]

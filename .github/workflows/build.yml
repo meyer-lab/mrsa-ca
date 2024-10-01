@@ -10,7 +10,7 @@ jobs:
     - name: Install dependencies
       run: poetry install
     - name: Build figures
-      run: make all
+      run: make all -j 2
     - name: Upload files
       uses: actions/upload-artifact@v4
       with:

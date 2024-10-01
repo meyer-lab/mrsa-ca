@@ -53,8 +53,8 @@ def figure08a_setup():
     }
     for list, data in zip(accuracies, datasets):
         for i in range(components):
-            nested_accuracy, _ = perform_PC_LR(
-                X_train=datasets[data].iloc[:, : i + 1], y_train=mrsa_y
+            nested_accuracy = perform_PC_LR(
+                X_data=datasets[data].iloc[:, : i + 1], y_data=mrsa_y
             )
             accuracies[list].append(nested_accuracy)
 

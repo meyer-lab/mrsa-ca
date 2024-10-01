@@ -37,16 +37,12 @@ def figure_03_setup(components: int = 60):
 
     for dataset in datasets:
         # print(f"Performing PCA on {dataset} dataset.")
-        scores_df, loadings_df, pca = perform_PCA(datasets[dataset])
+        scores_df, _, pca = perform_PCA(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
             scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]
 
         if dataset == "CA":
-            ## transform the MRSA data using CA's loadings
-            # multed = np.matmul(whole_data.loc["MRSA", "rna"].to_numpy(), loadings_df.T.to_numpy())
-            # scores_df = pd.DataFrame(multed, index=whole_data.loc["MRSA"].index, columns=scores_df.columns)
-
             # use sklearn PCA object's transform method to project CA data onto it
             mrsa_df.loc[:, :] = scale(mrsa_df.to_numpy())
             transformed_MRSA = pca.transform(mrsa_df)
@@ -55,19 +51,9 @@ def figure_03_setup(components: int = 60):
             )
 
         # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
-        performance = []
-        for i in range(components):
-            # print(f"Regressing {dataset} dataset on MRSA outcomes w/ {i+1} components")
-
-            # slice our X_data to our current components and set y_data to be MRSA status from whole data
-            X_data = scores_df.iloc[:, : i + 1]
-
-            # perform the logistic regression and store the nested CV performance
-            nested_performance, _ = perform_PC_LR(
-                X_data,
-                y_data,
-            )
-            performance.append(nested_performance)
+        performance = [
+            perform_PC_LR(scores_df.iloc[:, : i + 1], y_data) for i in range(components)
+        ]
 
         performance_df = pd.DataFrame(
             {

@@ -114,6 +114,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
     )
 
     tl.set_backend("numpy")
+    rec_errors = cp.asnumpy(cp.array(rec_errors))
 
     return (
         cp.asnumpy(weights),

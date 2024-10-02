@@ -15,7 +15,7 @@ import numpy as np
 import seaborn as sns
 from sklearn.preprocessing import scale
 
-from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
@@ -37,7 +37,7 @@ def figure_03_setup(components: int = 60):
 
     for dataset in datasets:
         # print(f"Performing PCA on {dataset} dataset.")
-        scores_df, _, pca = perform_PCA(datasets[dataset])
+        scores_df, _, pca = perform_pca(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
             scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]

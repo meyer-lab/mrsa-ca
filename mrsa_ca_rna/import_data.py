@@ -106,6 +106,10 @@ def import_mrsa_rna():
     )
 
     mrsa_meta = import_mrsa_meta()
+
+    # trim the metadata to just those shared with the rna data
+    mrsa_meta = mrsa_meta.loc[mrsa_rna.index, :]
+
     mrsa_val_meta = import_mrsa_val_meta()
 
     # add the metadata to the rna data. value columns should be converted to list-like
@@ -511,17 +515,18 @@ def ca_data_split():
 
     # put the time and non-timed data into anndata objects
     # use the lables with loc to allow pyright to know they are dataframes
+    # because we have to send dataframes, we have to drop the top level for anndata
     ca_rna_timed_ad = ad.AnnData(
-        ca_rna_timed.loc[:, ("rna", gene_labels)],
-        obs=ca_rna_timed.loc[:, ("meta", meta_labels)]
+        ca_rna_timed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=ca_rna_timed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
         )
     ca_rna_nontimed_ad = ad.AnnData(
-        ca_rna_nontimed.loc[:, ("rna", gene_labels)],
-        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)]
+        ca_rna_nontimed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
         )
     healthy_rna_ad = ad.AnnData(
-        healthy_rna.loc[:, ("rna", gene_labels)],
-        obs=healthy_rna.loc[:, ("meta", meta_labels)]
+        healthy_rna.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=healthy_rna.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
         )
 
     ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
@@ -546,7 +551,7 @@ def ca_data_split():
         ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
 
     return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
-
+ca_data_split()
 
 def concat_datasets(scale: bool = True, tpm: bool = True):
     """

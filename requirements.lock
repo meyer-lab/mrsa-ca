@@ -12,9 +12,11 @@ array-api-compat==1.8
 asttokens==2.4.1
 comm==0.2.2
 contourpy==1.3.0
+cupy-cuda12x==13.3.0
 cycler==0.12.1
 decorator==5.1.1
 executing==2.1.0
+fastrlock==0.8.2
 fonttools==4.54.1
 h5py==3.12.0
 ipympl==0.9.4
@@ -48,7 +50,7 @@ seaborn==0.13.2
 six==1.16.0
 stack-data==0.6.3
 svgutils==0.3.4
-tensorly==0.8.1
+tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760
 threadpoolctl==3.5.0
 traitlets==5.14.3
 typing-extensions==4.12.2

@@ -42,6 +42,7 @@ def genFig():
     disease_factors, r2x, disease_data = figure12_setup()
 
     disease_ranks = range(1, 21)
+    disease_ranks_labels = [str(x) for x in disease_ranks]
     # x axis label: rank
     x_ax_label = "Rank"
     # y axis labels: disease, eigen, genes
@@ -49,8 +50,8 @@ def genFig():
 
     # push disease_factors[2] to a pandas and pick out the top 20 most correlated/anti-correlated, then trim the data
     genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-    top_genes = genes_df.abs().mean(axis=1).nlargest(200).index
-    # bottom_genes = genes_df.abs().mean(axis=1).nsmallest(10).index
+    mean_genes = pd.Series(genes_df.abs().mean(axis=1))
+    top_genes = mean_genes.nlargest(200).index
     genes_df = genes_df.loc[top_genes]
 
     # put the new genes_df back into the disease_factors[2]
@@ -59,7 +60,7 @@ def genFig():
     # tick labels: disease, rank, genes
     disease_labels = [
         disease_data.obs["disease"].unique(),
-        disease_ranks,
+        disease_ranks_labels,
         False,
     ]
 
@@ -69,7 +70,7 @@ def genFig():
             factor,
             ax=ax[i],
             cmap="viridis",
-            xticklabels=disease_ranks,
+            xticklabels=disease_ranks_labels,
             yticklabels=disease_labels[i],
         )
         a.set_title(f"Disease Factor Matrix {i+1}\nR2X: {r2x:.2f}")

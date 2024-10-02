@@ -7,7 +7,6 @@ To-do:
 
 """
 
-from typing import List
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -32,8 +31,9 @@ def perform_pca(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
     rna_decomp = pca.fit_transform(scaled_rna)
 
     pc_labels = [f"PC{i}" for i in range(1, components + 1)]
+    pc_labels_index = pd.Index(pc_labels)
 
-    scores = pd.DataFrame(rna_decomp, index=data.index, columns=pc_labels)
-    loadings = pd.DataFrame(pca.components_, index=pc_labels, columns=data.columns)
+    scores = pd.DataFrame(rna_decomp, index=data.index, columns=pc_labels_index)
+    loadings = pd.DataFrame(pca.components_, index=pc_labels_index, columns=data.columns)
 
     return scores, loadings, pca

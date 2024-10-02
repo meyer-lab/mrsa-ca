@@ -56,7 +56,7 @@ matplotlib.rcParams["ytick.major.pad"] = 1.0
 matplotlib.rcParams["ytick.minor.pad"] = 0.9
 
 
-def setupBase(figsize, gridd, style="whitegrid"):
+def setupBase(figsize, gridd):
     """
     Sets up base figure for plotting subplots
 
@@ -71,7 +71,7 @@ def setupBase(figsize, gridd, style="whitegrid"):
         gs (gridspec.GridSpec): gridded subplots present on figure
     """
     sns.set_theme(
-        style=style,
+        style="whitegrid",
         font_scale=0.7,
         color_codes=True,
         palette="viridis",

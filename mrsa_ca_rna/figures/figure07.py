@@ -43,7 +43,7 @@ def figure07_setup():
     # set up R2Y and Q2Y DataFrame to easily pass to the plotting in genFig()
     component_col = np.arange(1, components + 1)
     matrix = np.array([component_col.astype(int), R2Ys, Q2Ys]).T
-    data = pd.DataFrame(matrix, columns=["components", "R2Y", "Q2Y"])
+    data = pd.DataFrame(matrix, columns=pd.Index(["components", "R2Y", "Q2Y"]))
 
     return data
 

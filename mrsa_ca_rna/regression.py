@@ -73,7 +73,6 @@ def perform_PC_LR(
         solver="saga",
         penalty="elasticnet",
         max_iter=100000,
-        random_state=rng,
     ).fit(X_data, y_data)
 
     nested_score = cross_val_score(

@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 
-from mrsa_ca_rna.pca import perform_PCA
+from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets, gene_converter
@@ -35,7 +35,7 @@ def figure03a_setup():
     mrsa_data.X = StandardScaler().fit_transform(mrsa_data.X)
 
     # perform PCA on CA data. Scaling is done in PCA function
-    _, ca_loadings, ca_pca = perform_PCA(ca_data.to_df())
+    _, ca_loadings, ca_pca = perform_pca(ca_data.to_df())
 
     # transform MRSA data using CA's PCA model
     mrsa_xform = ca_pca.transform(mrsa_data.to_df())

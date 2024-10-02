@@ -15,7 +15,7 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 def gene_converter(
     data, old_id: str, new_id: str, method: str = "values"
-) -> pd.DataFrame:
+) -> pd.DataFrame | ad.AnnData:
     """Converts gene ids from one type to another in a dataframe
 
     Parameters:
@@ -27,9 +27,10 @@ def gene_converter(
         dataframe (pd.DataFrame) or adata (ad.AnnData): data with gene ids converted"""
 
     human_annot = import_human_annot()
-    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id]))
+    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id], strict=False))
 
-    # first check if the data is a pd.DataFrame, then convert the gene ids based on the method
+    # first check if the data is a pd.DataFrame, 
+    # then convert the gene ids based on the method
     if isinstance(data, pd.DataFrame):
         dataframe:pd.DataFrame = data.copy()
         if method == "values":

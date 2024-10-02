@@ -62,7 +62,8 @@ def genFig():
 
     a = sns.barplot(melt, x="components", y="Score", hue="Metric", ax=ax[0])
     a.set_title(
-        "Performance of PLSR with MRSA (X) data Regressed against CA (Y) data\n10-folds, new formula"
+        "Performance of PLSR with MRSA (X) data Regressed against CA (Y) data\n"
+        "10-folds, new formula"
     )
     a.set_xlabel("# Components used in model")
     a.set_ylabel("Scores")

@@ -50,7 +50,8 @@ def figure_03_setup(components: int = 60):
                 transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns
             )
 
-        # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
+        # keep track of the nested CV performance (balanced accuracy) of the model.
+        # Reset for each dataset
         performance = [
             perform_PC_LR(scores_df.iloc[:, : i + 1], y_data) for i in range(components)
         ]
@@ -82,7 +83,8 @@ def genFig():
         a.set_xlabel("# of components")
         a.set_ylabel("Balanced Accuracy")
         a.set_title(
-            f"Nested-CV Score of Logistic Regression\nPCA ({data}), 'saga' solver, 'elasticnet' penalty"
+            f"Nested-CV Score of Logistic Regression\n"
+            f"PCA ({data}), 'saga' solver, 'elasticnet' penalty"
         )
 
     return f

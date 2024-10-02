@@ -28,7 +28,8 @@ def figure11_setup():
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()
 
-    # split and organize into xarray datasets along corresponding expansion dimensions (disease->disease, time->subject_id)
+    # split and organize into xarray datasets along corresponding expansion dimensions
+    # (disease->disease, time->subject_id)
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 

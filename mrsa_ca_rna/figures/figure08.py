@@ -41,12 +41,6 @@ def figure08_setup():
         whole_data.obs["disease"] == "MRSA", ["gender", "age", "status"]
     ]
 
-    # # start by plotting mrsa (x) loadings with status metadata to find components associated with outcome
-    # mrsa_loadings :pd.DataFrame = pd.concat([mrsa_whole["meta"]["status"], loadings["X"]], axis=1)
-
-    # # order mrsa_laodings dataframe by status to better visualize the components
-    # mrsa_loadings = mrsa_loadings.sort_values(by="status")
-
     return mrsa_loadings, mrsa_meta
 
 
@@ -60,8 +54,8 @@ def genFig():
     meta.loc[:, :] = meta.to_numpy(dtype=float)
 
     """For age coloring, we need to first sort the metadata by age so that our colormap
-    is continuous in increasing age. Then we colormap all of our metadata before sorting again
-    for plotting"""
+    is continuous in increasing age. Then we colormap all of our metadata before
+    sorting again for plotting"""
 
     # sort metadata by age for continuous colormap
     meta = meta.sort_values(by="age")
@@ -74,7 +68,8 @@ def genFig():
     subset = np.linspace(0, 1, unique_age_values.size)
     new_cmap = original_cmap(subset)
 
-    # grab two paired subsets of "Paired" colormap to color the status and gender metadata
+    # grab two paired subsets of "Paired" colormap
+    #  to color the status and gender metadata
     paired_cmap = plt.get_cmap("Paired")
 
     # create 3 color maps for age, gender, and status metadata
@@ -86,7 +81,8 @@ def genFig():
     )
     age_colors = dict(zip(unique_age_values, new_cmap, strict=False))
 
-    """Now that the colors are mapped, we can sort the data and metadata before plotting"""
+    """Now that the colors are mapped, we can sort the data
+    and metadata before plotting"""
     # sort the meta data by status before plotting
     meta = meta.sort_values(by=["status", "age"])
 

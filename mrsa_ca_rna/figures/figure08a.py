@@ -33,7 +33,8 @@ def figure08a_setup():
     components = 10
     scores, loadings, pls = perform_PLSR(X_data, Y_data, components)
 
-    # make a transformed mrsa_X using CA PLSR scores, then scale since scores are not unit variance
+    # make a transformed mrsa_X using CA PLSR scores,
+    # then scale since scores are not unit variance
     mrsa_Xform = mrsa_X.values @ scores["Y"].values
     mrsa_Xform = pd.DataFrame(
         mrsa_Xform, index=mrsa_X.index, columns=range(1, components + 1)
@@ -42,10 +43,8 @@ def figure08a_setup():
 
     datasets = {"MRSA": loadings["X"], "Xform": mrsa_Xform}
 
-    # # weight the MRSA data by the CA patients.
-    # datasets["Xform"] = pd.DataFrame(mrsa_X.values @ scores["Y"].values, index=datasets["MRSA"].index, columns=range(1, components+1))
-
-    # perform logistic regression on mrsa_loadings data, with increasing components against MRSA outcomes
+    # perform logistic regression on mrsa_loadings data,
+    # with increasing components against MRSA outcomes
     accuracies: dict = {
         "MRSA (X)": [],
         "Xform from MRSA (X) transformed by CA (Y) scores": [],
@@ -72,7 +71,8 @@ def genFig():
         )
 
         a.set_title(
-            f"Predicting MRSA Outcomes\nusing {data} PLSR components\nPLSR performed with: MRSA(X) CA(Y)"
+            f"Predicting MRSA Outcomes\nusing {data} PLSR components\n"
+            "PLSR performed with: MRSA(X) CA(Y)"
         )
         a.set_xlabel(f"Components of {data} PLSR")
         a.set_ylabel("Balanced Accuracy")

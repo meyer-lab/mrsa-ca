@@ -57,9 +57,10 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
 
 def perform_parafac2(data: xr.Dataset, rank: int = 10):
     """
-    Perform the parafac2 tensor factorization on passed xarray dataset data, with a specified rank.
-    The data should be in the form of a dataset with DataArrays for each expansion label, chosen
-    during data preparation in the prepare_data method.
+    Perform the parafac2 tensor factorization on passed xarray dataset data,
+    with a specified rank. The data should be in the form of a dataset with
+    DataArrays for each expansion label, chosen during data preparation
+    in the prepare_data method.
 
     Parameters:
         data (xarray.Dataset): The xarray dataset of the rna data
@@ -68,9 +69,11 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
     Returns:
         tuple of:
         weights (np.ndarray): The weights of the factorization
-        factors (list): The list of factor matrices, ordered by slices, rows, and columns w.r.t. rank (R)
-                        The unaligned dimension is replaced with eigenvalues (lambda) of the factorization
-                        ex. rows unaligned: (slices*rows*columns) => (slices*R), (lambda*R), (columns*R)
+        factors (list): The list of factor matrices, ordered by slices, rows,
+                        and columns w.r.t. rank (R). The unaligned dimension is
+                        replaced with eigenvalues (lambda) of the factorization
+                        ex. rows unaligned: (slices*rows*columns) =>
+                            (slices*R), (lambda*R), (columns*R)
         projections (list): The list of projection matrices
 
         rec_errors (list): The list of reconstruction errors at each iteration

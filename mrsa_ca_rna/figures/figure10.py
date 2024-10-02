@@ -40,7 +40,8 @@ def genFig():
     # y axis labels: subject_id, eigen, genes
     t_ax_labels = ["Subject ID", "Eigen-states", "Genes"]
 
-    # push time_factors[2] to a pandas and pick out the top 10 and bottom 10 genes, then trim the data
+    # push time_factors[2] to a pandas and pick out the top 10 and bottom 10 genes,
+    # then trim the data
     genes_df = pd.DataFrame(time_factors[2], index=time_data.var.index)
     mean_genes = pd.Series(genes_df.abs().mean(axis=1))
     top_genes = mean_genes.nlargest(20).index

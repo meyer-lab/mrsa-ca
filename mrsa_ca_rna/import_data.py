@@ -1,24 +1,6 @@
 """
-Import data from the mrsa_ca_rna project for analysis. Each dataset is imported along with its metadata.
-
-To-do:
-
-    Redo all imports and concat_datasets to use the AnnData object instead of the pandas DataFrame.
-        Handle each dataset in its own import function and return an AnnData object.
-        Agnostically concatenate the AnnData objects together in a separate function.
-
-    Make a gene exclusion function that trims out genes that are over expressed or not indicative of the disease.
-        Genes related to RBCs seem to be overexpressed and indicative of RBC contamination (according to breast cancer paper).
-            I did see HBA1 and HBA2 expressed in the CA time data.
-
-
-    Get more data from healthy patients to include in this analysis to
-        increase the power of the PCA analysis for finding real, not batch,
-        differences in the data.
-        Maybe use: https://www.sciencedirect.com/science/article/pii/S2666379122004062 for
-        dataset suggestions and perhaps thier methods for identifying viral vs. non-vrial
-        infection.
-
+Import data from the mrsa_ca_rna project for analysis.
+Each dataset is imported along with its metadata.
 """
 
 from os.path import abspath, dirname, join
@@ -132,7 +114,8 @@ def import_mrsa_rna():
     mrsa_rna.index.name = None
     mrsa_rna.index = mrsa_rna.index.astype("str")  # anndata requires string index
 
-    # send the mrsa_rna pd.DataFrame to an Anndata object with ENSG as var names and all other columns as obs
+    # send the mrsa_rna pd.DataFrame to an Anndata object with
+    # ENSG as var names and all other columns as obs
     mrsa_ad = ad.AnnData(
         mrsa_rna.loc[:, mrsa_rna.columns.str.contains("ENSG")],
         obs=mrsa_rna.loc[:, ~mrsa_rna.columns.str.contains("ENSG")],
@@ -143,10 +126,12 @@ def import_mrsa_rna():
 
 def import_ca_disc_meta():
     """
-    reads ca metadata from ca_discovery_meta_GSE176260.txt and trims to Candida phenotype
+    reads ca metadata from ca_discovery_meta_GSE176260.txt
+    and trims to Candida phenotype
 
     Returns:
-        ca_meta (pandas.DataFrame): candidemia patient metadata containing only candidemia and healthy phenotypes
+        ca_meta (pandas.DataFrame): candidemia patient metadata containing
+                                    only candidemia and healthy phenotypes
     """
     ca_disc_meta_full = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "ca_discovery_meta_GSE176260.txt"),
@@ -232,7 +217,8 @@ def import_ca_disc_rna():
     ]  # drop all unmapped (nan) genes
     ca_disc_rna = ca_disc_rna.groupby(
         ca_disc_rna.index
-    ).last()  # drop all but the last duplicate row indices (non-uniquely mapped EnsemblGeneIDs)
+    ).last()  # drop all but the last duplicate row indices
+    # (non-uniquely mapped EnsemblGeneIDs)
     ca_disc_rna.index.name = None
 
     ca_disc_rna = ca_disc_rna.T  # index by sample instead of by gene
@@ -320,7 +306,8 @@ def import_ca_val_rna():
     ]  # drop all unmapped (nan) genes
     ca_val_rna = ca_val_rna.groupby(
         ca_val_rna.index
-    ).last()  # drop all but the last duplicate row indices (non-uniquely mapped EnsemblGeneIDs)
+    ).last()  # drop all but the last duplicate row indices
+    # (non-uniquely mapped EnsemblGeneIDs)
     ca_val_rna.index.name = None
 
     ca_val_rna = ca_val_rna.T  # index by sample instead of by gene
@@ -338,7 +325,8 @@ def import_breast_cancer_meta():
 
     breast_cancer_meta = breast_cancer_meta.loc[:, ["ER", "PR", "HER2", "Recur"]]
 
-    # pandas currently performs a silent casting during replace, altering the column types
+    # pandas currently performs a silent casting during replace,
+    # altering the column types
     # in the future, this will no longer occur, but it currently throws a warning
     # to opt-in to the future behavior, we use the following context manager
     with pd.option_context("future.no_silent_downcasting", True):
@@ -379,7 +367,8 @@ def import_breast_cancer(tpm: bool = True):
     # re-map the gene symbol to EnsemblGeneID
     breast_cancer = breast_cancer.rename(gene_conversion, axis=0)
 
-    # drop all unmapped (NaN and non-ENSG) genes and drop all but the last duplicate row indices
+    # drop all unmapped (NaN and non-ENSG) genes and
+    # drop all but the last duplicate row indices
     breast_cancer = breast_cancer.loc[
         breast_cancer.index.str.contains("ENSG", na=False), :
     ]
@@ -433,8 +422,10 @@ def import_healthy(tpm: bool = True):
     # swap genes to columns and samples to rows
     healthy = healthy.T
 
-    # make a metadata dataframe for the healthy data containing subject_id made from the index and disease as "Healthy"
+    # make a metadata dataframe for the healthy data containing subject_id
+    #  made from the index and disease as "Healthy"
     healthy_meta = pd.DataFrame(index=healthy.index)
+
     healthy_meta["subject_id"] = healthy_meta.index
     healthy_meta["disease"] = "Healthy"
 
@@ -474,7 +465,8 @@ def ca_data_split():
     ca_meta_c = ca_meta.loc[ca_meta["disease"] == "Candidemia", :]
     ca_meta_h = ca_meta.loc[ca_meta["disease"] == "Healthy", :]
 
-    # extract the time data by looking for duplicate subject_id. Duplicates = time points
+    # extract the time data by looking for duplicate subject_id.
+    # Duplicates = time points
     ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
     ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
 
@@ -558,7 +550,8 @@ ca_data_split()
 
 def concat_datasets(scale: bool = True, tpm: bool = True):
     """
-    Concatenate the MRSA and CA data along the patient axis and return an annotated AnnData object.
+    Concatenate the MRSA and CA data along the patient axis and
+    return an annotated AnnData object.
 
     Parameters:
         scale (bool): whether to z-score the data along features (genes)
@@ -571,7 +564,8 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
     # start a list of rna datasets to be concatenated at the end of this function
     rna_list = list()
 
-    """import mrsa data and set up mrsa_rna df with all required annotations. Includes 'validation' dataset"""
+    """import mrsa data and set up mrsa_rna df with all required annotations. 
+    Includes 'validation' dataset"""
 
     mrsa_ad = import_mrsa_rna()
     rna_list.append(mrsa_ad)
@@ -581,7 +575,8 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
     rna_list.append(ca_nontimed)
     rna_list.append(ca_healthy)
 
-    # concat all anndata objects together keeping only the vars in common and expanding the obs to include all
+    # concat all anndata objects together keeping only the vars in common
+    #  and expanding the obs to include all
     rna_ad = ad.concat(rna_list, axis=0, join="inner")
 
     # re-TPM the RNA data by default by normalizing each row to 1,000,000
@@ -607,7 +602,8 @@ def concat_datasets(scale: bool = True, tpm: bool = True):
 def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool = True):
     """
     Concatenate any group of AnnData objects together along the genes axis.
-    Truncates to shared genes and expands obs to include all observations, fillig in missing values with NaN.
+    Truncates to shared genes and expands obs to include all observations,
+    fillig in missing values with NaN.
 
     Parameters:
         ad_list (list or list-like): list of AnnData objects to concatenate
@@ -624,7 +620,8 @@ def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool =
     # concat all anndata objects together keeping only the vars and obs in common
     whole_ad = ad.concat(ad_list, join="inner")
 
-    # if shrink is False, replace the resulting obs with a pd.concat of all obs data in obs_list
+    # if shrink is False,
+    # replace the resulting obs with a pd.concat of all obs data in obs_list
     if not shrink:
         whole_ad.obs = pd.concat(obs_list, axis=0, join="outer")
 

@@ -48,7 +48,8 @@ def genFig():
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
-    # push disease_factors[2] to a pandas and pick out the top 20 most correlated/anti-correlated, then trim the data
+    # push disease_factors[2] to a pandas and pick out the top 20 most
+    # correlated/anti-correlated, then trim the data
     genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
     mean_genes = pd.Series(genes_df.abs().mean(axis=1))
     top_genes = mean_genes.nlargest(200).index

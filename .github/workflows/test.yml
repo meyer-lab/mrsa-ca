@@ -20,9 +20,9 @@ jobs:
     - name: Run pyright check
       run: make pyright
     - name: Check formatting
-      run: rye fmt --check sccp
+      run: rye fmt --check mrsa_ca_rna
     - name: Check linting
-      run: rye lint sccp
+      run: rye lint mrsa_ca_rna
     # - name: Test with pytest
     #   run: make coverage.xml
     # - name: Upload coverage to Codecov

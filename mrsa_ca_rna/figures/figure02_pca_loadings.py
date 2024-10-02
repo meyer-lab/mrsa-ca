@@ -10,15 +10,15 @@ To-do:
 
 import seaborn as sns
 
-from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.pca import perform_pca
 
 
 def genFig():
     adata = concat_datasets(scale=True, tpm=True)
     df = adata.to_df()
 
-    _, loadings, _ = perform_PCA(df)
+    _, loadings, _ = perform_pca(df)
 
     desired_components = range(4)
 

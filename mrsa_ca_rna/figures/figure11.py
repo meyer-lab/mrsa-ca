@@ -1,16 +1,16 @@
 """This file plots the data pf2 reconstruction for the disease and time datasets"""
 
+import seaborn as sns
+
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import (
-    concat_datasets,
     ca_data_split,
+    concat_datasets,
     concat_general,
     import_breast_cancer,
     import_healthy,
 )
-from mrsa_ca_rna.figures.base import setupBase
-
-import seaborn as sns
 
 
 def figure11_setup():

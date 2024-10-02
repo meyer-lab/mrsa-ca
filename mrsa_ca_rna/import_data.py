@@ -21,12 +21,13 @@ To-do:
 
 """
 
-from os.path import join, dirname, abspath
-import pandas as pd
-import numpy as np
-import anndata as ad
-from sklearn.preprocessing import StandardScaler
+from os.path import abspath, dirname, join
 from typing import cast
+
+import anndata as ad
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -113,11 +114,15 @@ def import_mrsa_rna():
     mrsa_val_meta = import_mrsa_val_meta()
 
     # add the metadata to the rna data. value columns should be converted to list-like
-    mrsa_rna.insert(0, column="status", value=mrsa_meta["status"].astype(str).to_numpy())
+    mrsa_rna.insert(
+        0, column="status", value=mrsa_meta["status"].astype(str).to_numpy()
+    )
     mrsa_rna.insert(0, column="disease", value="MRSA")
     mrsa_rna.insert(0, column="time", value="NA")
     mrsa_rna.insert(0, column="age", value=mrsa_meta["age"].astype(str).to_numpy())
-    mrsa_rna.insert(0, column="gender", value=mrsa_meta["gender"].astype(str).to_numpy())
+    mrsa_rna.insert(
+        0, column="gender", value=mrsa_meta["gender"].astype(str).to_numpy()
+    )
     mrsa_rna.loc[mrsa_rna["status"].str.contains("Unknown"), "status"] = mrsa_val_meta[
         "status"
     ].astype(str)
@@ -213,7 +218,7 @@ def import_ca_disc_rna():
     ca_disc_rna_annot = import_human_annot()
 
     gene_conversion = dict(
-        zip(ca_disc_rna_annot.index, ca_disc_rna_annot["EnsemblGeneID"])
+        zip(ca_disc_rna_annot.index, ca_disc_rna_annot["EnsemblGeneID"], strict=False)
     )
 
     ca_disc_rna = ca_disc_rna_GeneID.rename(
@@ -301,7 +306,7 @@ def import_ca_val_rna():
     ca_val_rna_annot = import_human_annot()
 
     gene_conversion = dict(
-        zip(ca_val_rna_annot.index, ca_val_rna_annot["EnsemblGeneID"])
+        zip(ca_val_rna_annot.index, ca_val_rna_annot["EnsemblGeneID"], strict=False)
     )
 
     ca_val_rna = ca_val_rna_GeneID.rename(
@@ -367,7 +372,7 @@ def import_breast_cancer(tpm: bool = True):
 
     # import the human genome annotation file and make a gene conversion dictionary
     human_annot = import_human_annot()
-    gene_conversion = dict(zip(human_annot["Symbol"], human_annot["EnsemblGeneID"]))
+    gene_conversion = dict(zip(human_annot["Symbol"], human_annot["EnsemblGeneID"], strict=False))
 
     # re-map the gene symbol to EnsemblGeneID
     breast_cancer = breast_cancer.rename(gene_conversion, axis=0)
@@ -390,7 +395,7 @@ def import_breast_cancer(tpm: bool = True):
         # I know breast_cancer_ad.X is an ndarray, but pyright doesn't
         # replace this with proper type gating to avoid the cast
         X = cast(np.ndarray, breast_cancer_ad.X)
-        
+
         row_sums = X.sum(axis=1)
 
         scaling_factors = desired_value / row_sums
@@ -478,9 +483,7 @@ def ca_data_split():
     # easily keep only shared samples by using the join="inner" argument
     ca_rna_timed = pd.concat(
         [
-            ca_meta_c_t.loc[
-                :, meta_labels
-            ],
+            ca_meta_c_t.loc[:, meta_labels],
             ca_rna,
         ],
         axis=1,
@@ -490,9 +493,7 @@ def ca_data_split():
 
     ca_rna_nontimed = pd.concat(
         [
-            ca_meta_c_nt.loc[
-                :, meta_labels
-            ],
+            ca_meta_c_nt.loc[:, meta_labels],
             ca_rna,
         ],
         axis=1,
@@ -502,10 +503,7 @@ def ca_data_split():
 
     healthy_rna = pd.concat(
         [
-            ca_meta_h.loc[
-                :,
-                meta_labels
-            ],
+            ca_meta_h.loc[:, meta_labels],
             ca_rna,
         ],
         axis=1,
@@ -518,16 +516,16 @@ def ca_data_split():
     # because we have to send dataframes, we have to drop the top level for anndata
     ca_rna_timed_ad = ad.AnnData(
         ca_rna_timed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=ca_rna_timed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
-        )
+        obs=ca_rna_timed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
     ca_rna_nontimed_ad = ad.AnnData(
         ca_rna_nontimed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
-        )
+        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
     healthy_rna_ad = ad.AnnData(
         healthy_rna.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=healthy_rna.loc[:, ("meta", meta_labels)].droplevel(0, axis=1)
-        )
+        obs=healthy_rna.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
 
     ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
 
@@ -551,7 +549,10 @@ def ca_data_split():
         ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
 
     return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
+
+
 ca_data_split()
+
 
 def concat_datasets(scale: bool = True, tpm: bool = True):
     """

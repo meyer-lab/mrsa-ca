@@ -1,16 +1,16 @@
 """This file plots the pf2 factor matrices for the disease datasets"""
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import (
-    import_healthy,
-    import_breast_cancer,
-    concat_datasets,
-    concat_general,
-)
-from mrsa_ca_rna.figures.base import setupBase
-
 import pandas as pd
 import seaborn as sns
+
+from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import (
+    concat_datasets,
+    concat_general,
+    import_breast_cancer,
+    import_healthy,
+)
 
 
 def figure12_setup():

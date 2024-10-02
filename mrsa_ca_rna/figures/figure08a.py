@@ -1,15 +1,14 @@
 """This file plots the results logistic regression of the MRSA (X) PLSR data
 against MRSA outcomes."""
 
-from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.regression import perform_PLSR, perform_PC_LR
-from mrsa_ca_rna.figures.base import setupBase
-
+import numpy as np
+import pandas as pd
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
-import pandas as pd
-import numpy as np
-import seaborn as sns
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.regression import perform_PC_LR, perform_PLSR
 
 
 def figure08a_setup():
@@ -51,7 +50,7 @@ def figure08a_setup():
         "MRSA (X)": [],
         "Xform from MRSA (X) transformed by CA (Y) scores": [],
     }
-    for list, data in zip(accuracies, datasets):
+    for list, data in zip(accuracies, datasets, strict=False):
         for i in range(components):
             nested_accuracy = perform_PC_LR(
                 X_data=datasets[data].iloc[:, : i + 1], y_data=mrsa_y

@@ -1,14 +1,13 @@
 """R2Y vs Q2Y of MRSA x CA data via PLSR"""
 
-from mrsa_ca_rna.regression import perform_PLSR, caluclate_R2Y_Q2Y
-from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.figures.base import setupBase
-
-from sklearn.preprocessing import StandardScaler
-
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.regression import caluclate_R2Y_Q2Y, perform_PLSR
 
 
 def figure07_setup():

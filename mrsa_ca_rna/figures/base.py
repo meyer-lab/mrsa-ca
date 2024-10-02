@@ -10,14 +10,15 @@ To-do:
         Rgression file and functions must be written.
 """
 
-import sys
 import logging
+import sys
 import time
+
+import matplotlib
 import matplotlib.figure
 import seaborn as sns
-import matplotlib
-from matplotlib import gridspec, pyplot as plt
-from typing import Literal
+from matplotlib import gridspec
+from matplotlib import pyplot as plt
 
 # C++ anti-grain geometry backend
 matplotlib.use("AGG")

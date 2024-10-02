@@ -10,15 +10,15 @@ for the CA case, I need to figure out how to transform CA patient
 data to MRSA patient data (30x60) -> (88x60)
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import scale
 
-from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.regression import perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.pca import perform_pca
+from mrsa_ca_rna.regression import perform_PC_LR
 
 
 def figure_03_setup(components: int = 60):

@@ -1,11 +1,11 @@
 """This file will plot the factor matrices of the CA time data"""
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
-from mrsa_ca_rna.import_data import ca_data_split
-from mrsa_ca_rna.figures.base import setupBase
-
 import pandas as pd
 import seaborn as sns
+
+from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import ca_data_split
 
 
 def figure10_setup():
@@ -50,7 +50,11 @@ def genFig():
     time_factors[2] = genes_df.values
 
     # tick labels: subject_id, rank, genes
-    time_labels = [time_data.obs["subject_id"].unique(), time_ranks_labels, genes_df.index]
+    time_labels = [
+        time_data.obs["subject_id"].unique(),
+        time_ranks_labels,
+        genes_df.index,
+    ]
 
     # plot heatmap of disease factors
     for i, factor in enumerate(time_factors):

@@ -2,17 +2,16 @@
 Plotting components of MRSA data against patient metadata
 """
 
-from mrsa_ca_rna.regression import perform_PLSR
-from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.figures.base import setupBase
-
-from sklearn.preprocessing import StandardScaler
-
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from sklearn.preprocessing import StandardScaler
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.regression import perform_PLSR
 
 
 def figure08_setup():
@@ -79,9 +78,9 @@ def genFig():
     paired_cmap = plt.get_cmap("Paired")
 
     # create 3 color maps for age, gender, and status metadata
-    status_colors = dict(zip(meta["status"].unique(), paired_cmap([0, 1])))
-    gender_colors = dict(zip(meta["gender"].unique(), paired_cmap([2, 3])))
-    age_colors = dict(zip(unique_age_values, new_cmap))
+    status_colors = dict(zip(meta["status"].unique(), paired_cmap([0, 1]), strict=False))
+    gender_colors = dict(zip(meta["gender"].unique(), paired_cmap([2, 3]), strict=False))
+    age_colors = dict(zip(unique_age_values, new_cmap, strict=False))
 
     """Now that the colors are mapped, we can sort the data and metadata before plotting"""
     # sort the meta data by status before plotting

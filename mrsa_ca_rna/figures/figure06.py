@@ -1,9 +1,9 @@
 """Stripplot of time points for patients to get a sense of how our time data is distributed."""
 
-from mrsa_ca_rna.import_data import ca_data_split
-from mrsa_ca_rna.figures.base import setupBase
-
 import seaborn as sns
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import ca_data_split
 
 
 def figure06_setup():

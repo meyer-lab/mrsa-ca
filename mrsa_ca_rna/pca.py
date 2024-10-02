@@ -7,27 +7,24 @@ To-do:
 
 """
 
+import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-import pandas as pd
 
-
-def perform_PCA(data: pd.DataFrame):
+def perform_pca(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
     """
-    Scale and perform principle component analysis on either provided
-    data or on the default dataset returned by concat_dataset().
+    Perform PCA on the given data.
 
-    Parameters:
-        data (pd.DataFrame): the data to perform PCA on
+    Args:
+        data (pd.DataFrame): The input data for PCA.
 
     Returns:
-        scores (pd.DataFrame): the scores matrix of the data as a result of PCA
-        loadings (pd.DataFrame): the loadings matrix of the data as a result of PCA
-        pca (object): the PCA object for further use in the code.
+        scores (pd.DataFrame): The scores matrix of the data as a result of PCA.
+        loadings (pd.DataFrame): The loadings matrix of the data as a result of PCA.
+        pca (PCA): The PCA object for further use in the code.
     """
-
-    components = 70
+    components: int = 70
     pca = PCA(n_components=components)
     scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 
@@ -35,8 +32,11 @@ def perform_PCA(data: pd.DataFrame):
     rna_decomp = pca.fit_transform(scaled_rna)
 
     pc_labels = [f"PC{i}" for i in range(1, components + 1)]
+    pc_labels_index = pd.Index(pc_labels)
 
-    scores = pd.DataFrame(rna_decomp, index=data.index, columns=pc_labels)
-    loadings = pd.DataFrame(pca.components_, index=pc_labels, columns=data.columns)
+    scores = pd.DataFrame(rna_decomp, index=data.index, columns=pc_labels_index)
+    loadings = pd.DataFrame(
+        pca.components_, index=pc_labels_index, columns=data.columns
+    )
 
     return scores, loadings, pca

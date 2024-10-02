@@ -10,21 +10,19 @@ To-do:
     from the perform_whole_LR() func.
 """
 
-from sklearn.model_selection import (
-    StratifiedKFold,
-    KFold,
-    cross_val_score,
-    cross_val_predict,
-)
-from sklearn.linear_model import (
-    LogisticRegressionCV,
-    LogisticRegression,
-)
-from sklearn.cross_decomposition import PLSRegression
-
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import (
+    LogisticRegression,
+    LogisticRegressionCV,
+)
+from sklearn.model_selection import (
+    KFold,
+    StratifiedKFold,
+    cross_val_predict,
+    cross_val_score,
+)
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -34,12 +32,15 @@ def perform_PC_LR(
     y_data: pd.DataFrame,
 ):
     """
-    Agnostically performs LogisticRegression with nested cross validation to passed data. Regularization
-    can be determined with different data by passing additional data that will not be used for regularization.
+    Agnostically performs LogisticRegression
+    with nested cross validation to passed data.
+
 
     Parameters:
-        X_data (pd.DataFrame): training X data for regularization and subsequent nested cross validation
-        y_data (pd.DataFrame): training y data for regularization and subsequent nested cross validation
+        X_data (pd.DataFrame): X data for regularization
+                                and subsequent nested cross validation
+        y_data (pd.DataFrame): y data for regularization
+                                and subsequent nested cross validation
 
     Returns:
         nested_score (float): nested cross validation score of the final model
@@ -54,7 +55,8 @@ def perform_PC_LR(
         X_data.shape[0] == y_data.shape[0]
     ), "Passed X and y data must be the same length!"
 
-    # going with Jackon's settings instead of my original ones just to make sure this works. Continuing to use Cs though.
+    # going with Jackon's settings instead of my original ones
+    # just to make sure this works.
     pre_clf = LogisticRegressionCV(
         l1_ratios=[0.8],
         solver="saga",
@@ -90,15 +92,18 @@ def perform_PLSR(
     on transposed (genes x patients) mrsa and candidemia data with 10 components.
 
     Parameters:
-        X_data: (pd.DataFrame) | X data for analysis. Default = MRSA data from concat_datasets()
-        y_data: (pd.DataFrame) | y data for analysis. Default = Candidemia data from concat_datasets()
+        X_data: (pd.DataFrame) | X data for analysis.
+                                Default = MRSA data from concat_datasets()
+        y_data: (pd.DataFrame) | y data for analysis.
+                                Default = Candidemia data from concat_datasets()
         components: (int) | number of components to use for decomposition.
 
     Returns:
         pls (fitted object) | The PLSR object fitted to X_data and y_data
     """
 
-    # for each components added, we are going to calculate R2Y and Q2Y, then compare them
+    # for each components added, we are going to calculate R2Y and Q2Y,
+    # then compare them
 
     print(f"Performing PLSR for {components} components")
     pls = PLSRegression(n_components=components)

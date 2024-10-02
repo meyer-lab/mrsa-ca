@@ -10,15 +10,15 @@ for the CA case, I need to figure out how to transform CA patient
 data to MRSA patient data (30x60) -> (88x60)
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import scale
 
-from mrsa_ca_rna.pca import perform_PCA
-from mrsa_ca_rna.regression import perform_PC_LR
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.pca import perform_pca
+from mrsa_ca_rna.regression import perform_PC_LR
 
 
 def figure_03_setup(components: int = 60):
@@ -37,7 +37,7 @@ def figure_03_setup(components: int = 60):
 
     for dataset in datasets:
         # print(f"Performing PCA on {dataset} dataset.")
-        scores_df, _, pca = perform_PCA(datasets[dataset])
+        scores_df, _, pca = perform_pca(datasets[dataset])
 
         if dataset == "MRSA+CA+Healthy":
             scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]
@@ -50,7 +50,8 @@ def figure_03_setup(components: int = 60):
                 transformed_MRSA, index=mrsa_df.index, columns=scores_df.columns
             )
 
-        # keep track of the nested CV performance (balanced accuracy) of the model. Reset for each dataset
+        # keep track of the nested CV performance (balanced accuracy) of the model.
+        # Reset for each dataset
         performance = [
             perform_PC_LR(scores_df.iloc[:, : i + 1], y_data) for i in range(components)
         ]
@@ -82,7 +83,8 @@ def genFig():
         a.set_xlabel("# of components")
         a.set_ylabel("Balanced Accuracy")
         a.set_title(
-            f"Nested-CV Score of Logistic Regression\nPCA ({data}), 'saga' solver, 'elasticnet' penalty"
+            f"Nested-CV Score of Logistic Regression\n"
+            f"PCA ({data}), 'saga' solver, 'elasticnet' penalty"
         )
 
     return f

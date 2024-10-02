@@ -1,14 +1,13 @@
 """R2Y vs Q2Y of MRSA x CA data via PLSR"""
 
-from mrsa_ca_rna.regression import perform_PLSR, caluclate_R2Y_Q2Y
-from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.figures.base import setupBase
-
-from sklearn.preprocessing import StandardScaler
-
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.regression import caluclate_R2Y_Q2Y, perform_PLSR
 
 
 def figure07_setup():
@@ -43,7 +42,7 @@ def figure07_setup():
     # set up R2Y and Q2Y DataFrame to easily pass to the plotting in genFig()
     component_col = np.arange(1, components + 1)
     matrix = np.array([component_col.astype(int), R2Ys, Q2Ys]).T
-    data = pd.DataFrame(matrix, columns=["components", "R2Y", "Q2Y"])
+    data = pd.DataFrame(matrix, columns=pd.Index(["components", "R2Y", "Q2Y"]))
 
     return data
 
@@ -63,7 +62,8 @@ def genFig():
 
     a = sns.barplot(melt, x="components", y="Score", hue="Metric", ax=ax[0])
     a.set_title(
-        "Performance of PLSR with MRSA (X) data Regressed against CA (Y) data\n10-folds, new formula"
+        "Performance of PLSR with MRSA (X) data Regressed against CA (Y) data\n"
+        "10-folds, new formula"
     )
     a.set_xlabel("# Components used in model")
     a.set_ylabel("Scores")

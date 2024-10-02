@@ -13,8 +13,8 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.pca import perform_PCA
 from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.pca import perform_pca
 
 
 def figure_00_setup():
@@ -29,12 +29,12 @@ def figure_00_setup():
     }
 
     for dataset in datasets:
-        _, _, pca = perform_PCA(datasets[dataset])
+        _, _, pca = perform_pca(datasets[dataset])
 
         components = np.arange(1, pca.n_components_ + 1, dtype=int)
         total_explained = np.cumsum(pca.explained_variance_ratio_)
 
-        data = pd.DataFrame(components, columns=["components"])
+        data = pd.DataFrame(components, columns=pd.Index(["components"]))
         data["total_explained"] = total_explained
 
         datasets[dataset] = data

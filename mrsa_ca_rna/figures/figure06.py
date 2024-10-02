@@ -1,9 +1,10 @@
-"""Stripplot of time points for patients to get a sense of how our time data is distributed."""
-
-from mrsa_ca_rna.import_data import ca_data_split
-from mrsa_ca_rna.figures.base import setupBase
+"""Stripplot of time points for patients to get a sense of
+how our time data is distributed."""
 
 import seaborn as sns
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import ca_data_split
 
 
 def figure06_setup():
@@ -22,7 +23,8 @@ def genFig():
 
     data = figure06_setup()
 
-    # cast time as int so stipplot infers properly, and order by subject_id to line up plots
+    # cast time as int so stipplot infers properly
+    # order by subject_id to line up plots
     data["time"] = data["time"].astype(int)
     sorted_data = data.sort_values(by=["subject_id"])
 

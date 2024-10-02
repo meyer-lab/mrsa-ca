@@ -372,7 +372,9 @@ def import_breast_cancer(tpm: bool = True):
 
     # import the human genome annotation file and make a gene conversion dictionary
     human_annot = import_human_annot()
-    gene_conversion = dict(zip(human_annot["Symbol"], human_annot["EnsemblGeneID"], strict=False))
+    gene_conversion = dict(
+        zip(human_annot["Symbol"], human_annot["EnsemblGeneID"], strict=False)
+    )
 
     # re-map the gene symbol to EnsemblGeneID
     breast_cancer = breast_cancer.rename(gene_conversion, axis=0)

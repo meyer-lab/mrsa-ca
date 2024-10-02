@@ -46,7 +46,10 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
         )
         data_arrays.append(data_ar)
     data_xr = xr.Dataset(
-        {label: data_ar for label, data_ar in zip(expansion_labels, data_arrays, strict=False)}
+        {
+            label: data_ar
+            for label, data_ar in zip(expansion_labels, data_arrays, strict=False)
+        }
     )
 
     return data_xr

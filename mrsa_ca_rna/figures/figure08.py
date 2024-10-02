@@ -78,8 +78,12 @@ def genFig():
     paired_cmap = plt.get_cmap("Paired")
 
     # create 3 color maps for age, gender, and status metadata
-    status_colors = dict(zip(meta["status"].unique(), paired_cmap([0, 1]), strict=False))
-    gender_colors = dict(zip(meta["gender"].unique(), paired_cmap([2, 3]), strict=False))
+    status_colors = dict(
+        zip(meta["status"].unique(), paired_cmap([0, 1]), strict=False)
+    )
+    gender_colors = dict(
+        zip(meta["gender"].unique(), paired_cmap([2, 3]), strict=False)
+    )
     age_colors = dict(zip(unique_age_values, new_cmap, strict=False))
 
     """Now that the colors are mapped, we can sort the data and metadata before plotting"""

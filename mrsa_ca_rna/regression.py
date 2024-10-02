@@ -10,7 +10,6 @@ To-do:
     from the perform_whole_LR() func.
 """
 
-
 import numpy as np
 import pandas as pd
 from sklearn.cross_decomposition import PLSRegression

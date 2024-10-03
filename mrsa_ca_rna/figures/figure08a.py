@@ -47,7 +47,7 @@ def figure08a_setup():
     # with increasing components against MRSA outcomes
     accuracies: dict = {
         "MRSA (X)": [],
-        "Xform from MRSA (X) transformed by CA (Y) scores": [],
+        "MRSA (X) transformed by CA (Y) scores": [],
     }
     for list, data in zip(accuracies, datasets, strict=False):
         for i in range(components):

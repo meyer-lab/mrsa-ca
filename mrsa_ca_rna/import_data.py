@@ -13,27 +13,109 @@ from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
+
+def gene_converter(
+    data, old_id: str, new_id: str, method: str = "values"
+) -> pd.DataFrame | ad.AnnData:
+    """Converts gene ids from one type to another in a dataframe
+
+    Parameters:
+        dataframe (pd.DataFrame): dataframe containing gene ids to convert
+        old_id (str): column name of the current gene id
+        new_id (str): column name of the desired gene id
+
+    Returns:
+        dataframe (pd.DataFrame) or adata (ad.AnnData): data with gene ids converted"""
+
+    human_annot = import_human_annot()
+    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id], strict=False))
+
+    # first check if the data is a pd.DataFrame or an ad.AnnData,
+    # then convert the gene ids based on the method
+    if isinstance(data, pd.DataFrame):
+        dataframe: pd.DataFrame = data.copy()
+        if method == "values":
+            dataframe = dataframe.replace(gene_conversion)
+        elif method == "index":
+            dataframe.index = dataframe.index.map(gene_conversion)
+        elif method == "columns":
+            dataframe.columns = dataframe.columns.map(gene_conversion)
+        return dataframe
+    # if the data is an AnnData object, convert the gene ids based on the method
+    elif isinstance(data, ad.AnnData):
+        adata: ad.AnnData = data.copy()
+        assert method != "values", "Cannot convert values in AnnData object"
+        if method == "index":
+            adata.obs.index = adata.obs.index.map(gene_conversion)
+        elif method == "columns":
+            adata.var.index = adata.var.index.map(gene_conversion)
+        return adata
+    else:
+        raise ValueError("Data must be a pandas DataFrame or an AnnData object")
+
+
 # WIP function to filter out select genes
-# def filter_genes(data, threshold=0.01, rbc=True):
-#     """Filters out over-expressed genes that may not be indicative of the disease.
-#     Filters out under-expressed genes that may interfer with analysis.
+def trim_RBC(data: ad.AnnData):
+    """Trims out RBC related genes from the data to prevent overexpressed RBC genes
+    such as HBA1 and HBA2 from contaminating the data.
 
-#     Parameters:
-#         data (pandas.DataFrame): RNA data to filter
-#         threshold (float): threshold for filtering out genes
-#         rbc (bool): whether to filter out RBC genes
+    Parameters:
+        data (ad.AnnData): RNA data to filter
 
-#     Returns:
-#         data (pandas.DataFrame): filtered RNA data
-#     """
-#     # list of RBC related genes
-#     rbc_genes = ["RN7SL1", "RN7SL2", "HBA1", "HBA2", "HBB", "HBQ1",
-#                  "HBZ", "HBD", "HBG2", "HBE1", "HBG1", "HBM",
-#                  "MIR3648-1", "MIR3648-2", "AC104389.6", "AC010507.1",
-#                  "SLC25A37", "SLC4A1, NRGN", "SNCA", "BNIP3L", "EPB42",
-#                  "ALAS2", "BPGM", "OSBP2"]
+    Returns:
+        data (ad.AnnData): filtered RNA data
+    """
+    # list of RBC related genes
+    rbc_genes = [
+        "RN7SL1",
+        "RN7SL2",
+        "HBA1",
+        "HBA2",
+        "HBB",
+        "HBQ1",
+        "HBZ",
+        "HBD",
+        "HBG2",
+        "HBE1",
+        "HBG1",
+        "HBM",
+        "MIR3648-1",
+        "MIR3648-2",
+        "AC104389.6",
+        "AC010507.1",
+        "SLC25A37",
+        "SLC4A1, NRGN",
+        "SNCA",
+        "BNIP3L",
+        "EPB42",
+        "ALAS2",
+        "BPGM",
+        "OSBP2",
+    ]
 
-#     return data
+    # check if the genes are in Ensembl format, if so, convert them to gene symbols
+    if data.var.index.str.contains("ENSG").all():
+        data_converted = gene_converter(
+            data, "EnsemblGeneID", "Symbol", method="columns"
+        )
+        assert isinstance(data_converted, ad.AnnData), "Gene conversion did not result \
+            in an AnnData object"
+        revert = True
+    else:
+        data_converted = data.copy()
+        revert = False
+
+    # drop the RBC genes from the data
+
+    data_trimmed = data_converted[:, ~data_converted.var.index.isin(rbc_genes)]
+
+    # if the data was converted to gene symbols, convert it back to EnsemblGeneID
+    if revert:
+        data_trimmed = gene_converter(
+            data_trimmed, "Symbol", "EnsemblGeneID", method="columns"
+        )
+
+    return data_trimmed
 
 
 def import_human_annot():

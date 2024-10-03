@@ -11,7 +11,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
@@ -95,9 +95,9 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     whole_data = concat_datasets(scale=False, tpm=True)
-    y_true = (
-        whole_data[whole_data.obs["disease"] == "MRSA"].obs["status"].values.astype(int)
-    )
+    mrsa_status = whole_data[whole_data.obs["disease"] == "MRSA"].obs["status"]
+    lb = LabelBinarizer()
+    y_true = lb.fit_transform(mrsa_status)
 
     y_proba, weighted_components, top_genes = figure08b_setup()
 

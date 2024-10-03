@@ -1,18 +1,21 @@
-"""This file plots the ROC curve of the MRSA (X) PLSR data against MRSA outcomes.
-It will also plot the beta coefficients of the logistic regression model for each component.
-Then, it will barplot the most important genes that map to the most important components."""
+"""
+This file plots the ROC curve of the MRSA (X) PLSR data against MRSA outcomes.
+It will also plot the beta coefficients of the 
+    logistic regression model for each component.
+Then, it will barplot the most important genes that map 
+    to the most important components.
+"""
 
-from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
-from mrsa_ca_rna.regression import perform_PLSR, perform_PC_LR
-from mrsa_ca_rna.figures.base import setupBase
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import roc_auc_score, roc_curve
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
-
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.preprocessing import StandardScaler
+
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
+from mrsa_ca_rna.regression import perform_PC_LR, perform_PLSR
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -40,22 +43,29 @@ def figure08b_setup():
     Y_data = ca_Y.T
 
     components = 3
-    scores, loadings, pls = perform_PLSR(X_data, Y_data, components)
+    scores, loadings, _ = perform_PLSR(X_data, Y_data, components)
 
     mrsa_loadings = loadings["X"]
     mrsa_scores = scores["X"]
 
     # perform logistic regression on mrsa_loadings data
-    _, model = perform_PC_LR(mrsa_loadings, mrsa_y)
+    _, model = perform_PC_LR(mrsa_loadings, mrsa_y, return_clf=True)
     y_proba = cross_val_predict(
         model, X=mrsa_loadings, y=mrsa_y, cv=skf, method="predict_proba"
     )
 
-    # get the beta coefficients from the model, arrange them by absolute value, then tie them back to the components
+    # since cross_val_predict can produce a number of types,
+    # we need to make sure we are dealing with an ndarray
+    y_proba = np.array(y_proba)
+
+    # get the beta coefficients from the model, arrange them by absolute value,
+    #  then tie them back to the components
     weights: np.ndarray = model.coef_[0]
     sorted_weights = np.absolute(weights).argsort()
     sorted_components = mrsa_loadings.iloc[:, sorted_weights]
-    weighted_components = dict(zip(sorted_components.columns, weights[sorted_weights]))
+    weighted_components = dict(
+        zip(sorted_components.columns, weights[sorted_weights], strict=False)
+    )
 
     # get the top 100 genes for each of the components using the mrsa_scores
     top_genes = {}
@@ -96,7 +106,8 @@ def genFig():
     roc_auc = roc_auc_score(y_true, y_proba[:, 1])
     a = sns.lineplot(x=fpr, y=tpr, ax=ax[0])
     a.set_title(
-        f"Covariance maximization between MRSA and CA data\npredicts MRSA outcome using 3 components\n(AUC = {roc_auc:.3f})"
+        "Covariance maximization between MRSA and CA data\n"
+        f"predicts MRSA outcome using 3 components\n(AUC = {roc_auc:.3f})"
     )
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")

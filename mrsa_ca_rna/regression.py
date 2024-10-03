@@ -30,6 +30,7 @@ skf = StratifiedKFold(n_splits=10)
 def perform_PC_LR(
     X_data: pd.DataFrame,
     y_data: pd.DataFrame,
+    return_clf: bool = False,
 ):
     """
     Agnostically performs LogisticRegression
@@ -73,14 +74,16 @@ def perform_PC_LR(
         solver="saga",
         penalty="elasticnet",
         max_iter=100000,
-        random_state=rng,
     ).fit(X_data, y_data)
 
     nested_score = cross_val_score(
         clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
     ).mean()
 
-    return nested_score
+    if return_clf:
+        return nested_score, clf
+    else:
+        return nested_score
 
 
 def perform_PLSR(

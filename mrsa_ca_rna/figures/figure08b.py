@@ -1,8 +1,8 @@
 """
 This file plots the ROC curve of the MRSA (X) PLSR data against MRSA outcomes.
-It will also plot the beta coefficients of the 
+It will also plot the beta coefficients of the
     logistic regression model for each component.
-Then, it will barplot the most important genes that map 
+Then, it will barplot the most important genes that map
     to the most important components.
 """
 

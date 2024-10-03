@@ -30,7 +30,7 @@ def gene_converter(
     human_annot = import_human_annot()
     gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id], strict=False))
 
-    # first check if the data is a pd.DataFrame or an ad.AnnData, 
+    # first check if the data is a pd.DataFrame or an ad.AnnData,
     # then convert the gene ids based on the method
     if isinstance(data, pd.DataFrame):
         dataframe: pd.DataFrame = data.copy()

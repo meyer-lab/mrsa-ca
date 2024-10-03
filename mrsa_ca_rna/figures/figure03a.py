@@ -1,13 +1,13 @@
 """
-This file will first perform PCA on CA data, 
+This file will first perform PCA on CA data,
     then use the trained PCA model to project MRSA data onto the same space.
-Then, it will perform a logistic regression on the transformed MRSA data 
+Then, it will perform a logistic regression on the transformed MRSA data
     to predict MRSA outcome.
-It will then plot the regression performance as a scatter plot 
+It will then plot the regression performance as a scatter plot
     of the predicted vs actual MRSA outcome.
-Then, using the logistic regression model, 
+Then, using the logistic regression model,
     it will barplot the most important components predicting MRSA outcome.
-From there, it will barplot the most important genes that map 
+From there, it will barplot the most important genes that map
     to the most important components.
 This will help tie the regression model back to the original data.
 """
@@ -62,7 +62,7 @@ def figure03a_setup():
     # get the beta coefficients from the model
     weights: np.ndarray = model.coef_[0]
 
-    # get the location of the top 5 most important components 
+    # get the location of the top 5 most important components
     # (absolute value to capture both directions)
     top_weights_locs = np.absolute(weights).argsort()[-5:]
 

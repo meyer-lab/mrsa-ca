@@ -16,6 +16,8 @@ from mrsa_ca_rna.import_data import (
 def figure12_setup():
     """Set up the data for the tensor factorization and return the results"""
 
+    # data import, concatenation, scaling, and preparation
+    # same as figure11_setup
     old_data = concat_datasets(scale=False, tpm=True)
     bc_data = import_breast_cancer(tpm=True)
     healthy_data = import_healthy(tpm=True)

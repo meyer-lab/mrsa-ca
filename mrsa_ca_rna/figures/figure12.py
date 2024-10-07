@@ -27,7 +27,7 @@ def figure12_setup():
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
-    tensor_decomp, recon_err = perform_parafac2(disease_xr, rank=20)
+    tensor_decomp, recon_err = perform_parafac2(disease_xr, rank=50)
     disease_factors = tensor_decomp[1]
     r2x = 1 - min(recon_err)
 
@@ -43,7 +43,7 @@ def genFig():
 
     disease_factors, r2x, disease_data = figure12_setup()
 
-    disease_ranks = range(1, 21)
+    disease_ranks = range(1, 51)
     disease_ranks_labels = [str(x) for x in disease_ranks]
     # x axis label: rank
     x_ax_label = "Rank"

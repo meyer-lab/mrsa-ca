@@ -1,6 +1,7 @@
 """This file plots the data pf2 reconstruction for the disease and time datasets"""
 
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
@@ -28,6 +29,7 @@ def figure11_setup():
 
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()
+    time_data.X = StandardScaler().fit_transform(time_data.X)
 
     # split and organize into xarray datasets along corresponding expansion dimensions
     # (disease->disease, time->subject_id)

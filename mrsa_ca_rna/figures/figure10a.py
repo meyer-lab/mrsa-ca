@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.figures.figure10 import figure10_setup
@@ -22,12 +21,12 @@ def genFig():
 
     time_factors = figure10_setup()
 
-
     # push time_factors[0] to a pandas to color and sort by metadata
-    time_df = pd.DataFrame(time_factors[0], 
-                           index=time_data.obs.loc[:, "subject_id"].unique(),
-                           columns=[f"Eigenstate {i+1}" for i in range(2)]
-                           )
+    time_df = pd.DataFrame(
+        time_factors[0],
+        index=time_data.obs.loc[:, "subject_id"].unique(),
+        columns=pd.Index([f"Eigenstate {i+1}" for i in range(2)]),
+    )
 
     # clustermap setup for time metadata to indicate # time points
     # count the number of time points for each subject_id
@@ -50,18 +49,17 @@ def genFig():
     # create a dictionary of time_counts to color
     time_colors = dict(zip(time_counts.unique(), new_cmap, strict=False))
 
-    # replace the subject_id column with the color map
-    row_colors = time_df["count"].map(time_colors)
+    # replace the count column with the color map
+    row_colors = time_df.loc[:, "count"].map(time_colors)
 
     data = time_df.loc[:, time_df.columns.str.contains("Eigenstate")]
 
     f = sns.clustermap(
-            data,
-            row_cluster=False,
-            col_cluster=False,
-            cmap="viridis",
-            row_colors=row_colors,
-        )
-    
-    
+        data,
+        row_cluster=False,
+        col_cluster=False,
+        cmap="viridis",
+        row_colors=row_colors,
+    )
+
     return f

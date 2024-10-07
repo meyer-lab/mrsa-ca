@@ -1,6 +1,7 @@
 """This file plots the data pf2 reconstruction for the disease and time datasets"""
 
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
@@ -17,8 +18,9 @@ def figure11_setup():
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
 
-    # import disease datasets of interest (MRSA, CA, BC, Healthy)
-    mrsa_ca = concat_datasets(scale=True, tpm=True)
+    # data import, concatenation, scaling, and preparation
+    # same as figure12_setup
+    mrsa_ca = concat_datasets(scale=False, tpm=True)
     bc_data = import_breast_cancer(tpm=True)
     healthy_data = import_healthy(tpm=True)
     disease_data = concat_general(
@@ -27,6 +29,7 @@ def figure11_setup():
 
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()
+    time_data.X = StandardScaler().fit_transform(time_data.X)
 
     # split and organize into xarray datasets along corresponding expansion dimensions
     # (disease->disease, time->subject_id)
@@ -34,7 +37,7 @@ def figure11_setup():
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
     # change ranks_d back to range(1, 11) when running the full dataset!
-    ranks_d = range(1, 4)
+    ranks_d = range(1, 21)
     ranks_t = range(1, 3)
 
     r2x_d = []

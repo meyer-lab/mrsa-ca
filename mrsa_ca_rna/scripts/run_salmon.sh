@@ -73,32 +73,31 @@ for i in $(seq 1 $batchCount); do
     while IFS="" read -r line || [ -n "$line" ]; do
         echo "Processing $line"
         if [ "$endType" = "single" ]; then
-            fasterq-dump $line --progress --threads $THREADS 
+            fasterq-dump $line --progress --threads $THREADS &
         elif [ "$endType" = "paired" ]; then
-            fasterq-dump $line --split-files --skip-technical --progress --threads $THREADS
+            fasterq-dump $line --split-files --skip-technical --progress --threads $THREADS &
         fi
     done < batch_accessions.txt
 
-    #gzip all fastq files generated
-    echo "Gzipping all fastq files"
-    gzip --verbose *.fastq
+    # wait for all the fasterq-dump processes to finish
+    wait
 
     #navigate back to the main directory
     cd ..
 
     #quantify expression using salmon
-    #loop through the fastq.gz files and quantify expression, checking for single or paired end reads
+    #loop through the fastq files and quantify expression, checking for single or paired end reads
     echo "Quantifying expression with Salmon"
     if [ "$endType" = "single" ]; then
-        for file in ./sra_out/*.fastq.gz; do
+        for file in ./sra_out/*.fastq; do
             echo "Processing $file"
-            salmon quant -p $THREADS -i ./salmon_ref/salmon_index --geneMap ./salmon_ref/mappings.gtf --validateMappings --gcBias -l A -r ./sra_out/"$file" -o ./salmon_gene_counts/"$(basename "$file" .fastq.gz)"
+            salmon quant -p $THREADS -i ./salmon_ref/salmon_index --geneMap ./salmon_ref/mappings.gtf --validateMappings --gcBias -l A -r ./sra_out/"$file" -o ./salmon_gene_counts/"$(basename "$file" .fastq)"
         done
     elif [ "$endType" = "paired" ]; then
-        for file in ./sra_out/*_1.fastq.gz; do
+        for file in ./sra_out/*_1.fastq; do
             echo "Processing $file"
-            base=$(basename "$file" _1.fastq.gz)
-            salmon quant -p $THREADS -i ./salmon_ref/salmon_index --geneMap ./salmon_ref/mappings.gtf --validateMappings --gcBias -l A -1 ./sra_out/"${base}_1.fastq.gz" -2 ./sra_out/"${base}_2.fastq.gz" -o ./salmon_gene_counts/"${base}"
+            base=$(basename "$file" _1.fastq)
+            salmon quant -p $THREADS -i ./salmon_ref/salmon_index --geneMap ./salmon_ref/mappings.gtf --validateMappings --gcBias -l A -1 ./sra_out/"${base}_1.fastq" -2 ./sra_out/"${base}_2.fastq" -o ./salmon_gene_counts/"${base}"
         done
     fi
 
@@ -106,7 +105,7 @@ for i in $(seq 1 $batchCount); do
     #navigate back to sra_out to remove fastq files and start the next batch
     cd ./sra_out
     #remove all fastq files
-    rm *.fastq.gz
+    rm *.fastq
     #remove the batch_accessions.txt file
     rm batch_accessions.txt
 

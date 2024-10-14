@@ -530,6 +530,7 @@ def import_healthy(tpm: bool = True):
 
     return healthy_ad
 
+
 def import_covid_meta():
     """import covid metadata from the GEO file"""
     covid_meta = pd.read_csv(
@@ -542,6 +543,7 @@ def import_covid_meta():
 
     return covid_meta_trimmed
 
+
 def import_covid():
     covid_raw = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "covid_all_counts.txt"),
@@ -553,7 +555,9 @@ def import_covid():
     covid_meta = import_covid_meta()
 
     covid_raw.reset_index(inplace=True, names="sample_id")
-    covid_raw.loc[:, ["sample_id"]] = covid_raw["sample_id"].str.split(".", expand=True)[0]
+    covid_raw.loc[:, ["sample_id"]] = covid_raw["sample_id"].str.split(
+        ".", expand=True
+    )[0]
     covid_raw.set_index("sample_id", inplace=True)
 
     covid_ad = ad.AnnData(covid_raw.T, obs=covid_meta)
@@ -567,6 +571,7 @@ def import_covid():
     covid_ad.X = X_normalized
 
     return covid_ad
+
 
 def ca_data_split():
     ca_disc_meta = import_ca_disc_meta()

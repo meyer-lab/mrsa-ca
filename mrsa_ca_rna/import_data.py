@@ -530,6 +530,43 @@ def import_healthy(tpm: bool = True):
 
     return healthy_ad
 
+def import_covid_meta():
+    """import covid metadata from the GEO file"""
+    covid_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "covid_metadata.txt"),
+        delimiter=",",
+        index_col=0,
+    )
+
+    covid_meta_trimmed = covid_meta.loc[:, ["sex", "disease", "disease_staging"]]
+
+    return covid_meta_trimmed
+
+def import_covid():
+    covid_raw = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "covid_all_counts.txt"),
+        delimiter="\t",
+        index_col=0,
+    )
+    covid_raw = covid_raw.dropna(axis=1, how="all")
+
+    covid_meta = import_covid_meta()
+
+    covid_raw.reset_index(inplace=True, names="sample_id")
+    covid_raw.loc[:, ["sample_id"]] = covid_raw["sample_id"].str.split(".", expand=True)[0]
+    covid_raw.set_index("sample_id", inplace=True)
+
+    covid_ad = ad.AnnData(covid_raw.T, obs=covid_meta)
+
+    # tpm normalize the data
+    desired_value = 1000000
+    X = cast(np.ndarray, covid_ad.X)
+    row_sums = X.sum(axis=1)
+    scaling_factors = desired_value / row_sums
+    X_normalized = X * scaling_factors[:, np.newaxis]
+    covid_ad.X = X_normalized
+
+    return covid_ad
 
 def ca_data_split():
     ca_disc_meta = import_ca_disc_meta()
@@ -621,9 +658,6 @@ def ca_data_split():
         ca_ad.X = X_normalized
 
     return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
-
-
-ca_data_split()
 
 
 def concat_datasets(scale: bool = True, tpm: bool = True):

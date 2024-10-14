@@ -18,7 +18,7 @@ def figure10_setup():
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
     # going above rank = 2 causes function failure
-    tensor_decomp, _ = perform_parafac2(time_xr, rank=3)
+    tensor_decomp, _ = perform_parafac2(time_xr, rank=20)
     time_factors = tensor_decomp[1]
 
     return time_factors
@@ -35,7 +35,7 @@ def genFig():
 
     time_factors = figure10_setup()
 
-    time_ranks = range(1, 3)
+    time_ranks = range(1, time_factors[0].shape[1] + 1)
     time_ranks_labels = [str(x) for x in time_ranks]
     # x axis label: rank
     x_ax_label = "Rank"
@@ -47,7 +47,7 @@ def genFig():
     # then trim the data
     genes_df = pd.DataFrame(time_factors[2], index=time_data.var.index)
     mean_genes = pd.Series(genes_df.abs().mean(axis=1))
-    top_genes = mean_genes.nlargest(20).index
+    top_genes = mean_genes.nlargest(500).index
     genes_df = genes_df.loc[top_genes]
 
     # put the new genes_df back into the time_factors[2]
@@ -57,7 +57,7 @@ def genFig():
     time_labels = [
         time_data.obs["subject_id"].unique(),
         time_ranks_labels,
-        genes_df.index,
+        False,
     ]
 
     # plot heatmap of disease factors

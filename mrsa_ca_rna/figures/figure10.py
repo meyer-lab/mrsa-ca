@@ -2,6 +2,7 @@
 
 import pandas as pd
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
@@ -12,6 +13,7 @@ def figure10_setup():
     """Set up the data for the tensor factorization and return the results"""
 
     time_data, _, _ = ca_data_split()
+    time_data.X = StandardScaler().fit_transform(time_data.X)
 
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 

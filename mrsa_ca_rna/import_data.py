@@ -620,10 +620,6 @@ def ca_data_split():
 
         ca_ad.X = X_normalized
 
-    # scale the data by feature
-    for ca_ad in ca_list:
-        ca_ad.X = StandardScaler().fit_transform(ca_ad.X)
-
     return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
 
 

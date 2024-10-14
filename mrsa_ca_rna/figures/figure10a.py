@@ -25,7 +25,9 @@ def genFig():
     time_df = pd.DataFrame(
         time_factors[0],
         index=time_data.obs.loc[:, "subject_id"].unique(),
-        columns=pd.Index([f"Eigenstate {i+1}" for i in range(time_factors[0].shape[1])])
+        columns=pd.Index(
+            [f"Eigenstate {i+1}" for i in range(time_factors[0].shape[1])]
+        ),
     )
 
     # clustermap setup for time metadata to indicate # time points

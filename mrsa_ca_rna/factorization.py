@@ -8,6 +8,7 @@ hold our data in an all-in-one format to ease with manipulation.
 
 import anndata as ad
 import cupy as cp
+import numpy as np
 import tensorly as tl
 import xarray as xr
 
@@ -81,6 +82,14 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     # convert the xarray dataset to a numpy list
     data_list = [data[slc].values for slc in data.data_vars]
+
+    # pad with zeros trick where needed to make Pf2 work even with few rows
+    # this is because TensorLy is using the reduced SVD, when a full SVD is needed
+    for ii in range(len(data_list)):
+        cur_rows = data_list[ii].shape[0]
+
+        if cur_rows < rank:
+            data_list[ii] = np.pad(data_list[ii], ((0, rank - cur_rows), (0, 0)))
 
     tl.set_backend("cupy")
 

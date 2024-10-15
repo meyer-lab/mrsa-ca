@@ -10,6 +10,7 @@ from mrsa_ca_rna.import_data import (
     concat_datasets,
     concat_general,
     import_breast_cancer,
+    import_covid,
     import_healthy,
 )
 
@@ -23,8 +24,9 @@ def figure11_setup():
     mrsa_ca = concat_datasets(scale=False, tpm=True)
     bc_data = import_breast_cancer(tpm=True)
     healthy_data = import_healthy(tpm=True)
+    covid_data = import_covid()
     disease_data = concat_general(
-        [mrsa_ca, bc_data, healthy_data], shrink=True, scale=True, tpm=True
+        [mrsa_ca, bc_data, healthy_data, covid_data], shrink=True, scale=True, tpm=True
     )
 
     # import time dataset (CA)
@@ -38,7 +40,7 @@ def figure11_setup():
 
     # change ranks_d back to range(1, 11) when running the full dataset!
     ranks_d = range(1, 21)
-    ranks_t = range(1, 3)
+    ranks_t = range(1, 21)
 
     r2x_d = []
     r2x_t = []

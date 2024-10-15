@@ -9,6 +9,7 @@ from mrsa_ca_rna.import_data import (
     concat_datasets,
     concat_general,
     import_breast_cancer,
+    import_covid,
     import_healthy,
 )
 
@@ -21,8 +22,9 @@ def figure12_setup():
     old_data = concat_datasets(scale=False, tpm=True)
     bc_data = import_breast_cancer(tpm=True)
     healthy_data = import_healthy(tpm=True)
+    covid_data = import_covid()
     disease_data = concat_general(
-        [old_data, healthy_data, bc_data], shrink=True, scale=True, tpm=True
+        [old_data, healthy_data, bc_data, covid_data], shrink=True, scale=True, tpm=True
     )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")

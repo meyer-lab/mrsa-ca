@@ -42,6 +42,7 @@ def figure11_setup():
     ranks_d = range(1, 21)
     ranks_t = range(1, 21)
 
+
     r2x_d = []
     r2x_t = []
 

@@ -8,9 +8,6 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import (
     ca_data_split,
     concat_datasets,
-    concat_general,
-    import_breast_cancer,
-    import_healthy,
 )
 
 
@@ -20,12 +17,7 @@ def figure11_setup():
 
     # data import, concatenation, scaling, and preparation
     # same as figure12_setup
-    mrsa_ca = concat_datasets(scale=False, tpm=True)
-    bc_data = import_breast_cancer(tpm=True)
-    healthy_data = import_healthy(tpm=True)
-    disease_data = concat_general(
-        [mrsa_ca, bc_data, healthy_data], shrink=True, scale=True, tpm=True
-    )
+    disease_data = concat_datasets(["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True)
 
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()

@@ -7,7 +7,6 @@ from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import (
     concat_datasets,
-    concat_general,
     import_breast_cancer,
     import_healthy,
 )
@@ -18,12 +17,7 @@ def figure12_setup():
 
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
-    old_data = concat_datasets(scale=False, tpm=True)
-    bc_data = import_breast_cancer(tpm=True)
-    healthy_data = import_healthy(tpm=True)
-    disease_data = concat_general(
-        [old_data, healthy_data, bc_data], shrink=True, scale=True, tpm=True
-    )
+    disease_data = concat_datasets(["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True)
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 

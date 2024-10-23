@@ -24,7 +24,7 @@ def figure_00_setup():
 
     datasets = {
         "MRSA": whole_data[whole_data.obs["disease"] == "MRSA"].to_df(),
-        "MRSA+CA+Healthy": whole_data.to_df(),
+        "MRSA+CA": whole_data.to_df(),
         "CA": whole_data[whole_data.obs["disease"] == "Candidemia"].to_df(),
     }
 

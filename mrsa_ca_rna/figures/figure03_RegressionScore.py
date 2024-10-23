@@ -32,14 +32,14 @@ def figure_03_setup(components: int = 60):
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()
     y_data = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
 
-    datasets = {"MRSA": mrsa_df, "MRSA+CA+Healthy": combined_df, "CA": ca_df}
+    datasets = {"MRSA": mrsa_df, "MRSA+CA": combined_df, "CA": ca_df}
     performance_dict = {}
 
     for dataset in datasets:
         # print(f"Performing PCA on {dataset} dataset.")
         scores_df, _, pca = perform_pca(datasets[dataset])
 
-        if dataset == "MRSA+CA+Healthy":
+        if dataset == "MRSA+CA":
             scores_df = scores_df.loc[whole_data.obs["disease"] == "MRSA", :]
 
         if dataset == "CA":

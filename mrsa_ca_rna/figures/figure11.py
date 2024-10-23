@@ -17,7 +17,9 @@ def figure11_setup():
 
     # data import, concatenation, scaling, and preparation
     # same as figure12_setup
-    disease_data = concat_datasets(["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True)
+    disease_data = concat_datasets(
+        ["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True
+    )
 
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()

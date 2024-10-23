@@ -5,11 +5,7 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import (
-    concat_datasets,
-    import_breast_cancer,
-    import_healthy,
-)
+from mrsa_ca_rna.import_data import concat_datasets
 
 
 def figure12_setup():
@@ -17,7 +13,9 @@ def figure12_setup():
 
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
-    disease_data = concat_datasets(["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True)
+    disease_data = concat_datasets(
+        ["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True
+    )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 

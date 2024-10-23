@@ -655,7 +655,8 @@ def concat_datasets(
     fillig in missing values with NaN.
 
     Parameters:
-        ad_list (list of strings):
+        ad_list (list of strings): datasets to concatenate | Default = ["mrsa", "ca"].
+            Options: "mrsa", "ca", "bc", "healthy"
         shrink (bool): whether to shrink the resulting obs to only the shared obs
         scale (bool): whether to scale the data
         tpm (bool): whether to normalize the data to TPM

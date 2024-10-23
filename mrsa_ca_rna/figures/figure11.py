@@ -18,7 +18,7 @@ def figure11_setup():
     # data import, concatenation, scaling, and preparation
     # same as figure12_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
     )
 
     # import time dataset (CA)
@@ -32,7 +32,7 @@ def figure11_setup():
 
     # change ranks_d back to range(1, 11) when running the full dataset!
     ranks_d = range(1, 21)
-    ranks_t = range(1, 3)
+    ranks_t = range(1, 21)
 
     r2x_d = []
     r2x_t = []

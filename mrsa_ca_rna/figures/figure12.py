@@ -14,7 +14,7 @@ def figure12_setup():
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "healthy"], scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
     )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")

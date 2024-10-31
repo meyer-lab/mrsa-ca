@@ -1,4 +1,5 @@
 # main module imports
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -28,9 +29,11 @@ def setup_figure00a():
         _, _, pca = perform_pca(dataset.to_df(), scale=False)
 
         components = np.arange(1, pca.n_components_ + 1, dtype=int)
+        explained = pca.explained_variance_ratio_
         total_explained = np.cumsum(pca.explained_variance_ratio_)
 
         data = pd.DataFrame(components, columns=pd.Index(["components"]))
+        data["explained"] = explained
         data["total_explained"] = total_explained
 
         dataset_list[i] = data
@@ -44,19 +47,25 @@ def genFig():
     Generate the PCA explained variance figure.
     """
 
-    fig_size = (9, 3)
+    fig_size = (9, 6)
     layout = {"ncols": 3, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
     datasets = setup_figure00a()
 
+    # plot the per component explained variance
     for i, keys in enumerate(datasets):
         a = sns.lineplot(
-            data=datasets[keys], x="components", y="total_explained", ax=ax[i]
+            data=datasets[keys], x="components", y="explained", ax=ax[i]
         )
         a.set_xlabel("# of Components")
-        a.set_ylabel("Fraction of explained variance")
+        a.set_ylabel("Component variance")
         a.set_title(f"PCA performance of {keys} dataset")
+
+        ax2 = ax[i].twinx()
+        sns.lineplot(
+            data=datasets[keys], x="components", y="Total Explained", ax=ax2, color="red"
+        )
 
     return f
 genFig()

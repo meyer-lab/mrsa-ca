@@ -55,6 +55,8 @@ jupyterlab-widgets==3.0.13
     # via ipywidgets
 kiwisolver==1.4.7
     # via matplotlib
+kneed==0.8.5
+    # via mrsa-ca-rna
 lxml==5.3.0
     # via svgutils
 matplotlib==3.9.2
@@ -73,6 +75,7 @@ numpy==2.1.1
     # via cupy-cuda12x
     # via h5py
     # via ipympl
+    # via kneed
     # via matplotlib
     # via pandas
     # via scikit-learn
@@ -122,6 +125,7 @@ scikit-learn==1.5.2
     # via mrsa-ca-rna
 scipy==1.14.1
     # via anndata
+    # via kneed
     # via scikit-learn
     # via tensorly
 seaborn==0.13.2

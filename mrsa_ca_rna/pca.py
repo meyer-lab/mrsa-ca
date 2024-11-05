@@ -12,7 +12,9 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 
-def perform_pca(data: pd.DataFrame, scale: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
+def perform_pca(
+    data: pd.DataFrame, scale: bool = True
+) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
     """
     Perform PCA on the given data.
 

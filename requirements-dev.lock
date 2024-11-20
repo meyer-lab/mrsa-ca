@@ -57,6 +57,8 @@ kiwisolver==1.4.7
     # via matplotlib
 lxml==5.3.0
     # via svgutils
+matcouply==0.1.6
+    # via mrsa-ca-rna
 matplotlib==3.9.2
     # via ipympl
     # via mrsa-ca-rna
@@ -73,6 +75,7 @@ numpy==2.1.1
     # via cupy-cuda12x
     # via h5py
     # via ipympl
+    # via matcouply
     # via matplotlib
     # via pandas
     # via scikit-learn
@@ -122,6 +125,7 @@ scikit-learn==1.5.2
     # via mrsa-ca-rna
 scipy==1.14.1
     # via anndata
+    # via matcouply
     # via scikit-learn
     # via tensorly
 seaborn==0.13.2
@@ -134,6 +138,7 @@ stack-data==0.6.3
 svgutils==0.3.4
     # via mrsa-ca-rna
 tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760
+    # via matcouply
     # via mrsa-ca-rna
 threadpoolctl==3.5.0
     # via scikit-learn

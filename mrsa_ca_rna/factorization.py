@@ -8,6 +8,7 @@ hold our data in an all-in-one format to ease with manipulation.
 
 import anndata as ad
 import cupy as cp
+import matcouply as mcp
 import numpy as np
 import tensorly as tl
 import xarray as xr
@@ -56,7 +57,7 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10):
+def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -109,6 +110,12 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10):
 
     tl.set_backend("numpy")
     rec_errors = cp.asnumpy(cp.array(rec_errors))
+
+    if l1 is not None:
+        l1_penalty = mcp.penalties.L1Penalty(l1)
+        feasibility_penalties = []
+        auxes = []
+        l1_penalty.factor_matrices_update(factors, feasibility_penalties, auxes)
 
     return (
         cp.asnumpy(weights),

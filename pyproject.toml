@@ -7,16 +7,18 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
-"scikit-learn>=1.5.0",
-"matplotlib>=3.9.0",
-"ipympl>=0.9.4",
-"pandas>=2.2.2",
-"seaborn>=0.13.2",
-"svgutils>=0.3.4",
-"anndata>=0.10.8",
-"xarray>=2024.7.0",
-"cupy-cuda12x>=13.3.0",
-"tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760"]
+    "scikit-learn>=1.5.0",
+    "matplotlib>=3.9.0",
+    "ipympl>=0.9.4",
+    "pandas>=2.2.2",
+    "seaborn>=0.13.2",
+    "svgutils>=0.3.4",
+    "anndata>=0.10.8",
+    "xarray>=2024.7.0",
+    "cupy-cuda12x>=13.3.0",
+    "tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760",
+    "matcouply>=0.1.6",
+]
 
 [project.scripts]                                                        
 fbuild = "mrsa_ca_rna.figures.base:genFigure"

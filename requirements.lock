@@ -12,6 +12,8 @@
 -e file:.
 anndata==0.10.9
     # via mrsa-ca-rna
+annoy==1.17.3
+    # via pacmap
 array-api-compat==1.8
     # via anndata
 asttokens==2.4.1
@@ -51,6 +53,8 @@ jupyterlab-widgets==3.0.13
     # via ipywidgets
 kiwisolver==1.4.7
     # via matplotlib
+llvmlite==0.43.0
+    # via numba
 lxml==5.3.0
     # via svgutils
 matcouply==0.1.6
@@ -63,7 +67,9 @@ matplotlib-inline==0.1.7
     # via ipython
 natsort==8.4.0
     # via anndata
-numpy==2.1.1
+numba==0.60.0
+    # via pacmap
+numpy==2.0.2
     # via anndata
     # via contourpy
     # via cupy-cuda12x
@@ -71,6 +77,8 @@ numpy==2.1.1
     # via ipympl
     # via matcouply
     # via matplotlib
+    # via numba
+    # via pacmap
     # via pandas
     # via scikit-learn
     # via scipy
@@ -81,6 +89,8 @@ packaging==24.1
     # via anndata
     # via matplotlib
     # via xarray
+pacmap==0.7.6
+    # via mrsa-ca-rna
 pandas==2.2.3
     # via anndata
     # via mrsa-ca-rna
@@ -110,6 +120,7 @@ pytz==2024.2
     # via pandas
 scikit-learn==1.5.2
     # via mrsa-ca-rna
+    # via pacmap
 scipy==1.14.1
     # via anndata
     # via matcouply

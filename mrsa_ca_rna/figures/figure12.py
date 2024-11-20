@@ -21,19 +21,20 @@ def figure12_setup():
 
     tensor_decomp, recon_err = perform_parafac2(disease_xr, rank=50, l1=0.5)
     disease_factors = tensor_decomp[1]
+    disease_projections = tensor_decomp[2]
     r2x = 1 - min(recon_err)
 
-    return disease_factors, r2x, disease_data
+    return disease_factors, disease_projections, r2x, disease_data
 
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (12, 8)
+    layout = {"ncols": 3, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    disease_factors, r2x, disease_data = figure12_setup()
+    disease_factors, disease_projections, r2x, disease_data = figure12_setup()
 
     disease_ranks = range(1, disease_factors[0].shape[1]+1)
     disease_ranks_labels = [str(x) for x in disease_ranks]
@@ -60,7 +61,7 @@ def genFig():
     ]
 
     # plot heatmap of disease factors
-    for i, factor in enumerate(disease_factors):
+    for i, (factor, projection) in enumerate(zip(disease_factors, disease_projections, strict=False)):
         a = sns.heatmap(
             factor,
             ax=ax[i],
@@ -72,4 +73,16 @@ def genFig():
         a.set_xlabel(x_ax_label)
         a.set_ylabel(d_ax_labels[i])
 
+        weighted_projection = projection @ disease_factors[1]
+        wp_y_labels = [str(d + " Patients") for d in disease_data.obs["disease"].unique()]
+        a = sns.heatmap(
+            weighted_projection,
+            ax=ax[i+3],
+            cmap="viridis",
+            xticklabels=5,
+            yticklabels=5,
+        )
+        a.set_title(f"{disease_data.obs['disease'].unique()[i]} Weighted Projection")
+        a.set_ylabel(wp_y_labels[i])
+        a.set_xlabel("Rank")
     return f

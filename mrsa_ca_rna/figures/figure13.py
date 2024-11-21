@@ -2,10 +2,9 @@
 disease data"""
 
 # main module imports
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
 
 # secondary module imports
 # local module imports
@@ -35,25 +34,27 @@ def figure13_setup():
     mapped_p = perform_pacmap(disease_projections)
     mapped_wp = perform_pacmap(weighted_projections)
 
-
     return mapped_p, mapped_wp, disease_data
 
-def genFig():
 
+def genFig():
     fig_size = (8, 4)
     layout = {"ncols": 2, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
     mapped_p, mapped_wp, disease_data = figure13_setup()
 
+    # Ensure the disease array is the correct shape for hstack
+    disease_array = disease_data.obs["disease"].to_numpy().reshape(-1, 1)
+
     # Create a dataframe to label the diseases for scatterplot
     data_p = pd.DataFrame(
-        np.column_stack((disease_data.obs["disease"], mapped_p)),
-        columns=["Disease", "PacMAP 1", "PacMAP 2"]
+        np.hstack((disease_array, mapped_p)),
+        columns=pd.Index(["Disease", "PacMAP 1", "PacMAP 2"]),
     )
     data_wp = pd.DataFrame(
-        np.column_stack((disease_data.obs["disease"], mapped_wp)),
-        columns=["Disease", "PacMAP 1", "PacMAP 2"]
+        np.hstack((disease_array, mapped_wp)),
+        columns=pd.Index(["Disease", "PacMAP 1", "PacMAP 2"]),
     )
     data = [data_p, data_wp]
 
@@ -63,5 +64,7 @@ def genFig():
         a.set_xlabel("PacMAP 1")
         a.set_ylabel("PacMAP 2")
 
-    
     return f
+
+
+genFig()

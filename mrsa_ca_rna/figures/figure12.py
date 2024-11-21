@@ -36,7 +36,7 @@ def genFig():
 
     disease_factors, disease_projections, r2x, disease_data = figure12_setup()
 
-    disease_ranks = range(1, disease_factors[0].shape[1]+1)
+    disease_ranks = range(1, disease_factors[0].shape[1] + 1)
     disease_ranks_labels = [str(x) for x in disease_ranks]
     # x axis label: rank
     x_ax_label = "Rank"
@@ -61,7 +61,9 @@ def genFig():
     ]
 
     # plot heatmap of disease factors
-    for i, (factor, projection) in enumerate(zip(disease_factors, disease_projections, strict=False)):
+    for i, (factor, projection) in enumerate(
+        zip(disease_factors, disease_projections, strict=False)
+    ):
         a = sns.heatmap(
             factor,
             ax=ax[i],
@@ -74,10 +76,12 @@ def genFig():
         a.set_ylabel(d_ax_labels[i])
 
         weighted_projection = projection @ disease_factors[1]
-        wp_y_labels = [str(d + " Patients") for d in disease_data.obs["disease"].unique()]
+        wp_y_labels = [
+            str(d + " Patients") for d in disease_data.obs["disease"].unique()
+        ]
         a = sns.heatmap(
             weighted_projection,
-            ax=ax[i+3],
+            ax=ax[i + 3],
             cmap="viridis",
             xticklabels=5,
             yticklabels=5,

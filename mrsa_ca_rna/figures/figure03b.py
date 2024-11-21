@@ -16,6 +16,7 @@ from mrsa_ca_rna.regression import perform_PC_LR
 
 skf = StratifiedKFold(n_splits=10)
 
+
 def setup_figure03b():
     """Perform similar analysis of figure03a, but with random pca"""
 
@@ -32,8 +33,10 @@ def setup_figure03b():
     scaled_X = StandardScaler().fit_transform(X)
     mrsa_data.X = scaled_X
 
+    # Explicitly convert X to np array to avoid calling shape on None
+    X = np.asarray(mrsa_data.X)
     # Generate a random matrix to test PC significance
-    random_data = np.random.rand(mrsa_data.X.shape[0], mrsa_data.X.shape[1])
+    random_data = np.random.rand(X.shape[0], X.shape[1])
 
     # scale random data prior to use
     scaled_random = StandardScaler().fit_transform(random_data)
@@ -41,7 +44,7 @@ def setup_figure03b():
 
     # perform PCA on random data
     _, _, random_pca = perform_pca(random_df)
-    
+
     # transform MRSA data using random PCA model
     random_xform = random_pca.transform(mrsa_data.to_df())
 
@@ -71,8 +74,8 @@ def setup_figure03b():
 
     return results, mrsa_data.obs["status"].values.astype(int)
 
-def genFig():
 
+def genFig():
     fig_size = (16, 4)
     layout = {"ncols": 4, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)

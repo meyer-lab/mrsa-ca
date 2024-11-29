@@ -6,6 +6,7 @@ We will also introduce the xarray packages and the dataset class to
 hold our data in an all-in-one format to ease with manipulation.
 """
 
+# Main module imports
 import anndata as ad
 import cupy as cp
 import matcouply as mcp
@@ -92,33 +93,65 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
         if cur_rows < rank:
             data_list[ii] = np.pad(data_list[ii], ((0, rank - cur_rows), (0, 0)))
 
-    tl.set_backend("cupy")
-
-    # perform the factorization
-    (weights, factors, projections), rec_errors = tl.decomposition.parafac2(
-        [cp.array(X) for X in data_list],
-        rank=rank,
-        n_iter_max=200,
-        init="svd",
-        svd="randomized_svd",
-        normalize_factors=True,
-        verbose=False,
-        return_errors=True,
-        n_iter_parafac=20,
-        linesearch=True,
-    )
-
-    tl.set_backend("numpy")
-    rec_errors = cp.asnumpy(cp.array(rec_errors))
-
+    # check if L1 regularization is needed
     if l1 is not None:
-        l1_penalty = mcp.penalties.L1Penalty(l1)
-        feasibility_penalties = []
-        auxes = []
-        l1_penalty.factor_matrices_update(factors, feasibility_penalties, auxes)
+        out = mcp.decomposition.parafac2_aoadmm(
+            matrices=data_list,
+            rank=rank,
+            l1_penalty=l1,
+            n_iter_max=1000,
+            init="svd",
+            svd="truncated_svd",
+            inner_n_iter_max=5,
+            return_errors=True,
+        )
+        out_cmf, diag = out
+        return out_cmf, diag.rec_errors[-1]
 
-    return (
-        cp.asnumpy(weights),
-        [cp.asnumpy(f) for f in factors],
-        [cp.asnumpy(p) for p in projections],
-    ), rec_errors
+    else:
+        tl.set_backend("cupy")
+
+        # perform the factorization
+        (weights, factors, projections), rec_errors = tl.decomposition.parafac2(
+            [cp.array(X) for X in data_list],
+            rank=rank,
+            n_iter_max=200,
+            init="svd",
+            svd="randomized_svd",
+            normalize_factors=True,
+            verbose=False,
+            return_errors=True,
+            n_iter_parafac=20,
+            linesearch=True,
+        )
+
+        tl.set_backend("numpy")
+        rec_errors = cp.asnumpy(cp.array(rec_errors))
+
+        return (
+            cp.asnumpy(weights),
+            [cp.asnumpy(f) for f in factors],
+            [cp.asnumpy(p) for p in projections],
+        ), rec_errors
+
+
+def calculate_factor_correlation(factors: list):
+    """
+    Calculate the correlation between the factor matrices
+    to determine the similarity between the factors
+
+    Parameters:
+        factors (list): The list of factor matrices
+
+    Returns:
+        corr (np.ndarray): The correlation matrix of the factors
+    """
+
+    corr = []
+    # compare every factor matrix to every other factor matrix
+    for i in range(len(factors) - 1):
+        corr.append(
+            tl.metrics.correlation_index(factors[i], factors[i + 1], method="max_score")
+        )
+
+    return min(corr)

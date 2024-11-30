@@ -1,9 +1,9 @@
 # main module imports
 import numpy as np
-import pandas as pd
 import seaborn as sns
 
 # secondary module imports
+from scipy.stats import ortho_group
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.preprocessing import StandardScaler
@@ -35,18 +35,15 @@ def setup_figure03b():
 
     # Explicitly convert X to np array to avoid calling shape on None
     X = np.asarray(mrsa_data.X)
-    # Generate a random matrix to test PC significance
-    random_data = np.random.rand(X.shape[0], X.shape[1])
 
-    # scale random data prior to use
-    scaled_random = StandardScaler().fit_transform(random_data)
-    random_df = pd.DataFrame(scaled_random, columns=mrsa_data.var_names)
+    # Generate a random matrix orthogonal matrix the same size as X
+    random_SVD = ortho_group.rvs(dim=X.shape[1])
 
-    # perform PCA on random data
-    _, _, random_pca = perform_pca(random_df)
+    # select the first 70 components of the random SVD
+    random_pca = random_SVD[:, :70]
 
     # transform MRSA data using random PCA model
-    random_xform = random_pca.transform(mrsa_data.to_df())
+    random_xform = np.dot(X, random_pca)
 
     # transform MRSA data using CA's PCA model
     mrsa_xform = ca_pca.transform(mrsa_data.to_df())

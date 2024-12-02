@@ -8,11 +8,11 @@ hold our data in an all-in-one format to ease with manipulation.
 
 # Main module imports
 import anndata as ad
-import cupy as cp
 import matcouply as mcp
 import numpy as np
 import tensorly as tl
 import xarray as xr
+from matcouply.penalties import L1Penalty, NonNegativity
 from pacmap import PaCMAP
 
 
@@ -59,9 +59,7 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(
-    data: xr.Dataset, rank: int = 10, l1: float | None = None, mapping: bool = False
-):
+def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -71,130 +69,57 @@ def perform_parafac2(
     Parameters:
         data (xarray.Dataset): The xarray dataset of the rna data
         rank (int): The rank of the tensor factorization | default=10
-        l1 (float): The L1 regularization penalty | default=None
-        mapping (bool): Whether to perform mapping of the factorization | default=False
+        l1 (float): The L1 regularization penalty
 
     Returns:
         tuple of:
-        weights (np.ndarray): The weights of the factorization
-        factors (list): The list of factor matrices, ordered by slices, rows,
-                        and columns w.r.t. rank (R). The unaligned dimension is
-                        replaced with eigenvalues (lambda) of the factorization
-                        ex. rows unaligned: (slices*rows*columns) =>
-                            (slices*R), (lambda*R), (columns*R)
-        projections (list): The list of projection matrices
-
-        if mapping, tuple of:
+            weights (np.ndarray): The weights of the factorization
+            factors (list): The list of factor matrices, ordered by slices, rows,
+                            and columns w.r.t. rank (R). The unaligned dimension is
+                            replaced with eigenvalues (lambda) of the factorization
+                            ex. rows unaligned: (slices*rows*columns) =>
+                                (slices*R), (lambda*R), (columns*R)
+            projections (list): The list of projection matrices
         mapped_p (np.ndarray): The mapped projection matrices
-        mapped_wp (np.ndarray): The mapped weighted projection matrices
-
         rec_errors (list): The list of reconstruction errors at each iteration
     """
 
     # convert the xarray dataset to a numpy list
     data_list = [data[slc].values for slc in data.data_vars]
 
-    # pad with zeros trick where needed to make Pf2 work even with few rows
-    # this is because TensorLy is using the reduced SVD, when a full SVD is needed
-    for ii in range(len(data_list)):
-        cur_rows = data_list[ii].shape[0]
-
-        if cur_rows < rank:
-            data_list[ii] = np.pad(data_list[ii], ((0, rank - cur_rows), (0, 0)))
-
     # check if L1 regularization is needed
-    if l1 is not None:
-        out = mcp.decomposition.parafac2_aoadmm(
-            matrices=data_list,
-            rank=rank,
-            l1_penalty=l1,
-            n_iter_max=1000,
-            init="svd",
-            svd="truncated_svd",
-            inner_n_iter_max=5,
-            return_errors=True,
-        )
-        (weights, factors), diag = out
-        projections = []
-        rec_errors = diag.rec_errors[-1]
+    out = mcp.decomposition.parafac2_aoadmm(
+        matrices=data_list,
+        rank=rank,
+        regs=[[NonNegativity()], [], [L1Penalty(reg_strength=l1)]],
+        n_iter_max=1000,
+        init="svd",
+        svd="randomized_svd",
+        inner_n_iter_max=5,
+        return_errors=True,
+        verbose=True,
+    )
+    (weights, factors), diag = out
+    projections = factors[1]
+    rec_errors = diag.rec_errors[-1]
 
-    else:
-        tl.set_backend("cupy")
+    # FIXME: Right now the projections are weighted projections, and the B
+    # matrix is empty. We can fix this when we see whether the regularization
+    # is helping.
+    factors[1] = np.eye(rank, rank)
 
-        # perform the factorization
-        (weights, factors, projections), rec_errors = tl.decomposition.parafac2(
-            [cp.array(X) for X in data_list],
-            rank=rank,
-            n_iter_max=200,
-            init="svd",
-            svd="randomized_svd",
-            normalize_factors=True,
-            verbose=False,
-            return_errors=True,
-            n_iter_parafac=20,
-            linesearch=True,
-        )
+    # define a pacmap object for us to use, then fit_transform the data
+    pacmap = PaCMAP(n_components=2, n_neighbors=10)
+    mapped_p = pacmap.fit_transform(np.concatenate(projections, axis=0))
 
-        tl.set_backend("numpy")
-        rec_errors = cp.asnumpy(cp.array(rec_errors))
+    # include code to make dataframes for the mapped matrices
+    # for ease of plotting later and to add disease labels?
 
-    if mapping:
-        assert len(projections) > 0, (
-            "No projections found. Are you using l1 regularization? "
-            "Regularization does not return projections."
-        )
-
-        # convert the factors and projections to numpy arrays ahead of mapping
-        weights = cp.asnumpy(weights)
-        factor_list = [cp.asnumpy(f) for f in factors]
-        projection_list = [cp.asnumpy(p) for p in projections]
-
-        patient_projections = [x @ factor_list[1] for x in projection_list]
-        patient_projections = np.concatenate(patient_projections, axis=0)
-        patient_projections = np.array(patient_projections)
-
-        weighted_projections = [x * weights for x in projection_list]
-        patient_weighted_projections = [
-            x @ factor_list[1] for x in weighted_projections
-        ]
-        patient_weighted_projections = np.concatenate(
-            patient_weighted_projections, axis=0
-        )
-        patient_weighted_projections = np.array(patient_weighted_projections)
-
-        # define a pacmap object for us to use, then fit_transform the data
-        pacmap = PaCMAP(n_components=2, n_neighbors=10)
-
-        # fit_transform needs explicit np.arrays
-        mapped_p = pacmap.fit_transform(patient_projections)
-        mapped_wp = pacmap.fit_transform(patient_weighted_projections)
-
-        # explicitly cast the mapped matrices as np.array
-        mapped_p = np.array(mapped_p)
-        mapped_wp = np.array(mapped_wp)
-
-        # include code to make dataframes for the mapped matrices
-        # for ease of plotting later and to add disease labels?
-
-        return (
-            (
-                cp.asnumpy(weights),
-                [cp.asnumpy(f) for f in factors],
-                [cp.asnumpy(p) for p in projections],
-            ),
-            (
-                mapped_p,
-                mapped_wp,
-            ),
-            rec_errors,
-        )
-
-    else:
-        return (
-            cp.asnumpy(weights),
-            [cp.asnumpy(f) for f in factors],
-            [cp.asnumpy(p) for p in projections],
-        ), rec_errors
+    return (
+        (weights, factors, projections),
+        mapped_p,
+        rec_errors,
+    )
 
 
 def calculate_factor_correlation(factors: list):

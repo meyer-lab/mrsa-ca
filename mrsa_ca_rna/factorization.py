@@ -59,7 +59,9 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None, mapping: bool = False):
+def perform_parafac2(
+    data: xr.Dataset, rank: int = 10, l1: float | None = None, mapping: bool = False
+):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -112,7 +114,8 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None, 
             inner_n_iter_max=5,
             return_errors=True,
         )
-        (weights, factors, projections), diag = out 
+        (weights, factors), diag = out
+        projections = []
         rec_errors = diag.rec_errors[-1]
 
     else:
@@ -135,22 +138,33 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None, 
         tl.set_backend("numpy")
         rec_errors = cp.asnumpy(cp.array(rec_errors))
 
+    if mapping:
+        assert len(projections) > 0, (
+            "No projections found. Are you using l1 regularization? "
+            "Regularization does not return projections."
+        )
+
         # convert the factors and projections to numpy arrays ahead of mapping
         weights = cp.asnumpy(weights)
         factor_list = [cp.asnumpy(f) for f in factors]
         projection_list = [cp.asnumpy(p) for p in projections]
 
-    if mapping:
-
         patient_projections = [x @ factor_list[1] for x in projection_list]
         patient_projections = np.concatenate(patient_projections, axis=0)
+        patient_projections = np.array(patient_projections)
 
         weighted_projections = [x * weights for x in projection_list]
-        patient_weighted_projections = [x @ factor_list[1] for x in weighted_projections]
-        patient_weighted_projections = np.concatenate(patient_weighted_projections, axis=0)
+        patient_weighted_projections = [
+            x @ factor_list[1] for x in weighted_projections
+        ]
+        patient_weighted_projections = np.concatenate(
+            patient_weighted_projections, axis=0
+        )
+        patient_weighted_projections = np.array(patient_weighted_projections)
 
         # define a pacmap object for us to use, then fit_transform the data
         pacmap = PaCMAP(n_components=2, n_neighbors=10)
+
         # fit_transform needs explicit np.arrays
         mapped_p = pacmap.fit_transform(patient_projections)
         mapped_wp = pacmap.fit_transform(patient_weighted_projections)
@@ -163,19 +177,23 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None, 
         # for ease of plotting later and to add disease labels?
 
         return (
-        weights,
-        factor_list,
-        projection_list,
-        ), (
-        mapped_p,
-        mapped_wp,
-        ), rec_errors
+            (
+                cp.asnumpy(weights),
+                [cp.asnumpy(f) for f in factors],
+                [cp.asnumpy(p) for p in projections],
+            ),
+            (
+                mapped_p,
+                mapped_wp,
+            ),
+            rec_errors,
+        )
 
     else:
         return (
-            weights,
-            factor_list,
-            projection_list,
+            cp.asnumpy(weights),
+            [cp.asnumpy(f) for f in factors],
+            [cp.asnumpy(p) for p in projections],
         ), rec_errors
 
 

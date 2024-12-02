@@ -13,6 +13,7 @@ import matcouply as mcp
 import numpy as np
 import tensorly as tl
 import xarray as xr
+from pacmap import PaCMAP
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
@@ -58,7 +59,7 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
+def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None, mapping: bool = False):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -68,6 +69,8 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
     Parameters:
         data (xarray.Dataset): The xarray dataset of the rna data
         rank (int): The rank of the tensor factorization | default=10
+        l1 (float): The L1 regularization penalty | default=None
+        mapping (bool): Whether to perform mapping of the factorization | default=False
 
     Returns:
         tuple of:
@@ -78,6 +81,10 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
                         ex. rows unaligned: (slices*rows*columns) =>
                             (slices*R), (lambda*R), (columns*R)
         projections (list): The list of projection matrices
+
+        if mapping, tuple of:
+        mapped_p (np.ndarray): The mapped projection matrices
+        mapped_wp (np.ndarray): The mapped weighted projection matrices
 
         rec_errors (list): The list of reconstruction errors at each iteration
     """
@@ -105,8 +112,8 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
             inner_n_iter_max=5,
             return_errors=True,
         )
-        out_cmf, diag = out
-        return out_cmf, diag.rec_errors[-1]
+        (weights, factors, projections), diag = out 
+        rec_errors = diag.rec_errors[-1]
 
     else:
         tl.set_backend("cupy")
@@ -128,10 +135,47 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float | None = None):
         tl.set_backend("numpy")
         rec_errors = cp.asnumpy(cp.array(rec_errors))
 
+        # convert the factors and projections to numpy arrays ahead of mapping
+        weights = cp.asnumpy(weights)
+        factor_list = [cp.asnumpy(f) for f in factors]
+        projection_list = [cp.asnumpy(p) for p in projections]
+
+    if mapping:
+
+        patient_projections = [x @ factor_list[1] for x in projection_list]
+        patient_projections = np.concatenate(patient_projections, axis=0)
+
+        weighted_projections = [x * weights for x in projection_list]
+        patient_weighted_projections = [x @ factor_list[1] for x in weighted_projections]
+        patient_weighted_projections = np.concatenate(patient_weighted_projections, axis=0)
+
+        # define a pacmap object for us to use, then fit_transform the data
+        pacmap = PaCMAP(n_components=2, n_neighbors=10)
+        # fit_transform needs explicit np.arrays
+        mapped_p = pacmap.fit_transform(patient_projections)
+        mapped_wp = pacmap.fit_transform(patient_weighted_projections)
+
+        # explicitly cast the mapped matrices as np.array
+        mapped_p = np.array(mapped_p)
+        mapped_wp = np.array(mapped_wp)
+
+        # include code to make dataframes for the mapped matrices
+        # for ease of plotting later and to add disease labels?
+
         return (
-            cp.asnumpy(weights),
-            [cp.asnumpy(f) for f in factors],
-            [cp.asnumpy(p) for p in projections],
+        weights,
+        factor_list,
+        projection_list,
+        ), (
+        mapped_p,
+        mapped_wp,
+        ), rec_errors
+
+    else:
+        return (
+            weights,
+            factor_list,
+            projection_list,
         ), rec_errors
 
 

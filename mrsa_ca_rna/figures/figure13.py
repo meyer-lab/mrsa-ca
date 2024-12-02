@@ -11,7 +11,6 @@ import seaborn as sns
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.map import perform_pacmap
 
 
 def figure13_setup():
@@ -24,17 +23,11 @@ def figure13_setup():
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
     # Perform parafac2 factorization, pull out the factors and projections
-    tensor_decomp, _ = perform_parafac2(disease_xr, rank=50, l1=0.5)
-    disease_factors = tensor_decomp[1]
-    disease_projections = tensor_decomp[2]
+    _, mapped_data, _ = perform_parafac2(disease_xr, rank=50, mapping=True)
+    unweighted_maps = mapped_data[0]
+    weighted_maps = mapped_data[1]
 
-    # Make the weighted projections and perform the pacmap
-    weighted_projections = [x @ disease_factors[1] for x in disease_projections]
-
-    mapped_p = perform_pacmap(disease_projections)
-    mapped_wp = perform_pacmap(weighted_projections)
-
-    return mapped_p, mapped_wp, disease_data
+    return unweighted_maps, weighted_maps, disease_data
 
 
 def genFig():
@@ -65,6 +58,3 @@ def genFig():
         a.set_ylabel("PacMAP 2")
 
     return f
-
-
-genFig()

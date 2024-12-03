@@ -1,9 +1,15 @@
+"""File plots an ROC curve for MRSA data under different conditions.
+These conditions are as follows:
+MRSA data, transformed using CA's PCA model, and the 'True' statuses
+MRSA data, transformed using CA's PCA model, and 'Shuffled' statuses
+Random data, made using random orthogonal matrix, and the 'True' statuses
+Random data, made using random orthogonal matrix, and 'Shuffled' statuses"""
+
 # main module imports
 import numpy as np
 import seaborn as sns
 
 # secondary module imports
-from scipy.stats import ortho_group
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.preprocessing import StandardScaler
@@ -18,7 +24,8 @@ skf = StratifiedKFold(n_splits=10)
 
 
 def setup_figure03b():
-    """Perform similar analysis of figure03a, but with random pca"""
+    """Performs logistic regression on MRSA data, transformed using CA's PCA model,
+    and using random data. The statuses are either shuffled or not for each case"""
 
     # Get MRSA data
     orig_data = concat_datasets(scale=False, tpm=True)
@@ -36,14 +43,13 @@ def setup_figure03b():
     # Explicitly convert X to np array to avoid calling shape on None
     X = np.asarray(mrsa_data.X)
 
-    # Generate a random matrix orthogonal matrix the same size as X
-    random_SVD = ortho_group.rvs(dim=X.shape[1])
+    # Generate a random matrix
+    random_matrix = np.random.rand(X.shape[1], ca_pca.components_.shape[0])
 
-    # select the first 70 components of the random SVD
-    random_pca = random_SVD[:, :70]
-
-    # transform MRSA data using random PCA model
-    random_xform = np.dot(X, random_pca)
+    Q, _ = np.linalg.qr(random_matrix)
+    
+    # transform MRSA data using random data model
+    random_xform = np.dot(X, Q)
 
     # transform MRSA data using CA's PCA model
     mrsa_xform = ca_pca.transform(mrsa_data.to_df())
@@ -51,13 +57,13 @@ def setup_figure03b():
     # perform logistic regression on transformed MRSA data, with shuffling
     shuffled_status = mrsa_data.obs.loc[:, "status"].sample(frac=1)
 
-    mrsa_dict = {"true": mrsa_xform, "random": random_xform}
-    status_dict = {"true": mrsa_data.obs.loc[:, "status"], "random": shuffled_status}
+    mrsa_dict = {"mrsa": mrsa_xform, "random": random_xform}
+    status_dict = {"true": mrsa_data.obs.loc[:, "status"], "shuffled": shuffled_status}
 
     # perform logistic regression for the following cases:
     # - True MRSA data, True status
     # - True MRSA data, Shuffled status
-    # - Random MRSA data, True status
+    # - Random data, True status
 
     results = {}
 

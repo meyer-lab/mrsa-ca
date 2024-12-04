@@ -19,10 +19,10 @@ def figure12_setup(l1_strength: float = 0.5):
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
-    tensor_decomp, recon_err = perform_parafac2(disease_xr, rank=50, l1=l1_strength)
+    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=20, l1=l1_strength)
     disease_factors = tensor_decomp[1]
     # disease_projections = tensor_decomp[2]
-    r2x = 1 - min(recon_err)
+    r2x = 1 - recon_err
 
     return disease_factors, r2x, disease_data
 
@@ -31,10 +31,10 @@ def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
     fig_size = (12, 20)
-    layout = {"ncols": 3, "nrows": 1}
+    layout = {"ncols": 3, "nrows": 5}
     ax, f, _ = setupBase(fig_size, layout)
 
-    strenghts = [0.5]
+    strenghts = [0.0001, .01, 1, 100, 10000]
 
     for i, l1_strength in enumerate(strenghts):
         disease_factors, r2x, disease_data = figure12_setup(l1_strength)

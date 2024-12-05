@@ -5,7 +5,7 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.import_data import concat_datasets, gene_converter
 
 
 def figure12_setup(l1_strength: float = 0.5):
@@ -26,6 +26,38 @@ def figure12_setup(l1_strength: float = 0.5):
 
     return disease_factors, r2x, disease_data
 
+def get_top_genes(genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, print_csv: bool = False):
+    """Reports the top n_genes by mean absolute value across all components
+    organized by component. If n_comp is specified, only the top n_comp components"""
+
+    mean_genes = pd.Series(genes.abs().mean(axis=1))
+    top_genes = mean_genes.nlargest(n_genes).index
+    top_df = genes.loc[top_genes]
+
+    # convert EnsemblGeneID to Symbol, then print to csv
+    top_df = gene_converter(
+        top_df, "EnsemblGeneID", "Symbol", "index"
+    )
+
+    # if n_comp is specified return only the top weighted components and order
+    # the genes by absolute value per component
+    if n_comp > 0:
+        top_comps = top_df.abs().sum(axis=0).nlargest(n_comp).index
+        top_df = top_df[top_comps]
+
+
+    # print to csv
+    if print_csv:
+        popped_df = top_df.reset_index(names=["Gene"])
+
+        popped_df["Gene"].to_csv(
+            "mrsa_ca_rna/output/figure12_top_genes.csv",
+            index=False,
+            header=False
+        )
+
+    return top_df
+
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
@@ -34,7 +66,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 5}
     ax, f, _ = setupBase(fig_size, layout)
 
-    strenghts = [0.0001, .01, 1, 100, 10000]
+    strenghts = [100]
 
     for i, l1_strength in enumerate(strenghts):
         disease_factors, r2x, disease_data = figure12_setup(l1_strength)
@@ -49,12 +81,10 @@ def genFig():
         # push disease_factors[2] to a pandas and pick out the top 200 most
         # correlated/anti-correlated, then trim the data
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-        mean_genes = pd.Series(genes_df.abs().mean(axis=1))
-        top_genes = mean_genes.nlargest(200).index
-        genes_df = genes_df.loc[top_genes]
+        top_genes = get_top_genes(genes_df, n_genes=200, print_csv=True)
 
         # put the new genes_df back into the disease_factors[2]
-        disease_factors[2] = genes_df.values
+        disease_factors[2] = top_genes.values
 
         # tick labels: disease, rank, genes
         disease_labels = [

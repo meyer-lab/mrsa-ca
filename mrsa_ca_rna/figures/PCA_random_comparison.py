@@ -11,7 +11,7 @@ import seaborn as sns
 
 # secondary module imports
 from sklearn.metrics import roc_auc_score, roc_curve
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 # local imports
@@ -26,15 +26,12 @@ skf = StratifiedKFold(n_splits=10)
 def make_roc_curve(X, y, y_true):
     """Function trains model on given data and returns the ROC curve"""
 
-    _, model = perform_PC_LR(X, y, return_clf=True)
+    _, y_proba, model = perform_PC_LR(X, y, return_clf=True)
 
-    y_score = cross_val_predict(model, X=X, y=y, cv=skf, method="predict_proba")
-    y_score = np.array(y_score)
-
-    fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_score[:, 1])
+    fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_proba[:, 1])
 
     data = {"FPR": fpr, "TPR": tpr}
-    score = roc_auc_score(y_true, y_score[:, 1])
+    score = roc_auc_score(y_true, y_proba[:, 1])
 
     return data, score
 

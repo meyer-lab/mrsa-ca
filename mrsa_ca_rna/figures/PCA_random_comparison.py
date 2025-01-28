@@ -26,7 +26,8 @@ skf = StratifiedKFold(n_splits=10)
 def make_roc_curve(X, y, y_true):
     """Function trains model on given data and returns the ROC curve"""
 
-    _, y_proba, model = perform_PC_LR(X, y, return_clf=True)
+    _, y_proba = perform_PC_LR(X, y, return_clf=False)  # type: ignore
+    # for the life of me, I cannot figure out how to stop pyright from complaining here
 
     fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_proba[:, 1])
 

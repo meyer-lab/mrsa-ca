@@ -28,7 +28,7 @@ def perform_PC_LR(
     X_data: pd.DataFrame,
     y_data: pd.DataFrame,
     return_clf: bool = False,
-):
+) -> tuple[float, np.ndarray] | tuple[float, np.ndarray, LogisticRegressionCV]:
     """
     Agnostically performs LogisticRegression
     with nested cross validation to passed data.
@@ -46,6 +46,7 @@ def perform_PC_LR(
         nested_score (float): nested cross validation score of the final model
         nested_proba (np.array): nested cross validation probabilities of the
                                 final model
+        clf_cv (LogisticRegressionCV): the final model if return_clf is True
     """
 
     assert (
@@ -64,14 +65,14 @@ def perform_PC_LR(
         scoring="balanced_accuracy",
     ).fit(X_data, y_data)
 
-    nested_score = cross_val_score(
+    nested_score: float = cross_val_score(
         clf_cv, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
     ).mean()
 
-    nested_proba = cross_val_predict(
+    nested_proba: np.ndarray = cross_val_predict(
         clf_cv, X=X_data, y=y_data, cv=skf, method="predict_proba", n_jobs=10
     )
-    nested_proba = np.array(nested_proba)
+    # nested_proba = np.array(nested_proba)
 
     if return_clf:
         return nested_score, nested_proba, clf_cv

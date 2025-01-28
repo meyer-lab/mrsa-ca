@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
@@ -47,12 +47,8 @@ def figure03a_setup():
     mrsa_xform = ca_pca.transform(mrsa_data.to_df())
 
     # perform logistic regression on transformed MRSA data
-    _, model = perform_PC_LR(
+    _, y_proba, model = perform_PC_LR(  # type: ignore
         mrsa_xform, mrsa_data.obs.loc[:, "status"], return_clf=True
-    )
-    # y_proba = model.predict_proba(mrsa_xform)
-    y_proba = cross_val_predict(
-        model, X=mrsa_xform, y=mrsa_data.obs["status"], cv=skf, method="predict_proba"
     )
 
     # since cross_val_predict can produce a number of types,

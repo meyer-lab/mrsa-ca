@@ -13,10 +13,7 @@ To-do:
 import numpy as np
 import pandas as pd
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.linear_model import (
-    LogisticRegression,
-    LogisticRegressionCV,
-)
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import (
     KFold,
     StratifiedKFold,
@@ -42,24 +39,23 @@ def perform_PC_LR(
                                 and subsequent nested cross validation
         y_data (pd.DataFrame): y data for regularization
                                 and subsequent nested cross validation
+        return_clf (bool): whether to return the final model or not
+
 
     Returns:
         nested_score (float): nested cross validation score of the final model
+        nested_proba (np.array): nested cross validation probabilities of the
+                                final model
     """
 
-    """
-    I changed my mind. We are going to stick with making this function 'dumb' 
-    by supplying it with pre-determined X and y data to regress. This makes it the most
-    universal
-    """
     assert (
         X_data.shape[0] == y_data.shape[0]
     ), "Passed X and y data must be the same length!"
 
     # going with Jackon's settings instead of my original ones
     # just to make sure this works.
-    pre_clf = LogisticRegressionCV(
-        l1_ratios=[0.8],
+    clf_cv = LogisticRegressionCV(
+        l1_ratios=[0.2, 0.5, 0.8],
         solver="saga",
         penalty="elasticnet",
         n_jobs=10,
@@ -68,22 +64,19 @@ def perform_PC_LR(
         scoring="balanced_accuracy",
     ).fit(X_data, y_data)
 
-    clf = LogisticRegression(
-        C=pre_clf.C_[0],
-        l1_ratio=pre_clf.l1_ratio_[0],
-        solver="saga",
-        penalty="elasticnet",
-        max_iter=100000,
-    ).fit(X_data, y_data)
-
     nested_score = cross_val_score(
-        clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
+        clf_cv, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
     ).mean()
 
+    nested_proba = cross_val_predict(
+        clf_cv, X=X_data, y=y_data, cv=skf, method="predict_proba", n_jobs=10
+    )
+    nested_proba = np.array(nested_proba)
+
     if return_clf:
-        return nested_score, clf
+        return nested_score, nested_proba, clf_cv
     else:
-        return nested_score
+        return nested_score, nested_proba
 
 
 def perform_PLSR(

@@ -51,22 +51,32 @@ def figure_00_setup():
 
     return variance_explained
 
+
 def genFig():
     """
     Start making the figure.
     """
-    fig_size = (9, 3)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (3, 3)
+    layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    datasets = figure_00_setup()
+    explained_variance = figure_00_setup()
 
-    for i, dataset in enumerate(datasets):
-        a = sns.lineplot(
-            data=datasets[dataset], x="components", y="total_explained", ax=ax[i]
-        )
-        a.set_xlabel("# of Components")
-        a.set_ylabel("Fraction of explained variance")
-        a.set_title(f"PCA performance of {dataset} dataset")
+    # convert the data to long form for seaborn
+    explained_variance = explained_variance.melt(
+        id_vars="components", var_name="dataset", value_name="explained_variance"
+    )
+
+    a = sns.lineplot(
+        data=explained_variance,
+        x="components",
+        y="explained_variance",
+        hue="dataset",
+        ax=ax[0],
+    )
+    a.set_title("Comparison of PCA Explained Variance across datasets")
+    a.set_xlabel("Components")
+    a.set_ylabel("Explained Variance")
+    a.legend(title="Dataset")
 
     return f

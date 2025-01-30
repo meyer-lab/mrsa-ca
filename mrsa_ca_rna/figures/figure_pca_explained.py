@@ -27,9 +27,9 @@ def figure_00_setup():
     ca_data = combined_data[combined_data.obs["disease"] == "Candidemia"].copy()
 
     # convert the datasets to pd.dataframes to hand to perform_pca
-    combined_data = pd.DataFrame(combined_data.X, index=combined_data.obs.index)
-    mrsa_data = pd.DataFrame(mrsa_data.X, index=mrsa_data.obs.index)
-    ca_data = pd.DataFrame(ca_data.X, index=ca_data.obs.index)
+    combined_data = combined_data.to_df()
+    mrsa_data = mrsa_data.to_df()
+    ca_data = ca_data.to_df()
 
     # perform PCA on the datasets
     _, _, combined_pca = perform_pca(combined_data, components)

@@ -15,7 +15,7 @@ from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
-from mrsa_ca_rna.regression import perform_PC_LR, perform_PLSR
+from mrsa_ca_rna.regression import perform_LR, perform_PLSR
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -49,7 +49,7 @@ def figure08b_setup():
     mrsa_scores = scores["X"]
 
     # perform logistic regression on mrsa_loadings data
-    out = perform_PC_LR(mrsa_loadings, mrsa_y, return_clf=True)
+    out = perform_LR(mrsa_loadings, mrsa_y, return_clf=True)
     if len(out) == 3:
         _, y_proba, model = out
     else:

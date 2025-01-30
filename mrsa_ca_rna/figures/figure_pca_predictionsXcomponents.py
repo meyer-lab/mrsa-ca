@@ -11,7 +11,7 @@ import seaborn as sns
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.regression import perform_PC_LR
+from mrsa_ca_rna.regression import perform_LR
 
 
 def figure_03_setup():
@@ -54,13 +54,13 @@ def figure_03_setup():
 
     # perform regression on the datasets in component subsets
     mrsa_performance = [
-        perform_PC_LR(mrsa_pc.iloc[:, : i + 1], y_true)[0] for i in range(components)
+        perform_LR(mrsa_pc.iloc[:, : i + 1], y_true)[0] for i in range(components)
     ]
     # ca_performance, _, _ = [
-    # perform_PC_LR(ca_pc.iloc[:, : i + 1], y_true) for i in range(components)
+    # perform_LR(ca_pc.iloc[:, : i + 1], y_true) for i in range(components)
     # ]
     combined_performance = [
-        perform_PC_LR(combined_pc.iloc[:, : i + 1], y_true)[0]
+        perform_LR(combined_pc.iloc[:, : i + 1], y_true)[0]
         for i in range(components)
     ]
 

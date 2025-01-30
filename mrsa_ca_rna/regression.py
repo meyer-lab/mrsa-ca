@@ -22,7 +22,7 @@ from sklearn.model_selection import (
 )
 
 
-def perform_PC_LR(
+def perform_LR(
     X_data: pd.DataFrame,
     y_data: pd.DataFrame,
     return_clf: bool = False,

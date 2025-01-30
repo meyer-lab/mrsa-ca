@@ -12,7 +12,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets, gene_converter
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.regression import perform_PC_LR
+from mrsa_ca_rna.regression import perform_LR
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -48,7 +48,7 @@ def figure03a_setup():
     patient_comps = patient_comps.loc[mrsa_index, :]
 
     # perform logistic regression on the combined data
-    out = perform_PC_LR(patient_comps, y_true, splits=20, return_clf=True)
+    out = perform_LR(patient_comps, y_true, splits=20, return_clf=True)
     if len(out) == 3:
         _, y_proba, model = out
     else:

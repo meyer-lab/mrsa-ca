@@ -48,7 +48,13 @@ def figure03a_setup():
     patient_comps = patient_comps.loc[mrsa_index, :]
 
     # perform logistic regression on the combined data
-    _, y_proba, model = perform_PC_LR(patient_comps, y_true, splits=20, return_clf=True)
+    out = perform_PC_LR(patient_comps, y_true, splits=20, return_clf=True)
+    if len(out) == 3:
+        _, y_proba, model = out
+    else:
+        _, y_proba = out
+    # required to get pyright not to complain. There's got to be an easier way
+    # to handle conditional outputs.
 
     # get the beta coefficients from the model
     weights: np.ndarray = model.coef_[0]
@@ -68,7 +74,6 @@ def figure03a_setup():
     # get the top 100 genes for each of the top 5 components
     top_comp_genes = {}
     for comp in top_comps.index:
-
         # find the top 100 genes for current component
         gene_locs = top_comps.loc[comp].abs().nlargest(100).index
 

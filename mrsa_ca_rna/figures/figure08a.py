@@ -53,7 +53,7 @@ def figure08a_setup():
         for i in range(components):
             nested_accuracy = perform_LR(
                 X_data=datasets[data].iloc[:, : i + 1], y_data=mrsa_y
-            )
+            )[0]
             accuracies[list].append(nested_accuracy)
 
     return accuracies

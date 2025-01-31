@@ -48,13 +48,7 @@ def figure03a_setup():
     patient_comps = patient_comps.loc[mrsa_index, :]
 
     # perform logistic regression on the combined data
-    out = perform_LR(patient_comps, y_true, splits=20, return_clf=True)
-    if len(out) == 3:
-        _, y_proba, model = out
-    else:
-        _, y_proba = out
-    # required to get pyright not to complain. There's got to be an easier way
-    # to handle conditional outputs.
+    _, y_proba, model = perform_LR(patient_comps, y_true, splits=20)
 
     # get the beta coefficients from the model
     weights: np.ndarray = model.coef_[0]

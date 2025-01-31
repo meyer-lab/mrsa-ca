@@ -25,9 +25,8 @@ from sklearn.model_selection import (
 def perform_LR(
     X_data: pd.DataFrame,
     y_data: pd.DataFrame,
-    return_clf: bool = False,
     splits: int = 10,
-) -> tuple[float, np.ndarray, LogisticRegressionCV] | tuple[float, np.ndarray]:
+) -> tuple[float, np.ndarray, LogisticRegressionCV]:
     """
     Agnostically performs LogisticRegression
     with nested cross validation to passed data.
@@ -78,10 +77,7 @@ def perform_LR(
     )
     nested_proba = np.array(nested_proba)
 
-    if return_clf:
-        return nested_score, nested_proba, clf_cv
-    else:
-        return nested_score, nested_proba
+    return nested_score, nested_proba, clf_cv
 
 
 def perform_PLSR(

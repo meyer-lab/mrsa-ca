@@ -49,11 +49,7 @@ def figure08b_setup():
     mrsa_scores = scores["X"]
 
     # perform logistic regression on mrsa_loadings data
-    out = perform_LR(mrsa_loadings, mrsa_y, return_clf=True)
-    if len(out) == 3:
-        _, y_proba, model = out
-    else:
-        _, y_proba = out
+    _, y_proba, model = perform_LR(mrsa_loadings, mrsa_y)
 
     # get the beta coefficients from the model, arrange them by absolute value,
     #  then tie them back to the components

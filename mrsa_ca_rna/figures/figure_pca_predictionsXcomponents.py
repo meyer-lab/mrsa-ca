@@ -60,8 +60,7 @@ def figure_03_setup():
     # perform_LR(ca_pc.iloc[:, : i + 1], y_true) for i in range(components)
     # ]
     combined_performance = [
-        perform_LR(combined_pc.iloc[:, : i + 1], y_true)[0]
-        for i in range(components)
+        perform_LR(combined_pc.iloc[:, : i + 1], y_true)[0] for i in range(components)
     ]
 
     # add the performance data to the dataframe

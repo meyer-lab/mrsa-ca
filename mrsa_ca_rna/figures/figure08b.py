@@ -10,12 +10,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
-from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
-from mrsa_ca_rna.regression import perform_PC_LR, perform_PLSR
+from mrsa_ca_rna.regression import perform_LR, perform_PLSR
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -49,14 +49,7 @@ def figure08b_setup():
     mrsa_scores = scores["X"]
 
     # perform logistic regression on mrsa_loadings data
-    _, model = perform_PC_LR(mrsa_loadings, mrsa_y, return_clf=True)
-    y_proba = cross_val_predict(
-        model, X=mrsa_loadings, y=mrsa_y, cv=skf, method="predict_proba"
-    )
-
-    # since cross_val_predict can produce a number of types,
-    # we need to make sure we are dealing with an ndarray
-    y_proba = np.array(y_proba)
+    _, y_proba, model = perform_LR(mrsa_loadings, mrsa_y)
 
     # get the beta coefficients from the model, arrange them by absolute value,
     #  then tie them back to the components

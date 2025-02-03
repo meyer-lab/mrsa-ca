@@ -26,7 +26,10 @@ def figure12_setup(l1_strength: float = 0.5):
 
     return disease_factors, r2x, disease_data
 
-def get_top_genes(genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, print_csv: bool = False):
+
+def get_top_genes(
+    genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, print_csv: bool = False
+):
     """Reports the top n_genes by mean absolute value across all components
     organized by component. If n_comp is specified, only the top n_comp components"""
 
@@ -35,9 +38,7 @@ def get_top_genes(genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, prin
     top_df = genes.loc[top_genes]
 
     # convert EnsemblGeneID to Symbol, then print to csv
-    top_df = gene_converter(
-        top_df, "EnsemblGeneID", "Symbol", "index"
-    )
+    top_df: pd.DataFrame = gene_converter(top_df, "EnsemblGeneID", "Symbol", "index")
 
     # if n_comp is specified return only the top weighted components and order
     # the genes by absolute value per component
@@ -45,15 +46,12 @@ def get_top_genes(genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, prin
         top_comps = top_df.abs().sum(axis=0).nlargest(n_comp).index
         top_df = top_df[top_comps]
 
-
     # print to csv
     if print_csv:
         popped_df = top_df.reset_index(names=["Gene"])
 
         popped_df["Gene"].to_csv(
-            "mrsa_ca_rna/output/figure12_top_genes.csv",
-            index=False,
-            header=False
+            "mrsa_ca_rna/output/figure12_top_genes.csv", index=False, header=False
         )
 
     return top_df

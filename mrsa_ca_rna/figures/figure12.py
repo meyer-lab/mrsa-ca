@@ -28,14 +28,21 @@ def figure12_setup(l1_strength: float = 0.5):
 
 
 def get_top_genes(
-    genes: pd.DataFrame, n_genes: int = 200, n_comp: int = 0, print_csv: bool = False
+    genes: pd.DataFrame,
+    threshold: float = 0.25,
+    n_comp: int = 0,
+    print_csv: bool = False,
 ):
-    """Reports the top n_genes by mean absolute value across all components
-    organized by component. If n_comp is specified, only the top n_comp components"""
+    """Reports all genes with an absolute value greater than threshold across
+    all components. If n_comp is specified, returns the top n_comp components"""
 
-    mean_genes = pd.Series(genes.abs().mean(axis=1))
-    top_genes = mean_genes.nlargest(n_genes).index
-    top_df = genes.loc[top_genes]
+    # get the top genes
+    genes_above_threshold = []
+    for index, row in genes.iterrows():
+        if (row.abs() > threshold).any():
+            genes_above_threshold.append(index)
+
+    top_df = genes.loc[genes_above_threshold]
 
     # convert EnsemblGeneID to Symbol, then print to csv
     top_df: pd.DataFrame = gene_converter(top_df, "EnsemblGeneID", "Symbol", "index")
@@ -64,7 +71,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 5}
     ax, f, _ = setupBase(fig_size, layout)
 
-    strenghts = [100]
+    strenghts = [100, 250, 500]
 
     for i, l1_strength in enumerate(strenghts):
         disease_factors, r2x, disease_data = figure12_setup(l1_strength)
@@ -79,7 +86,7 @@ def genFig():
         # push disease_factors[2] to a pandas and pick out the top 200 most
         # correlated/anti-correlated, then trim the data
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-        top_genes = get_top_genes(genes_df, n_genes=200, print_csv=True)
+        top_genes = get_top_genes(genes_df, threshold=0.25, print_csv=False)
 
         # put the new genes_df back into the disease_factors[2]
         disease_factors[2] = top_genes.values

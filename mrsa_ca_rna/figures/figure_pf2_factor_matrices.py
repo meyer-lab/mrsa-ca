@@ -1,5 +1,6 @@
 """This file plots the pf2 factor matrices for the disease datasets"""
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -19,7 +20,7 @@ def figure12_setup(l1_strength: float = 0.5):
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
-    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=20, l1=l1_strength)
+    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=5, l1=l1_strength)
     disease_factors = tensor_decomp[1]
     # disease_projections = tensor_decomp[2]
     r2x = 1 - recon_err
@@ -35,6 +36,11 @@ def get_top_genes(
 ):
     """Reports all genes with an absolute value greater than threshold across
     all components. If n_comp is specified, returns the top n_comp components"""
+
+    # check sparsity
+    A = genes.to_numpy()
+    A[np.abs(A) < 0.01] = 0
+    sparsity = 1.0 - (np.count_nonzero(A) / A.size)
 
     # get the top genes
     genes_above_threshold = []
@@ -61,17 +67,17 @@ def get_top_genes(
             "mrsa_ca_rna/output/figure12_top_genes.csv", index=False, header=False
         )
 
-    return top_df
+    return top_df, sparsity
 
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 20)
-    layout = {"ncols": 3, "nrows": 5}
+    fig_size = (12, 4)
+    layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    strenghts = [100, 250, 500]
+    strenghts = [750]
 
     for i, l1_strength in enumerate(strenghts):
         disease_factors, r2x, disease_data = figure12_setup(l1_strength)
@@ -83,10 +89,9 @@ def genFig():
         # y axis labels: disease, eigen, genes
         d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
-        # push disease_factors[2] to a pandas and pick out the top 200 most
-        # correlated/anti-correlated, then trim the data
+        # get the top genes and sparsity for the gene factor matrix
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-        top_genes = get_top_genes(genes_df, threshold=0.25, print_csv=False)
+        top_genes, sparsity = get_top_genes(genes_df, threshold=0.30, print_csv=False)
 
         # put the new genes_df back into the disease_factors[2]
         disease_factors[2] = top_genes.values
@@ -99,19 +104,52 @@ def genFig():
         ]
 
         # plot heatmap of disease factors
-        for j, factor in enumerate(disease_factors):
-            a = sns.heatmap(
-                factor,
-                ax=ax[j + (i * 3)],
-                cmap="viridis",
-                xticklabels=disease_ranks_labels,
-                yticklabels=disease_labels[j],
-            )
-            a.set_title(
-                f"Disease Factor Matrix {j+1}\n"
-                f"l1 Strength: {l1_strength}. R2X: {r2x:.2f}"
-            )
-            a.set_xlabel(x_ax_label)
-            a.set_ylabel(d_ax_labels[j])
+
+        # plot the disease factors
+        a = sns.heatmap(
+            disease_factors[0],
+            ax=ax[0 + 3 * i],
+            cmap="viridis",
+            xticklabels=disease_ranks_labels,
+            yticklabels=disease_labels[0],
+        )
+        a.set_title(
+            f"Disease Factor Matrix\n"
+            f"R2X: {r2x:.2f}"
+        )
+        a.set_xlabel(x_ax_label)
+        a.set_ylabel(d_ax_labels[0])
+
+        # plot the eigenstates
+        a = sns.heatmap(
+            disease_factors[1],
+            ax=ax[1 + 3 * i],
+            cmap="viridis",
+            xticklabels=disease_ranks_labels,
+            yticklabels=disease_labels[1],
+        )
+        a.set_title(
+            f"Eigen-state Factor Matrix\n"
+            f"R2X: {r2x:.2f}"
+        )
+        a.set_xlabel(x_ax_label)
+        a.set_ylabel(d_ax_labels[1])
+
+        # plot the gene factors
+        a = sns.heatmap(
+            disease_factors[2],
+            ax=ax[2 + 3 * i],
+            cmap="viridis",
+            xticklabels=disease_ranks_labels,
+            yticklabels=disease_labels[2],
+        )
+        a.set_title(
+            f"Gene Factor Matrix\n"
+            f"Sparsity: {sparsity:.2f}\n"
+            f"l1 Strength: {l1_strength}. R2X: {r2x:.2f}"
+        )
+        a.set_xlabel(x_ax_label)
+        a.set_ylabel(d_ax_labels[2])
 
     return f
+genFig()

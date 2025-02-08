@@ -5,10 +5,8 @@ from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import (
-    ca_data_split,
-    concat_datasets,
-)
+from mrsa_ca_rna.import_data import ca_data_split
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure11_setup():

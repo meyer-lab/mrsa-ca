@@ -6,8 +6,8 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.regression import caluclate_R2Y_Q2Y, perform_PLSR
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure07_setup():

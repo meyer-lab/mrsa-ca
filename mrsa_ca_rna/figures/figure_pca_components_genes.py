@@ -10,9 +10,9 @@ import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets, gene_converter
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
+from mrsa_ca_rna.utils import concat_datasets, gene_converter
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):

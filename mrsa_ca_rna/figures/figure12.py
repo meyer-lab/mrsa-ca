@@ -5,7 +5,7 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure12_setup():

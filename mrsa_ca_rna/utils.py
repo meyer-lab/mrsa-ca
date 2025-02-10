@@ -135,7 +135,7 @@ def gene_filter(
         ]
 
     if isinstance(data, ad.AnnData):
-        return data[data.var.index.isin(data_filtered.columns)]
+        return data[:, data.var.index.isin(data_filtered.columns)]
     else:
         return data_filtered
 

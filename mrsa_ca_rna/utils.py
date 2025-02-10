@@ -1,7 +1,7 @@
 """This file will contain utility functions for the project.
 These functions will be used throughout the project to perform various common tasks."""
 
-from typing import Literal, cast
+from typing import cast
 
 import anndata as ad
 import numpy as np
@@ -62,7 +62,7 @@ def gene_converter(
 def gene_filter(
     data: ad.AnnData | pd.DataFrame,
     threshold: float,
-    method: Literal["mean", "any", "total"],
+    method: str,
     top_n: int = 0,
 ) -> ad.AnnData | pd.DataFrame:
     """
@@ -78,7 +78,7 @@ def gene_filter(
             Assumes (samples x genes) format.
         top_n (int): number of top genes to keep
         threshold (float): minimum expression threshold to keep a gene
-        method (Literal["mean", "any", "total"]): method to use for filtering genes
+        method (str): method to use for filtering genes
 
 
     Returns:
@@ -115,6 +115,10 @@ def gene_filter(
             data_filtered = data_to_filter.loc[
                 :, data_to_filter.abs().sum() > threshold
             ]
+        else:
+            raise ValueError(
+                "Method must be 'mean', 'any', or 'total' when threshold is provided"
+            )
 
         # print out how many genes were filtered out
         print(
@@ -142,7 +146,8 @@ def gene_filter(
 
 def concat_datasets(
     ad_list=None,
-    trim: tuple = (0, "mean"),
+    filter_threshold: float = 0,
+    filter_method: str = "mean",
     shrink: bool = True,
     scale: bool = True,
     tpm: bool = True,
@@ -188,8 +193,10 @@ def concat_datasets(
     whole_ad = ad.concat(ad_list, join="inner")
 
     # if trim is True, filter out genes with low expression
-    if trim:
-        whole_ad = gene_filter(whole_ad, threshold=trim[0], method=trim[1])
+    if filter_threshold:
+        whole_ad = gene_filter(
+            whole_ad, threshold=filter_threshold, method=filter_method
+        )
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     # if shrink is False,

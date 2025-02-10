@@ -92,10 +92,10 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001):
         matrices=data_list,
         rank=rank,
         regs=[[NonNegativity()], [], [L1Penalty(reg_strength=l1)]],
-        n_iter_max=10000,
+        n_iter_max=2000,
         init="svd",
         svd="randomized_svd",
-        inner_n_iter_max=20,
+        inner_n_iter_max=10,
         return_errors=True,
         verbose=True,
     )

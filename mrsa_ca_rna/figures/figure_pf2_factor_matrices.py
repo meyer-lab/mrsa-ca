@@ -6,16 +6,16 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets, gene_converter
+from mrsa_ca_rna.utils import concat_datasets, gene_filter
 
 
-def figure12_setup(l1_strength: float = 0.5):
+def figure_setup(l1_strength: float = 0.5):
     """Set up the data for the tensor factorization and return the results"""
 
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"], trim=True, scale=True, tpm=True
     )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
@@ -28,48 +28,6 @@ def figure12_setup(l1_strength: float = 0.5):
     return disease_factors, r2x, disease_data
 
 
-def get_top_genes(
-    genes: pd.DataFrame,
-    threshold: float = 0.25,
-    n_comp: int = 0,
-    print_csv: bool = False,
-):
-    """Reports all genes with an absolute value greater than threshold across
-    all components. If n_comp is specified, returns the top n_comp components"""
-
-    # check sparsity
-    A = genes.to_numpy()
-    A[np.abs(A) < 0.01] = 0
-    sparsity = 1.0 - (np.count_nonzero(A) / A.size)
-
-    # get the top genes
-    genes_above_threshold = []
-    for index, row in genes.iterrows():
-        if (row.abs() > threshold).any():
-            genes_above_threshold.append(index)
-
-    top_df = genes.loc[genes_above_threshold]
-
-    # convert EnsemblGeneID to Symbol, then print to csv
-    top_df: pd.DataFrame = gene_converter(top_df, "EnsemblGeneID", "Symbol", "index")
-
-    # if n_comp is specified return only the top weighted components and order
-    # the genes by absolute value per component
-    if n_comp > 0:
-        top_comps = top_df.abs().sum(axis=0).nlargest(n_comp).index
-        top_df = top_df[top_comps]
-
-    # print to csv
-    if print_csv:
-        popped_df = top_df.reset_index(names=["Gene"])
-
-        popped_df["Gene"].to_csv(
-            "mrsa_ca_rna/output/figure12_top_genes.csv", index=False, header=False
-        )
-
-    return top_df, sparsity
-
-
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
@@ -80,7 +38,7 @@ def genFig():
     strenghts = [750]
 
     for i, l1_strength in enumerate(strenghts):
-        disease_factors, r2x, disease_data = figure12_setup(l1_strength)
+        disease_factors, r2x, disease_data = figure_setup(l1_strength)
 
         disease_ranks = range(1, disease_factors[0].shape[1] + 1)
         disease_ranks_labels = [str(x) for x in disease_ranks]
@@ -91,7 +49,13 @@ def genFig():
 
         # get the top genes and sparsity for the gene factor matrix
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
-        top_genes, sparsity = get_top_genes(genes_df, threshold=0.30, print_csv=False)
+        top_genes = gene_filter(genes_df.T, threshold = 0.3, method = "any")
+        top_genes = top_genes.T
+
+        # check sparsity
+        A = genes_df.to_numpy()
+        A[np.abs(A) < 0.01] = 0
+        sparsity = 1.0 - (np.count_nonzero(A) / A.size)
 
         # put the new genes_df back into the disease_factors[2]
         disease_factors[2] = top_genes.values
@@ -152,4 +116,3 @@ def genFig():
         a.set_ylabel(d_ax_labels[2])
 
     return f
-genFig()

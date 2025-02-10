@@ -135,14 +135,14 @@ def gene_filter(
         ]
 
     if isinstance(data, ad.AnnData):
-        return data[data.var.index.isin(data_filtered.columns)]
+        return data[:, data.var.index.isin(data_filtered.columns)]
     else:
         return data_filtered
 
 
 def concat_datasets(
     ad_list=None,
-    trim: bool = False,
+    trim: tuple = (0, "mean"),
     shrink: bool = True,
     scale: bool = True,
     tpm: bool = True,
@@ -155,6 +155,8 @@ def concat_datasets(
     Parameters:
         ad_list (list of strings): datasets to concatenate | Default = ["mrsa", "ca"].
             Options: "mrsa", "ca", "bc", "covid", "healthy"
+        trim (tuple): threshold and method for gene filtering.
+            Options: (threshold, method) | Default = (0, "mean")
         shrink (bool): whether to shrink the resulting obs to only the shared obs
         scale (bool): whether to scale the data
         tpm (bool): whether to normalize the data to TPM
@@ -187,7 +189,7 @@ def concat_datasets(
 
     # if trim is True, filter out genes with low expression
     if trim:
-        whole_ad = gene_filter(whole_ad, threshold=10.0, method="mean")
+        whole_ad = gene_filter(whole_ad, threshold=trim[0], method=trim[1])
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     # if shrink is False,

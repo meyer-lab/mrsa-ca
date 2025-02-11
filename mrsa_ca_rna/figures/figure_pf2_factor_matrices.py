@@ -15,7 +15,7 @@ def figure_setup(l1_strength: float = 0.5):
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid", "healthy"], trim=True, scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
     )
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
@@ -31,11 +31,11 @@ def figure_setup(l1_strength: float = 0.5):
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (8, 8)
+    layout = {"ncols": 2, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    strenghts = [750]
+    strenghts = [500, 750]
 
     for i, l1_strength in enumerate(strenghts):
         disease_factors, r2x, disease_data = figure_setup(l1_strength)
@@ -48,6 +48,7 @@ def genFig():
         d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
         # get the top genes and sparsity for the gene factor matrix
+        threshold = 0.3
         genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
         top_genes = gene_filter(genes_df.T, threshold = 0.3, method = "any")
         top_genes = top_genes.T
@@ -84,32 +85,32 @@ def genFig():
         a.set_xlabel(x_ax_label)
         a.set_ylabel(d_ax_labels[0])
 
-        # plot the eigenstates
-        a = sns.heatmap(
-            disease_factors[1],
-            ax=ax[1 + 3 * i],
-            cmap="viridis",
-            xticklabels=disease_ranks_labels,
-            yticklabels=disease_labels[1],
-        )
-        a.set_title(
-            f"Eigen-state Factor Matrix\n"
-            f"R2X: {r2x:.2f}"
-        )
-        a.set_xlabel(x_ax_label)
-        a.set_ylabel(d_ax_labels[1])
+        # # plot the eigenstates
+        # a = sns.heatmap(
+        #     disease_factors[1],
+        #     ax=ax[1 + 3 * i],
+        #     cmap="viridis",
+        #     xticklabels=disease_ranks_labels,
+        #     yticklabels=disease_labels[1],
+        # )
+        # a.set_title(
+        #     f"Eigen-state Factor Matrix\n"
+        #     f"R2X: {r2x:.2f}"
+        # )
+        # a.set_xlabel(x_ax_label)
+        # a.set_ylabel(d_ax_labels[1])
 
         # plot the gene factors
         a = sns.heatmap(
             disease_factors[2],
-            ax=ax[2 + 3 * i],
+            ax=ax[1 + 3 * i],
             cmap="viridis",
             xticklabels=disease_ranks_labels,
             yticklabels=disease_labels[2],
         )
         a.set_title(
-            f"Gene Factor Matrix\n"
-            f"Sparsity: {sparsity:.2f}\n"
+            f"Gene Factor Matrix, genes > {threshold}\n"
+            f"Sparsity of entire Gene Matrix: {sparsity:.2f}\n"
             f"l1 Strength: {l1_strength}. R2X: {r2x:.2f}"
         )
         a.set_xlabel(x_ax_label)

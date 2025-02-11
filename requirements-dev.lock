@@ -12,12 +12,21 @@
 -e file:.
 anndata==0.10.9
     # via mrsa-ca-rna
+annotated-types==0.7.0
+    # via pydantic
 annoy==1.17.3
     # via pacmap
 array-api-compat==1.8
     # via anndata
 asttokens==2.4.1
     # via stack-data
+certifi==2025.1.31
+    # via requests
+    # via sentry-sdk
+charset-normalizer==3.4.1
+    # via requests
+click==8.1.8
+    # via wandb
 comm==0.2.2
     # via ipywidgets
 contourpy==1.3.0
@@ -28,12 +37,20 @@ cycler==0.12.1
     # via matplotlib
 decorator==5.1.1
     # via ipython
+docker-pycreds==0.4.0
+    # via wandb
 executing==2.1.0
     # via stack-data
 fonttools==4.54.1
     # via matplotlib
+gitdb==4.0.12
+    # via gitpython
+gitpython==3.1.44
+    # via wandb
 h5py==3.12.0
     # via anndata
+idna==3.10
+    # via requests
 iniconfig==2.0.0
     # via pytest
 ipympl==0.9.4
@@ -105,14 +122,24 @@ pexpect==4.9.0
 pillow==10.4.0
     # via ipympl
     # via matplotlib
+platformdirs==4.3.6
+    # via wandb
 pluggy==1.5.0
     # via pytest
 prompt-toolkit==3.0.48
     # via ipython
+protobuf==5.29.3
+    # via wandb
+psutil==6.1.1
+    # via wandb
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
+pydantic==2.10.6
+    # via wandb
+pydantic-core==2.27.2
+    # via pydantic
 pygments==2.18.0
     # via ipython
 pyparsing==3.1.4
@@ -126,6 +153,10 @@ python-dateutil==2.9.0.post0
     # via pandas
 pytz==2024.2
     # via pandas
+pyyaml==6.0.2
+    # via wandb
+requests==2.32.3
+    # via wandb
 scikit-learn==1.5.2
     # via mrsa-ca-rna
     # via pacmap
@@ -136,9 +167,18 @@ scipy==1.14.1
     # via tensorly
 seaborn==0.13.2
     # via mrsa-ca-rna
+sentry-sdk==2.20.0
+    # via wandb
+setproctitle==1.3.4
+    # via wandb
+setuptools==75.8.0
+    # via wandb
 six==1.16.0
     # via asttokens
+    # via docker-pycreds
     # via python-dateutil
+smmap==5.0.2
+    # via gitdb
 stack-data==0.6.3
     # via ipython
 svgutils==0.3.4
@@ -156,9 +196,17 @@ traitlets==5.14.3
     # via matplotlib-inline
 typing-extensions==4.12.2
     # via ipython
+    # via pydantic
+    # via pydantic-core
     # via pyright
+    # via wandb
 tzdata==2024.2
     # via pandas
+urllib3==2.3.0
+    # via requests
+    # via sentry-sdk
+wandb==0.19.6
+    # via mrsa-ca-rna
 wcwidth==0.2.13
     # via prompt-toolkit
 widgetsnbextension==4.0.13

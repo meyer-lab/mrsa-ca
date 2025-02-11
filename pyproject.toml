@@ -18,6 +18,7 @@ dependencies = [
     "tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760",
     "matcouply>=0.1.6",
     "pacmap>=0.7.6",
+    "wandb>=0.19.6",
 ]
 
 [project.scripts]                                                        

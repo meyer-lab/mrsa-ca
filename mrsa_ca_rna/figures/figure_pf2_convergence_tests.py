@@ -23,6 +23,8 @@ Genes: all genes
 from mrsa_ca_rna.utils import concat_datasets
 from mrsa_ca_rna.factorization import prepare_data, perform_parafac2
 
+import wandb as wb
+
 def best_set():
     # Test #1: Regularization
     # Diseases: all datasets
@@ -40,14 +42,24 @@ def best_set():
             ad_list = ["mrsa", "ca", "bc", "covid", "healthy"].remove(exclude)
         
 
-        for threshold in [0, 5, 10]:
+        for threshold in [0, 1, 3]:
 
             adata = concat_datasets(ad_list=ad_list, filter_threshold=threshold, filter_method="mean", shrink=True, scale=True, tpm=True)
             data_xr = prepare_data(adata, expansion_dim="disease")
         
             # Test L1 Strengths
             for l1_strength in [250, 500, 750]:
-                decomposition, _, diag = perform_parafac2(data_xr, rank=5, l1=l1_strength)
+
+                wb.init(project="pf2_large_scale_params", config={"l1_strength": l1_strength, "threshold": threshold, "exclude": exclude})
+                def callback(rec_error, rel_loss, C_sparsity):
+                    wb.log({"rec_error": rec_error, "rel_loss": rel_loss, "C_sparsity": C_sparsity})
+
+                try:
+                    decomposition, _, diag = perform_parafac2(data_xr, rank=5, l1=l1_strength, callback=callback)
+
+                finally:
+                    wb.finish()
+
                 factors = decomposition[1]
                 rec_errors = diag.rec_errors[-1]
                 abs_loss = diag.regularized_loss[-1]
@@ -63,5 +75,31 @@ def best_set():
 
     return best_rel_loss, best_l1_strength, best_threshold, best_exclude
 
-bests = best_set()
-print(bests)
+def l1_testing():
+
+    ad_list = ["mrsa", "ca", "bc", "covid", "healthy"]
+
+    adata = concat_datasets(ad_list=ad_list, filter_threshold=0, filter_method="mean")
+    data_xr = prepare_data(adata, expansion_dim="disease")
+
+    for l1_strength in [250, 500, 750, 1000]:
+
+        wb.init(project="pf2_20_comps_l1_testing", config={"l1_strength": l1_strength})
+        def callback(rec_error, rel_loss, C_sparsity):
+            wb.log({"rec_error": rec_error, "rel_loss": rel_loss, "C_sparsity": C_sparsity})
+
+        try:
+            decomposition, _, diag = perform_parafac2(data_xr, rank=20, l1=l1_strength, callback=callback)
+
+        finally:
+            wb.finish()
+
+        factors = decomposition[1]
+        rec_errors = diag.rec_errors[-1]
+        abs_loss = diag.regularized_loss[-1]
+        rel_loss = (diag.regularized_loss[-2] - diag.regularized_loss[-1]) / diag.regularized_loss[-2]
+        feasible = diag.satisfied_feasibility_condition
+
+    return rel_loss
+    
+l1_testing()

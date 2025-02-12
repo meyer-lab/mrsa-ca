@@ -59,7 +59,7 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001):
+def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001, callback=None):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -92,12 +92,13 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001):
         matrices=data_list,
         rank=rank,
         regs=[[NonNegativity()], [], [L1Penalty(reg_strength=l1)]],
-        n_iter_max=5000,
+        n_iter_max=2000,
         init="svd",
         svd="randomized_svd",
-        inner_n_iter_max=5,
+        inner_n_iter_max=10,
         return_errors=True,
         verbose=True,
+        callback=callback,
     )
     (weights, factors), diag = out
     projections = factors[1]

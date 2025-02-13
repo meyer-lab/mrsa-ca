@@ -36,11 +36,11 @@ def figure11_setup():
     r2x_t = []
 
     for rank_d in ranks_d:
-        _, rec_errors_d = perform_parafac2(disease_xr, rank=rank_d)
+        _, _, rec_errors_d = perform_parafac2(disease_xr, rank=rank_d)
         r2x_d.append(1 - min(rec_errors_d))
 
     for rank_t in ranks_t:
-        _, rec_errors_t = perform_parafac2(time_xr, rank=rank_t)
+        _, _, rec_errors_t = perform_parafac2(time_xr, rank=rank_t)
         r2x_t.append(1 - min(rec_errors_t))
 
     return r2x_d, r2x_t

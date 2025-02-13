@@ -192,13 +192,6 @@ def concat_datasets(
     # concat all anndata objects together keeping only the vars and obs in common
     whole_ad = ad.concat(ad_list, join="inner")
 
-    # if trim is True, filter out genes with low expression
-    if filter_threshold:
-        whole_ad = gene_filter(
-            whole_ad, threshold=filter_threshold, method=filter_method
-        )
-        assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
-
     # if shrink is False,
     # replace the resulting obs with a pd.concat of all obs data in obs_list
     if not shrink:
@@ -216,6 +209,13 @@ def concat_datasets(
         X_normalized = X * scaling_factors[:, np.newaxis]
 
         whole_ad.X = X_normalized
+
+    # if trim is True, filter out genes with low expression
+    if filter_threshold:
+        whole_ad = gene_filter(
+            whole_ad, threshold=filter_threshold, method=filter_method
+        )
+        assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     if scale:
         whole_ad.X = StandardScaler().fit_transform(whole_ad.X)

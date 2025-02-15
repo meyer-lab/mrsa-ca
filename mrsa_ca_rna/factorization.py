@@ -59,7 +59,13 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001, callback=None):
+def perform_parafac2(
+    data: xr.Dataset,
+    rank: int = 10,
+    l1: float = 0.00001,
+    normalize=False,
+    callback=None,
+):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -92,17 +98,25 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.00001, call
         matrices=data_list,
         rank=rank,
         regs=[[NonNegativity()], [], [L1Penalty(reg_strength=l1)]],
-        n_iter_max=2000,
+        n_iter_max=500,
         init="svd",
         svd="randomized_svd",
         inner_n_iter_max=10,
         return_errors=True,
-        verbose=True,
+        verbose=False,
+        normalize_factors=normalize,
         callback=callback,
     )
     (weights, factors), diag = out
     projections = factors[1]
-    rec_errors = diag.rec_errors[-1]
+    rec_error = diag.rec_errors[-1]
+    feasible = diag.satisfied_feasibility_condition
+    print(
+        f"Fit summary:\n"
+        f"Regularization strength: {l1}\n"
+        f"Feasible: {feasible}\n"
+        f"Reconstruction error: {rec_error}\n"
+    )
 
     # FIXME: Right now the projections are weighted projections, and the B
     # matrix is empty. We can fix this when we see whether the regularization

@@ -1,6 +1,7 @@
 """This file will contain utility functions for the project.
 These functions will be used throughout the project to perform various common tasks."""
 
+from copy import deepcopy
 from typing import cast
 
 import anndata as ad
@@ -192,13 +193,6 @@ def concat_datasets(
     # concat all anndata objects together keeping only the vars and obs in common
     whole_ad = ad.concat(ad_list, join="inner")
 
-    # if trim is True, filter out genes with low expression
-    if filter_threshold:
-        whole_ad = gene_filter(
-            whole_ad, threshold=filter_threshold, method=filter_method
-        )
-        assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
-
     # if shrink is False,
     # replace the resulting obs with a pd.concat of all obs data in obs_list
     if not shrink:
@@ -217,7 +211,29 @@ def concat_datasets(
 
         whole_ad.X = X_normalized
 
+    # if trim is True, filter out genes with low expression
+    if filter_threshold:
+        whole_ad = gene_filter(
+            whole_ad, threshold=filter_threshold, method=filter_method
+        )
+        assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
+
     if scale:
         whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
 
     return whole_ad
+
+def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
+    """Check the sparsity of a numpy array
+
+    Parameters:
+        array (np.ndarray): the array to check
+        threshold (float): the threshold for sparsity | default=1e-4
+
+    Returns:
+        sparsity (float): the sparsity of the array"""
+
+    A = deepcopy(array)
+    A[np.abs(A) < threshold] = 0
+    sparsity = 1.0 - (np.count_nonzero(A) / A.size)
+    return sparsity

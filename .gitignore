@@ -1,4 +1,7 @@
 mrsa_ca_rna/output
+wandb/*
+output/modified_ca_series.txt
+.vscode/launch.json
 
 *.pyc
 
@@ -138,4 +141,4 @@ dmypy.json
 .DS_Store
 
 *.svg
-output/modified_ca_series.txt
+

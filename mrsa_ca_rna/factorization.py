@@ -57,7 +57,9 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0, normalize: bool = False):
+def perform_parafac2(
+    data: xr.Dataset, rank: int = 10, l1: float = 0.0, normalize: bool = False
+):
     """
     Perform the parafac2 tensor factorization on passed xarray dataset data,
     with a specified rank. The data should be in the form of a dataset with
@@ -85,6 +87,14 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0, normaliz
     # convert the xarray dataset to a numpy list
     data_list = [data[slc].values for slc in data.data_vars]
 
+    # pad with zeros trick where needed to make Pf2 work even with few rows
+    # this is because TensorLy is using the reduced SVD, when a full SVD is needed
+    for ii in range(len(data_list)):
+        cur_rows = data_list[ii].shape[0]
+
+        if cur_rows < rank:
+            data_list[ii] = np.pad(data_list[ii], ((0, rank - cur_rows), (0, 0)))
+
     # check if L1 regularization is needed
     out = mcp.decomposition.parafac2_aoadmm(
         matrices=data_list,
@@ -95,7 +105,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0, normaliz
         svd="randomized_svd",
         inner_n_iter_max=10,
         return_errors=True,
-        verbose=True,
+        verbose=False,
     )
     (weights, factors), diag = out
     projections = factors[1]
@@ -112,6 +122,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0, normaliz
         AC_factors, weights = normalize_factors([factors[0], factors[2]])
         factors[0], factors[2] = AC_factors
 
+    # FIXME: reimplement when we have B matrix and projection sorted
     # define a pacmap object for us to use, then fit_transform the data
     pacmap = PaCMAP(n_components=2, n_neighbors=10)
     mapped_p = pacmap.fit_transform(np.concatenate(projections, axis=0))
@@ -124,6 +135,7 @@ def perform_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0, normaliz
         mapped_p,
         rec_errors,
     )
+
 
 def normalize_factors(factors: list[np.ndarray]) -> tuple[list[np.ndarray], np.ndarray]:
     """Normalize the factor matrices of a tensor factorization

@@ -223,6 +223,7 @@ def concat_datasets(
 
     return whole_ad
 
+
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
     """Check the sparsity of a numpy array
 

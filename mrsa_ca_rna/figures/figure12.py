@@ -19,9 +19,9 @@ def figure12_setup():
 
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
-    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=50)
+    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=10)
     disease_factors = tensor_decomp[1]
-    r2x = 1 - min(recon_err)
+    r2x = 1 - recon_err
 
     return disease_factors, r2x, disease_data
 

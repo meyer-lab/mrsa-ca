@@ -23,9 +23,9 @@ class Factor_tests(unittest.TestCase):
         )
         mean_target = np.zeros(16315)
         std_target = np.ones(16315)
-        npt.assert_allclose(concat_data.X.mean(axis=0), mean_target, atol=1e-5)
-        npt.assert_allclose(concat_data.X.std(axis=0), std_target, rtol=1e-5)
-
+        X = np.array(concat_data.X)
+        npt.assert_allclose(X.mean(axis=0), mean_target, atol=1e-5)
+        npt.assert_allclose(X.std(axis=0), std_target, rtol=1e-5)
 
     def test_prepare_data(self):
         disease_data = concat_datasets(

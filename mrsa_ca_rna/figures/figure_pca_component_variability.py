@@ -12,9 +12,10 @@ from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.utils import concat_datasets
 
 
-def matrix_cosines(a, b):
+def matrix_cosines(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
     """
     Compute the column-wsie cosine similarity between two matrices
+    which are organized as dataframes.
     """
     return np.array(
         [
@@ -28,7 +29,7 @@ def figure_setup():
     mrsa_ca = concat_datasets(["mrsa", "ca"], scale=True).to_df()
 
     # start with a pca decomposition of the true data
-    scores_true, _, _ = perform_pca(mrsa_ca, components=70)
+    _, loadings_true, _ = perform_pca(mrsa_ca, components=70)
 
 
     # resample the data 
@@ -49,9 +50,9 @@ def figure_setup():
     # perform PCA on each resampled dataset, storing the metrics of interest
     # into the dataframes
     for i, data in enumerate(resampled_data):
-        scores, _, pca = perform_pca(data, components=70)
+        _, loadings, pca = perform_pca(data, components=70)
         pca_singular_values.iloc[:, i] = pca.singular_values_
-        pca_diff.iloc[:, i] = matrix_cosines(scores_true, scores)
+        pca_diff.iloc[:, i] = matrix_cosines(loadings_true.T, loadings.T)
 
     return pca_singular_values, pca_diff
 

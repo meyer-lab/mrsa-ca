@@ -200,11 +200,9 @@ traitlets==5.14.3
     # via ipywidgets
     # via matplotlib-inline
 typing-extensions==4.12.2
-    # via ipython
     # via pydantic
     # via pydantic-core
     # via pyright
-    # via wandb
 tzdata==2024.2
     # via pandas
 urllib3==2.3.0

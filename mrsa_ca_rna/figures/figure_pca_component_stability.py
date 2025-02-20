@@ -8,6 +8,7 @@ weights, which are averaged across iterations and plotted.
 """
 
 import anndata as ad
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -40,7 +41,6 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
     if "status" not in data.obs.columns:
         raise ValueError("data must have a 'status' column in obs")
 
-
     combined_data = data.copy().to_df()
     y_true = data.obs.loc[data.obs["status"] != "Unknown", "status"]
     combined_data["status"] = y_true
@@ -51,7 +51,6 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
     V = None
     coef_list = []
     for i in range(iterations):
-
         if U is not None:
             old_scores = scores
             old_U = U
@@ -67,7 +66,7 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
         V = V_T.T
 
         # separate the scores into U and sigma
-        U: pd.DataFrame = (scores/(pca.singular_values_))
+        U: pd.DataFrame = scores / (pca.singular_values_)
         sigma = pca.singular_values_
 
         # # check U and V for orthogonality across components
@@ -86,8 +85,9 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
             mse_U = mean_squared_error(U, old_U)
             mse_sigma = mean_squared_error(sigma, old_sigma)
             mse_V = mean_squared_error(V, old_V)
-            print(f"Iteration {i}:\nScores MSE: {mse_scores}, U MSE: {mse_U}, Sigma MSE: {mse_sigma}, V MSE: {mse_V}")
-
+            print(
+                f"Iteration {i}:\nScores MSE: {mse_scores}, U MSE: {mse_U}, Sigma MSE: {mse_sigma}, V MSE: {mse_V}"
+            )
 
         # pop in the resampled y values and drop rows with NaN to get just the MRSA data
         U["status"] = y_resampled
@@ -102,7 +102,6 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
 
         coef_list.append(pd.DataFrame(model.coef_, index=[i], columns=U_mrsa.columns))
 
-
     coef_list = pd.concat(coef_list).T
 
     # order the rows by the mean beta weight, then by smallest standard deviation
@@ -113,7 +112,8 @@ def stability_insights(data: ad.AnnData, iterations: int = 5):
 
     return coef_list
 
-def component_stability_test(data: ad.AnnData, iterations: int = 5):
+
+def component_stability_test(data: ad.AnnData, iterations: int = 10):
     """
     Tests the stability of the PCA components across bootstrapped iterations
     of the combined dataset regressed against the MRSA status.
@@ -139,6 +139,8 @@ def component_stability_test(data: ad.AnnData, iterations: int = 5):
 
     hperf_coef_list = []
     lperf_coef_list = []
+    hperf_pats = []
+    lperf_pats = []
     for i in range(iterations):
         # resample the data and pop-out the y values
         resampled_data = resample(combined_data)
@@ -147,45 +149,67 @@ def component_stability_test(data: ad.AnnData, iterations: int = 5):
         # perform PCA on the combined dataset
         scores, _, _ = perform_pca(resampled_data, components=4)
 
-        # # perform the linear sum assignment to match components
-        # _, col_ind = linear_sum_assignment(scores.abs(), maximize=True)
+        # perform the linear sum assignment to match components
+        _, col_ind = linear_sum_assignment(scores.abs(), maximize=True)
 
-        # # standardize the components
-        # scores: pd.DataFrame = scores.iloc[:, col_ind]
+        # standardize the components
+        scores: pd.DataFrame = scores.iloc[:, col_ind]
 
         # pop in the resampled y values and drop rows with NaN to get just the MRSA data
         scores["status"] = y_resampled
         scores = scores.dropna(axis=0)
 
         # split the data into X and y
-        y_true = scores.pop("status")
+        y_resampled = scores.pop("status")
 
         # perform logistic regression and collect beta coefficient data
-        nested_score, _, model = perform_LR(scores, y_true, splits=10)
+        nested_score, _, model = perform_LR(scores, y_resampled, splits=10)
 
         # collect the high performance beta coefficients
         if nested_score >= 0.7:
-            hperf_coef_list.append(pd.DataFrame(model.coef_, index=[i], columns=scores.columns))
+            hperf_coef_list.append(
+                pd.DataFrame(model.coef_, index=[i], columns=scores.columns)
+            )
+            hperf_pats.append(scores.index.to_numpy())
         else:
-            lperf_coef_list.append(pd.DataFrame(model.coef_, index=[i], columns=scores.columns))
-
+            lperf_coef_list.append(
+                pd.DataFrame(model.coef_, index=[i], columns=scores.columns)
+            )
+            lperf_pats.append(scores.index.to_numpy())
 
     hperf_coef_data = pd.concat(hperf_coef_list).T
     lperf_coef_data = pd.concat(lperf_coef_list).T
 
+    h_pats = np.concatenate(hperf_pats)
+    l_pats = np.concatenate(lperf_pats)
+
+    h_pats = pd.Series(h_pats).value_counts()
+    h_pats = pd.concat([h_pats, y_true], axis=1).dropna(axis=0)
+    h_pats = h_pats.reset_index(drop=False, names=["patient"])
+    h_pats["percent"] = 100 * h_pats["count"] / h_pats["count"].sum()
+
+    l_pats = pd.Series(l_pats).value_counts()
+    l_pats = pd.concat([l_pats, y_true], axis=1).dropna(axis=0)
+    l_pats = l_pats.reset_index(drop=False, names=["patient"])
+    l_pats["percent"] = 100 * l_pats["count"] / l_pats["count"].sum()
+
     # order the rows by the mean beta weight, then by smallest standard deviation
     hperf_coef_data["Mean"] = hperf_coef_data.mean(axis=1).abs()
     hperf_coef_data["Std"] = hperf_coef_data.std(axis=1)
-    hperf_coef_data = hperf_coef_data.sort_values(by=["Mean", "Std"], ascending=[False, True])
+    hperf_coef_data = hperf_coef_data.sort_values(
+        by=["Mean", "Std"], ascending=[False, True]
+    )
     hperf_coef_data.drop(columns=["Mean", "Std"], inplace=True)
 
     # order the rows by the mean beta weight, then by smallest standard deviation
     lperf_coef_data["Mean"] = lperf_coef_data.mean(axis=1).abs()
     lperf_coef_data["Std"] = lperf_coef_data.std(axis=1)
-    lperf_coef_data = lperf_coef_data.sort_values(by=["Mean", "Std"], ascending=[False, True])
+    lperf_coef_data = lperf_coef_data.sort_values(
+        by=["Mean", "Std"], ascending=[False, True]
+    )
     lperf_coef_data.drop(columns=["Mean", "Std"], inplace=True)
 
-    return hperf_coef_data, lperf_coef_data
+    return hperf_coef_data, lperf_coef_data, h_pats, l_pats
 
 
 def setup_figure():
@@ -193,7 +217,7 @@ def setup_figure():
     collect the data necessary to plot
     """
     data = concat_datasets(["mrsa", "ca"], scale=True, tpm=True)
-    results = component_stability_test(data, iterations=100)
+    results = component_stability_test(data, iterations=10)
     # results = stability_insights(data, iterations=10)
 
     return results
@@ -204,8 +228,8 @@ def genFig():
     Generate the figure for the PCA component stability test
     """
 
-    fig_size = (8, 8)
-    layout = {"ncols": 1, "nrows": 2}
+    fig_size = (10, 16)
+    layout = {"ncols": 1, "nrows": 4}
     ax, f, _ = setupBase(fig_size, layout)
 
     results = setup_figure()
@@ -216,7 +240,7 @@ def genFig():
     # results = results.melt(
     #         id_vars="Component", var_name="Iteration", value_name="Beta Weight"
     #     )
-    
+
     # a = sns.boxplot(x="Component", y="Beta Weight", data=results, ax=ax[0])
     # a.set_xlabel("Component")
     # a.set_ylabel("Beta Weight")
@@ -224,6 +248,8 @@ def genFig():
 
     h_results = results[0]
     l_results = results[1]
+    h_pats = results[2]
+    l_pats = results[3]
 
     n_high = h_results.shape[1]
     n_low = l_results.shape[1]
@@ -231,12 +257,12 @@ def genFig():
     # convert the results to long form
     h_results.reset_index(drop=False, inplace=True, names=["Component"])
     h_results = h_results.melt(
-            id_vars="Component", var_name="Iteration", value_name="Beta Weight"
-        )
+        id_vars="Component", var_name="Iteration", value_name="Beta Weight"
+    )
     l_results.reset_index(drop=False, inplace=True, names=["Component"])
     l_results = l_results.melt(
-            id_vars="Component", var_name="Iteration", value_name="Beta Weight"
-        )
+        id_vars="Component", var_name="Iteration", value_name="Beta Weight"
+    )
 
     a = sns.boxplot(x="Component", y="Beta Weight", data=h_results, ax=ax[0])
     a.set_xlabel("Component")
@@ -247,5 +273,33 @@ def genFig():
     a.set_xlabel("Component")
     a.set_ylabel("Beta Weight")
     a.set_title(f"Low Performance Components ({n_low} < 0.7 BA)")
+
+    a = sns.barplot(
+        data=h_pats,
+        x="patient",
+        y="percent",
+        hue="status",
+        hue_order=["1", "0"],
+        palette="pastel",
+        ax=ax[2],
+    )
+    a.set_title("High Performance Patients")
+    a.set_xlabel("Patient")
+    a.set_ylabel("Resample Incidences (Percent)")
+    a.set_xticklabels(a.get_xticklabels(), rotation=90)
+
+    a = sns.barplot(
+        data=l_pats,
+        x="patient",
+        y="percent",
+        hue="status",
+        hue_order=["1", "0"],
+        palette="pastel",
+        ax=ax[3],
+    )
+    a.set_title("Low Performance Patients")
+    a.set_xlabel("Patient")
+    a.set_ylabel("Resample Incidences (Percent)")
+    a.set_xticklabels(a.get_xticklabels(), rotation=90)
 
     return f

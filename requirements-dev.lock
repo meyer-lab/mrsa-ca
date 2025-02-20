@@ -144,7 +144,6 @@ traitlets==5.14.3
     # via ipywidgets
     # via matplotlib-inline
 typing-extensions==4.12.2
-    # via ipython
     # via pyright
 tzdata==2024.2
     # via pandas

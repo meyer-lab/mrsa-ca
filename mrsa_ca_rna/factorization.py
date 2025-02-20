@@ -47,6 +47,14 @@ def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
     return X
 
 
+def new_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0):
+    """new parafac2 tensor factorization using parafac2_nd function
+    
+    TODO: fill out function with data massaging to fit parafac2_nd
+    """
+
+
+
 def perform_parafac2(
     X: ad.AnnData,
     condition_name: str = "disease",

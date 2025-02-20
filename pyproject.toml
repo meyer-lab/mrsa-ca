@@ -20,6 +20,7 @@ dependencies = [
     "matcouply>=0.1.6",
     "wandb>=0.19.6",
     "pacmap>=0.8.0",
+    "parafac2 @ git+https://github.com/meyer-lab/parafac2@constrained-cp",
 ]
 
 [project.scripts]                                                        

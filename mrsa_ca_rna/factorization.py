@@ -12,6 +12,7 @@ import numpy as np
 import xarray as xr
 from matcouply.penalties import L1Penalty, NonNegativity
 from pacmap import PaCMAP
+from parafac2 import parafac2_nd
 
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
@@ -55,6 +56,14 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     )
 
     return data_xr
+
+
+def new_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0):
+    """new parafac2 tensor factorization using parafac2_nd function
+    
+    TODO: fill out function with data massaging to fit parafac2_nd
+    """
+
 
 
 def perform_parafac2(

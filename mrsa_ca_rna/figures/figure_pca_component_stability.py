@@ -8,7 +8,6 @@ weights, which are averaged across iterations and plotted.
 """
 
 import anndata as ad
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -55,7 +54,7 @@ def component_stability_test(data: ad.AnnData, iterations: int = 10):
         y_resampled = resampled_data.pop("status")
 
         # perform PCA on the combined dataset
-        scores, _, _ = perform_pca(resampled_data, components=4)
+        scores, _, _ = perform_pca(resampled_data, components=5)
 
         # perform the linear sum assignment to match components
         _, col_ind = linear_sum_assignment(scores.abs(), maximize=True)
@@ -125,7 +124,7 @@ def setup_figure():
     collect the data necessary to plot
     """
     data = concat_datasets(["mrsa", "ca"], scale=True, tpm=True)
-    results = component_stability_test(data, iterations=10)
+    results = component_stability_test(data, iterations=100)
 
     return results
 

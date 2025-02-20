@@ -145,7 +145,7 @@ def component_stability_test(data: ad.AnnData, iterations: int = 5):
         y_resampled = resampled_data.pop("status")
 
         # perform PCA on the combined dataset
-        scores, _, _ = perform_pca(resampled_data, components=10)
+        scores, _, _ = perform_pca(resampled_data, components=4)
 
         # # perform the linear sum assignment to match components
         # _, col_ind = linear_sum_assignment(scores.abs(), maximize=True)
@@ -193,8 +193,8 @@ def setup_figure():
     collect the data necessary to plot
     """
     data = concat_datasets(["mrsa", "ca"], scale=True, tpm=True)
-    # results = component_stability_test(data, iterations=1000)
-    results = stability_insights(data, iterations=1000)
+    results = component_stability_test(data, iterations=100)
+    # results = stability_insights(data, iterations=10)
 
     return results
 
@@ -204,48 +204,48 @@ def genFig():
     Generate the figure for the PCA component stability test
     """
 
-    fig_size = (8, 4)
-    layout = {"ncols": 1, "nrows": 1}
+    fig_size = (8, 8)
+    layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
     results = setup_figure()
     # standard_dev = statistics["Std"].to_numpy()
 
+    # # convert the results to long form
+    # results.reset_index(drop=False, inplace=True, names=["Component"])
+    # results = results.melt(
+    #         id_vars="Component", var_name="Iteration", value_name="Beta Weight"
+    #     )
+    
+    # a = sns.boxplot(x="Component", y="Beta Weight", data=results, ax=ax[0])
+    # a.set_xlabel("Component")
+    # a.set_ylabel("Beta Weight")
+    # a.set_title("Component Stability, using U (Scores/Sigma)")
+
+    h_results = results[0]
+    l_results = results[1]
+
+    n_high = h_results.shape[1]
+    n_low = l_results.shape[1]
+
     # convert the results to long form
-    results.reset_index(drop=False, inplace=True, names=["Component"])
-    results = results.melt(
+    h_results.reset_index(drop=False, inplace=True, names=["Component"])
+    h_results = h_results.melt(
             id_vars="Component", var_name="Iteration", value_name="Beta Weight"
         )
-    
-    a = sns.boxplot(x="Component", y="Beta Weight", data=results, ax=ax[0])
+    l_results.reset_index(drop=False, inplace=True, names=["Component"])
+    l_results = l_results.melt(
+            id_vars="Component", var_name="Iteration", value_name="Beta Weight"
+        )
+
+    a = sns.boxplot(x="Component", y="Beta Weight", data=h_results, ax=ax[0])
     a.set_xlabel("Component")
     a.set_ylabel("Beta Weight")
-    a.set_title("Component Stability, using U (Scores/Sigma)")
+    a.set_title(f"High Performance Components ({n_high} > 0.7 BA)")
 
-    # h_results = results[0]
-    # l_results = results[1]
-
-    # n_high = h_results.shape[1]
-    # n_low = l_results.shape[1]
-
-    # # convert the results to long form
-    # h_results.reset_index(drop=False, inplace=True, names=["Component"])
-    # h_results = h_results.melt(
-    #         id_vars="Component", var_name="Iteration", value_name="Beta Weight"
-    #     )
-    # l_results.reset_index(drop=False, inplace=True, names=["Component"])
-    # l_results = l_results.melt(
-    #         id_vars="Component", var_name="Iteration", value_name="Beta Weight"
-    #     )
-
-    # a = sns.boxplot(x="Component", y="Beta Weight", data=h_results, ax=ax[0])
-    # a.set_xlabel("Component")
-    # a.set_ylabel("Beta Weight")
-    # a.set_title(f"High Performance Components ({n_high} > 0.7 BA)")
-
-    # a = sns.boxplot(x="Component", y="Beta Weight", data=l_results, ax=ax[1])
-    # a.set_xlabel("Component")
-    # a.set_ylabel("Beta Weight")
-    # a.set_title(f"Low Performance Components ({n_low} < 0.7 BA)")
+    a = sns.boxplot(x="Component", y="Beta Weight", data=l_results, ax=ax[1])
+    a.set_xlabel("Component")
+    a.set_ylabel("Beta Weight")
+    a.set_title(f"Low Performance Components ({n_low} < 0.7 BA)")
 
     return f

@@ -1,4 +1,6 @@
-"""This file will plot the factor matrices of the CA time data"""
+"""This file plots the patient factor matrix for the CA time data
+along with patient metadata (currently number of time points) to
+assess as a possible relationship between the two"""
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -16,9 +16,9 @@ from sklearn.preprocessing import StandardScaler
 
 # local imports
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.regression import perform_PC_LR
+from mrsa_ca_rna.regression import perform_LR
+from mrsa_ca_rna.utils import concat_datasets
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -26,7 +26,7 @@ skf = StratifiedKFold(n_splits=10)
 def make_roc_curve(X, y, y_true):
     """Function trains model on given data and returns the ROC curve"""
 
-    _, y_proba = perform_PC_LR(X, y, return_clf=False)  # type: ignore
+    _, y_proba = perform_LR(X, y, return_clf=False)  # type: ignore
     # for the life of me, I cannot figure out how to stop pyright from complaining here
 
     fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_proba[:, 1])

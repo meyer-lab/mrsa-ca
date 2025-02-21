@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.figures.figure10 import figure10_setup
+from mrsa_ca_rna.figures.figure_pf2_time_factors import figure10_setup
 from mrsa_ca_rna.import_data import ca_data_split
 
 

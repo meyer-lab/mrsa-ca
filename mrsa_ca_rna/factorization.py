@@ -70,7 +70,9 @@ def new_parafac2(X: ad.AnnData, condition_name: str = "disease", rank: int = 10,
     means = np.mean(X.X, axis=0)  # type: ignore
     X.var["means"] = means
 
-    weights, factors, projections, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
+    decomposition, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
+    factors = decomposition[1]
+    projections = decomposition[2]
 
     return factors, projections, R2X
 

@@ -23,7 +23,7 @@ def figure12_setup():
     # disease_factors = tensor_decomp[1]
     # r2x = 1 - recon_err
 
-    factors, _, r2x = new_parafac2(disease_data, condition_name="disease", rank=10, l1=0.1)
+    factors, _, r2x = new_parafac2(disease_data, condition_name="disease", rank=50, l1=1e-5)
 
     return factors, r2x, disease_data
 
@@ -75,4 +75,3 @@ def genFig():
         a.set_ylabel(d_ax_labels[i])
 
     return f
-genFig()

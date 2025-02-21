@@ -3,7 +3,7 @@
 import pandas as pd
 import seaborn as sns
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.factorization import perform_parafac2, prepare_data, new_parafac2
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import concat_datasets
 
@@ -17,13 +17,15 @@ def figure12_setup():
         ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
     )
 
-    disease_xr = prepare_data(disease_data, expansion_dim="disease")
+    # disease_xr = prepare_data(disease_data, expansion_dim="disease")
 
-    tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=10)
-    disease_factors = tensor_decomp[1]
-    r2x = 1 - recon_err
+    # tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=10)
+    # disease_factors = tensor_decomp[1]
+    # r2x = 1 - recon_err
 
-    return disease_factors, r2x, disease_data
+    factors, _, r2x = new_parafac2(disease_data, condition_name="disease", rank=10, l1=0.1)
+
+    return factors, r2x, disease_data
 
 
 def genFig():
@@ -73,3 +75,4 @@ def genFig():
         a.set_ylabel(d_ax_labels[i])
 
     return f
+genFig()

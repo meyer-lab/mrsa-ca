@@ -58,11 +58,22 @@ def prepare_data(data_ad: ad.AnnData, expansion_dim: str = "None"):
     return data_xr
 
 
-def new_parafac2(data: xr.Dataset, rank: int = 10, l1: float = 0.0):
-    """new parafac2 tensor factorization using parafac2_nd function
-    
-    TODO: fill out function with data massaging to fit parafac2_nd
-    """
+def new_parafac2(X: ad.AnnData, condition_name: str = "disease", rank: int = 10, l1: float = 0.0):
+
+
+    # Get the indices for subsetting the data
+    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    X.obs["condition_unique_idxs"] = sgIndex
+    X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
+
+    # Pre-calculate gene means
+    means = np.mean(X.X, axis=0)  # type: ignore
+    X.var["means"] = means
+
+    weights, factors, projections, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
+
+    return factors, projections, R2X
+
 
 
 

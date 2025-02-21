@@ -18,11 +18,9 @@ def matrix_cosines(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
     which are organized as dataframes.
     """
     return np.array(
-        [
-            spatial.distance.cosine(a.iloc[:, i], b.iloc[:, i])
-            for i in range(a.shape[1])
-        ]
+        [spatial.distance.cosine(a.iloc[:, i], b.iloc[:, i]) for i in range(a.shape[1])]
     )
+
 
 def figure_setup():
     # import and convert the data to pandas for resample
@@ -31,14 +29,16 @@ def figure_setup():
     # start with a pca decomposition of the true data
     _, loadings_true, _ = perform_pca(mrsa_ca, components=70)
 
-
-    # resample the data 
+    # resample the data
     n_resamples = 100
-    resampled_data = [resample(mrsa_ca, replace=True) for _ in range(n_resamples)]
+    resampled_data: list[pd.DataFrame] = [
+        resample(mrsa_ca, replace=True)
+        for _ in range(n_resamples)  # type: ignore
+    ]
 
     # set up dataframes
-    pc_index = [f"{i}" for i in range(1, 71)]
-    pc_columns = [f"Resample {i+1}" for i in range(n_resamples)]
+    pc_index = pd.Index([f"{i}" for i in range(1, 71)])
+    pc_columns = pd.Index([f"Resample {i+1}" for i in range(n_resamples)])
 
     pca_singular_values = pd.DataFrame(
         np.zeros((70, n_resamples)), columns=pc_columns, index=pc_index

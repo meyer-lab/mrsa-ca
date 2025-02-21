@@ -18,7 +18,7 @@ def figure10_setup():
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
     # going above rank = 2 causes function failure
-    tensor_decomp, _ = perform_parafac2(time_xr, rank=20)
+    tensor_decomp, _, _ = perform_parafac2(time_xr, rank=2)
     time_factors = tensor_decomp[1]
 
     return time_factors

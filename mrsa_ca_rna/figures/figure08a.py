@@ -7,8 +7,8 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
-from mrsa_ca_rna.regression import perform_PC_LR, perform_PLSR
+from mrsa_ca_rna.regression import perform_LR, perform_PLSR
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure08a_setup():
@@ -51,9 +51,9 @@ def figure08a_setup():
     }
     for list, data in zip(accuracies, datasets, strict=False):
         for i in range(components):
-            nested_accuracy = perform_PC_LR(
+            nested_accuracy = perform_LR(
                 X_data=datasets[data].iloc[:, : i + 1], y_data=mrsa_y
-            )
+            )[0]
             accuracies[list].append(nested_accuracy)
 
     return accuracies

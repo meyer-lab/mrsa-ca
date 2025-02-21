@@ -9,115 +9,11 @@ from typing import cast
 import anndata as ad
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
 
-def gene_converter(
-    data, old_id: str, new_id: str, method: str = "values"
-) -> pd.DataFrame | ad.AnnData:
-    """Converts gene ids from one type to another in a dataframe
-
-    Parameters:
-        dataframe (pd.DataFrame): dataframe containing gene ids to convert
-        old_id (str): column name of the current gene id
-        new_id (str): column name of the desired gene id
-
-    Returns:
-        dataframe (pd.DataFrame) or adata (ad.AnnData): data with gene ids converted"""
-
-    human_annot = import_human_annot()
-    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id], strict=False))
-
-    # first check if the data is a pd.DataFrame or an ad.AnnData,
-    # then convert the gene ids based on the method
-    if isinstance(data, pd.DataFrame):
-        dataframe: pd.DataFrame = data.copy()
-        if method == "values":
-            dataframe = dataframe.replace(gene_conversion)
-        elif method == "index":
-            dataframe.index = dataframe.index.map(gene_conversion)
-        elif method == "columns":
-            dataframe.columns = dataframe.columns.map(gene_conversion)
-        return dataframe
-    # if the data is an AnnData object, convert the gene ids based on the method
-    elif isinstance(data, ad.AnnData):
-        adata: ad.AnnData = data.copy()
-        assert method != "values", "Cannot convert values in AnnData object"
-        if method == "index":
-            adata.obs.index = adata.obs.index.map(gene_conversion)
-        elif method == "columns":
-            adata.var.index = adata.var.index.map(gene_conversion)
-        return adata
-    else:
-        raise ValueError("Data must be a pandas DataFrame or an AnnData object")
-
-
-# WIP function to filter out select genes
-def trim_RBC(data: ad.AnnData):
-    """Trims out RBC related genes from the data to prevent overexpressed RBC genes
-    such as HBA1 and HBA2 from contaminating the data.
-
-    Parameters:
-        data (ad.AnnData): RNA data to filter
-
-    Returns:
-        data (ad.AnnData): filtered RNA data
-    """
-    # list of RBC related genes
-    rbc_genes = [
-        "RN7SL1",
-        "RN7SL2",
-        "HBA1",
-        "HBA2",
-        "HBB",
-        "HBQ1",
-        "HBZ",
-        "HBD",
-        "HBG2",
-        "HBE1",
-        "HBG1",
-        "HBM",
-        "MIR3648-1",
-        "MIR3648-2",
-        "AC104389.6",
-        "AC010507.1",
-        "SLC25A37",
-        "SLC4A1, NRGN",
-        "SNCA",
-        "BNIP3L",
-        "EPB42",
-        "ALAS2",
-        "BPGM",
-        "OSBP2",
-    ]
-
-    # check if the genes are in Ensembl format, if so, convert them to gene symbols
-    if data.var.index.str.contains("ENSG").all():
-        data_converted = gene_converter(
-            data, "EnsemblGeneID", "Symbol", method="columns"
-        )
-        assert isinstance(data_converted, ad.AnnData), "Gene conversion did not result \
-            in an AnnData object"
-        revert = True
-    else:
-        data_converted = data.copy()
-        revert = False
-
-    # drop the RBC genes from the data
-
-    data_trimmed = data_converted[:, ~data_converted.var.index.isin(rbc_genes)]
-
-    # if the data was converted to gene symbols, convert it back to EnsemblGeneID
-    if revert:
-        data_trimmed = gene_converter(
-            data_trimmed, "Symbol", "EnsemblGeneID", method="columns"
-        )
-
-    return data_trimmed
-
-
+# annotations for the human genome
 def import_human_annot():
     human_annot = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "Human_GRCh38_p13_annot.tsv.gz"),
@@ -129,6 +25,7 @@ def import_human_annot():
     return human_annot
 
 
+# start with metadata for MRSA
 def import_mrsa_meta():
     """
     reads mrsa metadata from patient_metadata_mrsa.txt
@@ -146,6 +43,7 @@ def import_mrsa_meta():
     return mrsa_meta
 
 
+# import validation metadata for MRSA
 def import_mrsa_val_meta():
     mrsa_val_meta = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "validation_patient_metadata_mrsa.txt"),
@@ -156,6 +54,7 @@ def import_mrsa_val_meta():
     return mrsa_val_meta
 
 
+# this dataset contains all mrsa rna data
 def import_mrsa_rna():
     """
     reads mrsa rna data from rna_combat_tpm_mrsa
@@ -397,6 +296,117 @@ def import_ca_val_rna():
     return ca_val_rna
 
 
+def ca_data_split():
+    ca_disc_meta = import_ca_disc_meta()
+    ca_val_meta = import_ca_val_meta()
+    ca_disc_rna = import_ca_disc_rna()
+    ca_val_rna = import_ca_val_rna()
+
+    ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
+    ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
+
+    # add a status column to all meta data
+    ca_meta["status"] = "Unknown"
+
+    # seperate out the candidemia and healthy data
+    ca_meta_c = ca_meta.loc[ca_meta["disease"] == "Candidemia", :]
+    ca_meta_h = ca_meta.loc[ca_meta["disease"] == "Healthy", :]
+
+    # extract the time data by looking for duplicate subject_id.
+    # Duplicates = time points
+    ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
+    ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
+
+    gene_labels = list(ca_rna.columns)
+    meta_labels = ["subject_id", "gender", "age", "time", "disease", "status"]
+
+    # make dataframes of the time, non-time, and healthy data
+    # easily keep only shared samples by using the join="inner" argument
+    ca_rna_timed = pd.concat(
+        [
+            ca_meta_c_t.loc[:, meta_labels],
+            ca_rna,
+        ],
+        axis=1,
+        keys=["meta", "rna"],
+        join="inner",
+    )
+
+    ca_rna_nontimed = pd.concat(
+        [
+            ca_meta_c_nt.loc[:, meta_labels],
+            ca_rna,
+        ],
+        axis=1,
+        keys=["meta", "rna"],
+        join="inner",
+    )
+
+    healthy_rna = pd.concat(
+        [
+            ca_meta_h.loc[:, meta_labels],
+            ca_rna,
+        ],
+        axis=1,
+        join="inner",
+        keys=["meta", "rna"],
+    )
+
+    # put the time and non-timed data into anndata objects
+    # use the lables with loc to allow pyright to know they are dataframes
+    # because we have to send dataframes, we have to drop the top level for anndata
+    ca_rna_timed_ad = ad.AnnData(
+        ca_rna_timed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=ca_rna_timed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
+    ca_rna_nontimed_ad = ad.AnnData(
+        ca_rna_nontimed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
+    healthy_rna_ad = ad.AnnData(
+        healthy_rna.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
+        obs=healthy_rna.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
+    )
+
+    ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
+
+    # re-TPM the RNA data by default by normalizing each row to 1,000,000
+    desired_value = 1000000
+
+    for ca_ad in ca_list:
+        # I know ca_ad.X is an ndarray, but pyright doesn't
+        # replace this with proper type gating to avoid the cast
+        X = cast(np.ndarray, ca_ad.X)
+        row_sums = X.sum(axis=1)
+
+        scaling_factors = desired_value / row_sums
+
+        X_normalized = X * scaling_factors[:, np.newaxis]
+
+        ca_ad.X = X_normalized
+
+    return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
+
+
+# concat the ca datasets
+def concat_ca():
+    """
+    Concatenate the CA data along the patient axis and
+    return an annotated AnnData object.
+
+    Returns:
+        ca_ad (AnnData): concatenated CA data with all required annotations.
+    """
+
+    ca_timed, ca_nontimed, _ = ca_data_split()
+
+    # concat all anndata objects together keeping only the vars in common
+    #  and expanding the obs to include all
+    ca_ad = ad.concat([ca_timed, ca_nontimed], axis=0, join="inner")
+
+    return ca_ad
+
+
 def import_breast_cancer_meta():
     """import breast cancer metadata from the GEO file"""
     breast_cancer_meta = pd.read_csv(
@@ -531,192 +541,43 @@ def import_healthy(tpm: bool = True):
     return healthy_ad
 
 
-def ca_data_split():
-    ca_disc_meta = import_ca_disc_meta()
-    ca_val_meta = import_ca_val_meta()
-    ca_disc_rna = import_ca_disc_rna()
-    ca_val_rna = import_ca_val_rna()
-
-    ca_rna = pd.concat([ca_disc_rna, ca_val_rna], axis=0, join="inner")
-    ca_meta = pd.concat([ca_disc_meta, ca_val_meta], axis=0, join="inner")
-
-    # add a status column to all meta data
-    ca_meta["status"] = "Unknown"
-
-    # seperate out the candidemia and healthy data
-    ca_meta_c = ca_meta.loc[ca_meta["disease"] == "Candidemia", :]
-    ca_meta_h = ca_meta.loc[ca_meta["disease"] == "Healthy", :]
-
-    # extract the time data by looking for duplicate subject_id.
-    # Duplicates = time points
-    ca_meta_c_t = ca_meta_c.loc[ca_meta_c["subject_id"].duplicated(keep=False), :]
-    ca_meta_c_nt = ca_meta_c.loc[~ca_meta_c["subject_id"].duplicated(keep=False), :]
-
-    gene_labels = list(ca_rna.columns)
-    meta_labels = ["subject_id", "gender", "age", "time", "disease", "status"]
-
-    # make dataframes of the time, non-time, and healthy data
-    # easily keep only shared samples by using the join="inner" argument
-    ca_rna_timed = pd.concat(
-        [
-            ca_meta_c_t.loc[:, meta_labels],
-            ca_rna,
-        ],
-        axis=1,
-        keys=["meta", "rna"],
-        join="inner",
+def import_covid_meta():
+    """import covid metadata from the GEO file"""
+    covid_meta = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "covid_metadata.txt"),
+        delimiter=",",
+        index_col=0,
     )
 
-    ca_rna_nontimed = pd.concat(
-        [
-            ca_meta_c_nt.loc[:, meta_labels],
-            ca_rna,
-        ],
-        axis=1,
-        keys=["meta", "rna"],
-        join="inner",
-    )
+    covid_meta_trimmed = covid_meta.loc[:, ["sex", "disease", "disease_staging"]]
 
-    healthy_rna = pd.concat(
-        [
-            ca_meta_h.loc[:, meta_labels],
-            ca_rna,
-        ],
-        axis=1,
-        join="inner",
-        keys=["meta", "rna"],
-    )
+    return covid_meta_trimmed
 
-    # put the time and non-timed data into anndata objects
-    # use the lables with loc to allow pyright to know they are dataframes
-    # because we have to send dataframes, we have to drop the top level for anndata
-    ca_rna_timed_ad = ad.AnnData(
-        ca_rna_timed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=ca_rna_timed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
-    )
-    ca_rna_nontimed_ad = ad.AnnData(
-        ca_rna_nontimed.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=ca_rna_nontimed.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
-    )
-    healthy_rna_ad = ad.AnnData(
-        healthy_rna.loc[:, ("rna", gene_labels)].droplevel(0, axis=1),
-        obs=healthy_rna.loc[:, ("meta", meta_labels)].droplevel(0, axis=1),
-    )
 
-    ca_list = [ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad]
+def import_covid():
+    covid_raw = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "covid_all_counts.txt"),
+        delimiter="\t",
+        index_col=0,
+    )
+    covid_raw = covid_raw.dropna(axis=1, how="all")
 
-    # re-TPM the RNA data by default by normalizing each row to 1,000,000
+    covid_meta = import_covid_meta()
+
+    covid_raw.reset_index(inplace=True, names="sample_id")
+    covid_raw.loc[:, ["sample_id"]] = covid_raw["sample_id"].str.split(
+        ".", expand=True
+    )[0]
+    covid_raw.set_index("sample_id", inplace=True)
+
+    covid_ad = ad.AnnData(covid_raw.T, obs=covid_meta)
+
+    # tpm normalize the data
     desired_value = 1000000
+    X = cast(np.ndarray, covid_ad.X)
+    row_sums = X.sum(axis=1)
+    scaling_factors = desired_value / row_sums
+    X_normalized = X * scaling_factors[:, np.newaxis]
+    covid_ad.X = X_normalized
 
-    for ca_ad in ca_list:
-        # I know ca_ad.X is an ndarray, but pyright doesn't
-        # replace this with proper type gating to avoid the cast
-        X = cast(np.ndarray, ca_ad.X)
-        row_sums = X.sum(axis=1)
-
-        scaling_factors = desired_value / row_sums
-
-        X_normalized = X * scaling_factors[:, np.newaxis]
-
-        ca_ad.X = X_normalized
-
-    return ca_rna_timed_ad, ca_rna_nontimed_ad, healthy_rna_ad
-
-
-ca_data_split()
-
-
-def concat_datasets(scale: bool = True, tpm: bool = True):
-    """
-    Concatenate the MRSA and CA data along the patient axis and
-    return an annotated AnnData object.
-
-    Parameters:
-        scale (bool): whether to z-score the data along features (genes)
-        tpm (bool): whether to normalize the data to TPM
-
-    Returns:
-        rna_ad (AnnData): concatenated RNA data with all required annotations.
-    """
-
-    # start a list of rna datasets to be concatenated at the end of this function
-    rna_list = list()
-
-    """import mrsa data and set up mrsa_rna df with all required annotations. 
-    Includes 'validation' dataset"""
-
-    mrsa_ad = import_mrsa_rna()
-    rna_list.append(mrsa_ad)
-
-    ca_timed, ca_nontimed, ca_healthy = ca_data_split()
-    rna_list.append(ca_timed)
-    rna_list.append(ca_nontimed)
-    rna_list.append(ca_healthy)
-
-    # concat all anndata objects together keeping only the vars in common
-    #  and expanding the obs to include all
-    rna_ad = ad.concat(rna_list, axis=0, join="inner")
-
-    # re-TPM the RNA data by default by normalizing each row to 1,000,000
-    if tpm:
-        desired_value = 1000000
-        # I know rna_ad.X is an ndarray, but pyright doesn't
-        # replace this with proper type gating to avoid the cast
-        X = cast(np.ndarray, rna_ad.X)
-        row_sums = X.sum(axis=1)
-
-        scaling_factors = desired_value / row_sums
-
-        X_normalized = X * scaling_factors[:, np.newaxis]
-
-        rna_ad.X = X_normalized
-
-    if scale:
-        rna_ad.X = StandardScaler().fit_transform(rna_ad.X)
-
-    return rna_ad
-
-
-def concat_general(ad_list, shrink: bool = True, scale: bool = True, tpm: bool = True):
-    """
-    Concatenate any group of AnnData objects together along the genes axis.
-    Truncates to shared genes and expands obs to include all observations,
-    fillig in missing values with NaN.
-
-    Parameters:
-        ad_list (list or list-like): list of AnnData objects to concatenate
-        scale (bool): whether to scale the data
-        tpm (bool): whether to normalize the data to TPM
-
-    Returns:
-        ad (AnnData): concatenated AnnData object
-    """
-
-    # collect the obs data from each AnnData object
-    obs_list = [ad.obs for ad in ad_list]
-
-    # concat all anndata objects together keeping only the vars and obs in common
-    whole_ad = ad.concat(ad_list, join="inner")
-
-    # if shrink is False,
-    # replace the resulting obs with a pd.concat of all obs data in obs_list
-    if not shrink:
-        whole_ad.obs = pd.concat(obs_list, axis=0, join="outer")
-
-    if tpm:
-        desired_value = 1000000
-        # I know whole_ad.X is an ndarray, but pyright doesn't
-        # replace this with proper type gating to avoid the cast
-        X = cast(np.ndarray, whole_ad.X)
-        row_sums = X.sum(axis=1)
-
-        scaling_factors = desired_value / row_sums
-
-        X_normalized = X * scaling_factors[:, np.newaxis]
-
-        whole_ad.X = X_normalized
-
-    if scale:
-        whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
-
-    return whole_ad
+    return covid_ad

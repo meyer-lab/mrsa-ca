@@ -13,10 +13,7 @@ To-do:
 import numpy as np
 import pandas as pd
 from sklearn.cross_decomposition import PLSRegression
-from sklearn.linear_model import (
-    LogisticRegression,
-    LogisticRegressionCV,
-)
+from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import (
     KFold,
     StratifiedKFold,
@@ -24,13 +21,12 @@ from sklearn.model_selection import (
     cross_val_score,
 )
 
-skf = StratifiedKFold(n_splits=10)
 
-
-def perform_PC_LR(
+def perform_LR(
     X_data: pd.DataFrame,
     y_data: pd.DataFrame,
-):
+    splits: int = 10,
+) -> tuple[float, np.ndarray, LogisticRegressionCV]:
     """
     Agnostically performs LogisticRegression
     with nested cross validation to passed data.
@@ -41,24 +37,29 @@ def perform_PC_LR(
                                 and subsequent nested cross validation
         y_data (pd.DataFrame): y data for regularization
                                 and subsequent nested cross validation
+        return_clf (bool): whether to return the classifier or not.
+                            Default = False
+        splits (int): number of splits for nested cross validation.
+                        Default = 10
 
     Returns:
         nested_score (float): nested cross validation score of the final model
+        nested_proba (np.ndarray): nested cross validation predicted probabilities
+                                    of the final model
+        clf_cv (LogisticRegressionCV): classifier object if return_clf is True
     """
 
-    """
-    I changed my mind. We are going to stick with making this function 'dumb' 
-    by supplying it with pre-determined X and y data to regress. This makes it the most
-    universal
-    """
     assert (
         X_data.shape[0] == y_data.shape[0]
     ), "Passed X and y data must be the same length!"
 
-    # going with Jackon's settings instead of my original ones
-    # just to make sure this works.
-    pre_clf = LogisticRegressionCV(
-        l1_ratios=[0.8],
+    # set up stratified kfold for nested cross validation
+    skf = StratifiedKFold(n_splits=splits)
+
+    # perform logistic regression with nested cross validation
+    # eventually settle on a single l1_ratio?
+    clf_cv = LogisticRegressionCV(
+        l1_ratios=[0.2, 0.5, 0.8],
         solver="saga",
         penalty="elasticnet",
         n_jobs=10,
@@ -67,19 +68,16 @@ def perform_PC_LR(
         scoring="balanced_accuracy",
     ).fit(X_data, y_data)
 
-    clf = LogisticRegression(
-        C=pre_clf.C_[0],
-        l1_ratio=pre_clf.l1_ratio_[0],
-        solver="saga",
-        penalty="elasticnet",
-        max_iter=100000,
-    ).fit(X_data, y_data)
-
     nested_score = cross_val_score(
-        clf, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
+        clf_cv, X=X_data, y=y_data, cv=skf, scoring="balanced_accuracy", n_jobs=10
     ).mean()
 
-    return nested_score
+    nested_proba = cross_val_predict(
+        clf_cv, X=X_data, y=y_data, cv=skf, method="predict_proba", n_jobs=10
+    )
+    nested_proba = np.array(nested_proba)
+
+    return nested_score, nested_proba, clf_cv
 
 
 def perform_PLSR(

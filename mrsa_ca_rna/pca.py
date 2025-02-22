@@ -12,19 +12,22 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 
-def perform_pca(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
+def perform_pca(
+    data: pd.DataFrame, components: int = 70
+) -> tuple[pd.DataFrame, pd.DataFrame, PCA]:
     """
-    Perform PCA on the given data.
+    Column-wise z-score the data, then perform PCA on it.
 
     Args:
         data (pd.DataFrame): The input data for PCA.
+        components (int): The number of components to use for PCA.
 
     Returns:
         scores (pd.DataFrame): The scores matrix of the data as a result of PCA.
         loadings (pd.DataFrame): The loadings matrix of the data as a result of PCA.
-        pca (PCA): The PCA object for further use in the code.
+        pca (PCA): The PCA object used to perform the analysis.
     """
-    components: int = 70
+
     pca = PCA(n_components=components)
     scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 

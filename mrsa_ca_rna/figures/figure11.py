@@ -1,52 +1,46 @@
 """This file plots the data pf2 reconstruction for the disease and time datasets"""
 
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import (
-    ca_data_split,
-    concat_datasets,
-    concat_general,
-    import_breast_cancer,
-    import_healthy,
-)
+from mrsa_ca_rna.import_data import ca_data_split
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure11_setup():
     """Set up the data for the tensor factorization of both disease and time datasets
     and return the reconstruction errors to make R2X plots"""
 
-    # import disease datasets of interest (MRSA, CA, BC, Healthy)
-    mrsa_ca = concat_datasets(scale=True, tpm=True)
-    bc_data = import_breast_cancer(tpm=True)
-    healthy_data = import_healthy(tpm=True)
-    disease_data = concat_general(
-        [mrsa_ca, bc_data, healthy_data], shrink=True, scale=True, tpm=True
+    # data import, concatenation, scaling, and preparation
+    # same as figure12_setup
+    disease_data = concat_datasets(
+        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
     )
 
     # import time dataset (CA)
     time_data, _, _ = ca_data_split()
+    time_data.X = StandardScaler().fit_transform(time_data.X)
 
     # split and organize into xarray datasets along corresponding expansion dimensions
     # (disease->disease, time->subject_id)
     disease_xr = prepare_data(disease_data, expansion_dim="disease")
     time_xr = prepare_data(time_data, expansion_dim="subject_id")
 
-    # change ranks_d back to range(1, 11) when running the full dataset!
-    ranks_d = range(1, 4)
-    ranks_t = range(1, 3)
+    ranks_d = range(2, 10)
+    ranks_t = range(2, 10)
 
     r2x_d = []
     r2x_t = []
 
     for rank_d in ranks_d:
-        _, rec_errors_d = perform_parafac2(disease_xr, rank=rank_d)
-        r2x_d.append(1 - min(rec_errors_d))
+        _, _, rec_error_d = perform_parafac2(disease_xr, rank=rank_d)
+        r2x_d.append(1 - rec_error_d)
 
     for rank_t in ranks_t:
-        _, rec_errors_t = perform_parafac2(time_xr, rank=rank_t)
-        r2x_t.append(1 - min(rec_errors_t))
+        _, _, rec_error_t = perform_parafac2(time_xr, rank=rank_t)
+        r2x_t.append(1 - rec_error_t)
 
     return r2x_d, r2x_t
 

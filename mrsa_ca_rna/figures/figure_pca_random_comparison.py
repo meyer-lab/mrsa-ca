@@ -23,8 +23,13 @@ from mrsa_ca_rna.utils import concat_datasets
 skf = StratifiedKFold(n_splits=10)
 
 
-def make_roc_curve(X, y, y_true):
+def make_roc_curve(X, y):
     """Function trains model on given data and returns the ROC curve"""
+    # Import and scale mrsa and ca data together
+    mrsa_ca = concat_datasets(["mrsa", "ca"], scale=True, tpm=True)
+    # Trim to mrsa data and extract y_true
+    mrsa = mrsa_ca[mrsa_ca.obs["disease"] == "MRSA"].copy()
+    y_true = mrsa.obs.loc[:, "status"].astype(int)
 
     _, y_proba, _ = perform_LR(X, y)  # type: ignore
     # for the life of me, I cannot figure out how to stop pyright from complaining here
@@ -48,7 +53,7 @@ def setup_figure03b():
     y_true = mrsa_data.obs.loc[:, "status"].astype(int)
 
     # Perform PCA on CA data to get CA components
-    _, _, ca_pca = perform_pca(ca_data.to_df())
+    _, _, ca_pca = perform_pca(ca_data.to_df(), components=5)
 
     # scale MRSA data prior to use
     X = mrsa_data.X
@@ -88,11 +93,9 @@ def genFig():
     # - MRSA data, True status
     # - MRSA data, Shuffled status
     # - Random data, True status
-    true_mrsa, true_score = make_roc_curve(mrsa_dict["mrsa"], y_true, y_true)
-    shuffled_mrsa, shuffled_score = make_roc_curve(
-        mrsa_dict["mrsa"], y_shuffled, y_true
-    )
-    random, random_score = make_roc_curve(mrsa_dict["random"], y_true, y_true)
+    true_mrsa, true_score = make_roc_curve(mrsa_dict["mrsa"], y_true)
+    shuffled_mrsa, shuffled_score = make_roc_curve(mrsa_dict["mrsa"], y_shuffled)
+    random, random_score = make_roc_curve(mrsa_dict["random"], y_true)
 
     # plot ROC curves
     # - MRSA data, True status

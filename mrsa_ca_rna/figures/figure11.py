@@ -23,8 +23,8 @@ def figure11_setup():
     time_data, _, _ = ca_data_split()
     time_data.X = StandardScaler().fit_transform(time_data.X)
 
-    ranks_d = range(2, 10)
-    ranks_t = range(2, 10)
+    ranks_d = range(1, 10)
+    ranks_t = range(1, 10)
 
     r2x_d = []
     r2x_t = []

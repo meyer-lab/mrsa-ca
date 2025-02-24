@@ -3,7 +3,7 @@
 import pandas as pd
 import seaborn as sns
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import ca_data_split
 
@@ -13,11 +13,9 @@ def figure10_setup():
 
     time_data, _, _ = ca_data_split()
 
-    time_xr = prepare_data(time_data, expansion_dim="subject_id")
-
-    # going above rank = 2 causes function failure
-    tensor_decomp, _, _ = perform_parafac2(time_xr, rank=2)
-    time_factors = tensor_decomp[1]
+    time_factors, _, _ = perform_parafac2(
+        time_data, condition_name="subject_id", rank=4
+    )
 
     return time_factors
 

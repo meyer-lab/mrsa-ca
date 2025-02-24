@@ -44,6 +44,21 @@ def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
 def perform_parafac2(
     X: ad.AnnData, condition_name: str = "disease", rank: int = 10, l1: float = 0.0
 ):
+    """
+    Perform the parafac2 tensor factorization on the data.
+
+    Parameters:
+    X (ad.AnnData): The anndata object to perform the factorization on
+    condition_name (str): The name of the condition to expand the data on
+    rank (int): The rank of the factorization
+    l1 (float): The L1 regularization parameter
+
+    Returns:
+    factors (list): The factor matrices of the decomposition
+    projections (list): The projections of the data
+    R2X (float): The R2X value of the decomposition
+    """
+
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)
 

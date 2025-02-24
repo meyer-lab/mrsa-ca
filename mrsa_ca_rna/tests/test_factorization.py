@@ -1,4 +1,18 @@
-"""This file will test the pf2 factorization methods in the factorization.py file"""
+"""
+This file will test the pf2 factorization methods in the factorization.py file
+concat_datasets, prepare_data, and perform_parafac2
+
+concat_datasets will concatenate the datasets and scale them
+  check: type, shape, and that the data is scaled properly
+  
+prepare_data will prepare the data for the factorization
+  check: type, shape, that the data has new idx and gene means
+  and that the gene means are zero
+  
+perform_parafac2 will perform the factorization
+  check: type, shape, that everything returned as expected
+  and that the factors are finite, not nan, and not all zero
+"""
 
 import anndata as ad
 import numpy as np

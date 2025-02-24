@@ -3,7 +3,7 @@
 import pandas as pd
 import seaborn as sns
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data, new_parafac2
+from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import concat_datasets
 
@@ -23,7 +23,11 @@ def figure12_setup():
     # disease_factors = tensor_decomp[1]
     # r2x = 1 - recon_err
 
-    factors, _, r2x = new_parafac2(disease_data, condition_name="disease", rank=50, l1=0.1)
+    l1 = 0
+    rank = 50
+    factors, _, r2x = perform_parafac2(
+        disease_data, condition_name="disease", rank=rank, l1=l1
+    )
 
     return factors, r2x, disease_data
 

@@ -10,7 +10,7 @@
 #   universal: false
 
 -e file:.
-anndata==0.10.9
+anndata==0.11.3
     # via mrsa-ca-rna
     # via parafac2
 annotated-types==0.7.0
@@ -124,7 +124,7 @@ pandas==2.2.3
     # via statsmodels
     # via tlviz
     # via xarray
-parafac2 @ git+https://github.com/meyer-lab/parafac2@3a5ae414ef665eae8c94e6b62de34f34fa957156
+parafac2 @ git+https://github.com/meyer-lab/parafac2@0653615f4f1b0615eb5bc508e0001cd8ba3a4e94
     # via mrsa-ca-rna
 parso==0.8.4
     # via jedi
@@ -165,11 +165,11 @@ pyyaml==6.0.2
 requests==2.32.3
     # via tlviz
     # via wandb
-scikit-learn==1.5.2
+scikit-learn==1.6.1
     # via mrsa-ca-rna
     # via pacmap
     # via parafac2
-scipy==1.14.1
+scipy==1.15.2
     # via anndata
     # via matcouply
     # via parafac2

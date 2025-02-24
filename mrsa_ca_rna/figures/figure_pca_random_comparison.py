@@ -10,6 +10,7 @@ import numpy as np
 import seaborn as sns
 
 # secondary module imports
+from scipy.stats import ortho_group
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
@@ -53,7 +54,8 @@ def setup_figure03b():
     y_true = mrsa_data.obs.loc[:, "status"].astype(int)
 
     # Perform PCA on CA data to get CA components
-    _, _, ca_pca = perform_pca(ca_data.to_df(), components=5)
+    components = 5
+    _, _, ca_pca = perform_pca(ca_data.to_df(), components=components)
 
     # scale MRSA data prior to use
     X = mrsa_data.X
@@ -63,13 +65,9 @@ def setup_figure03b():
     # Explicitly convert X to np array to avoid calling shape on None
     X = np.asarray(mrsa_data.X)
 
-    # Generate a random matrix
-    random_matrix = np.random.rand(X.shape[1], ca_pca.components_.shape[0])
-
-    Q, _ = np.linalg.qr(random_matrix)
-
-    # transform MRSA data using random data model
-    random_xform = np.dot(X, Q)
+    # Generate random orthogonal matrix
+    random_ortho = ortho_group.rvs(X.shape[0])
+    random_ortho = random_ortho[:, :components]
 
     # transform MRSA data using CA's PCA model
     mrsa_xform = ca_pca.transform(mrsa_data.to_df())
@@ -77,7 +75,7 @@ def setup_figure03b():
     # shuffle status
     shuffled_status = y_true.sample(frac=1)
 
-    mrsa_dict = {"mrsa": mrsa_xform, "random": random_xform}
+    mrsa_dict = {"mrsa": mrsa_xform, "random": random_ortho}
 
     return mrsa_dict, shuffled_status, y_true
 
@@ -129,3 +127,6 @@ def genFig():
     )
 
     return f
+
+
+genFig()

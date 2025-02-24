@@ -51,7 +51,7 @@ def new_parafac2(X: ad.AnnData, condition_name: str = "disease", rank: int = 10,
 
 
     # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    _, sgIndex = np.unique(X.obs_vector(expansion_dim), return_inverse=True)
     X.obs["condition_unique_idxs"] = sgIndex
     X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
 
@@ -59,13 +59,7 @@ def new_parafac2(X: ad.AnnData, condition_name: str = "disease", rank: int = 10,
     means = np.mean(X.X, axis=0)  # type: ignore
     X.var["means"] = means
 
-    decomposition, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
-    factors = decomposition[1]
-    projections = decomposition[2]
-
-    return factors, projections, R2X
-
-
+    return X
 
 
 def perform_parafac2(

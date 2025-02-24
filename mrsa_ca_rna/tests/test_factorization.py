@@ -3,7 +3,6 @@
 import anndata as ad
 import numpy as np
 import numpy.testing as npt
-import xarray as xr
 
 from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
 from mrsa_ca_rna.utils import concat_datasets
@@ -42,9 +41,7 @@ def test_prepare_data():
 
 def test_perform_parafac2():
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
-    disease_data = concat_datasets(
-        disease_list, scale=True, tpm=True
-    )
+    disease_data = concat_datasets(disease_list, scale=True, tpm=True)
     rank = 50
     l1 = 0.1
     factors, projections, r2x = perform_parafac2(
@@ -61,7 +58,7 @@ def test_perform_parafac2():
     for factor in factors:
         assert isinstance(factor, np.ndarray)
         assert factor.shape[1] == rank
-    
+
     # Check contents of factors
     for factor in factors:
         assert np.isfinite(factor).all()

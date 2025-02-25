@@ -24,7 +24,7 @@ def figure12_setup():
     # r2x = 1 - recon_err
 
     l1_base = 1e-5
-    l1 = l1_base * 6
+    l1 = l1_base * 1
     rank = 50
 
     factors, _, r2x = perform_parafac2(

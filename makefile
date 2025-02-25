@@ -1,8 +1,6 @@
-.PHONY: clean test pyright
+.PHONY: all clean_output test pyright setup_salmon quantify_salmon clean_salmon help
 
 flist = $(wildcard mrsa_ca_rna/figures/figure*.py)
-
-.PHONY: clean test all
 
 all: $(patsubst mrsa_ca_rna/figures/figure%.py, output/figure%.svg, $(flist))
 
@@ -32,6 +30,8 @@ THREADS ?= 4
 ENDTYPE ?= paired
 # Default batch size for processing
 BATCH_SIZE ?= 5
+# Default project name
+PROJECT ?= $(shell date +%Y%m%d)
 
 # Directories
 SALMON_DIR := salmon_processing
@@ -47,11 +47,8 @@ DECOYS := $(REF_DIR)/decoys.txt
 SALMON_INDEX := $(REF_DIR)/salmon_index
 GTF := $(REF_DIR)/mappings.gtf
 
-# Main targets
-.PHONY: all setup quantify clean_salmon
-
 # Setup directories and reference files
-setup: $(SALMON_DIR) $(SRA_DIR) $(REF_DIR) $(COUNTS_DIR) $(SALMON_INDEX) $(GTF)
+setup_salmon: $(SALMON_DIR) $(SRA_DIR) $(REF_DIR) $(COUNTS_DIR) $(SALMON_INDEX) $(GTF)
 	@echo "Setup complete. Directory structure created and reference files downloaded."
 	@echo "Next steps:"
 	@echo "1. Create your accession list file at: $(SRA_DIR)/accession_list.txt"
@@ -93,10 +90,10 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 	salmon index -t $(GENTROME) -d $(DECOYS) --gencode -p $(THREADS) -i $@
 
 # Quantification rules
-quantify: $(COUNTS_DIR)/all_counts.txt
+quantify_salmon: $(COUNTS_DIR)/all_counts_$(PROJECT).txt
 
 # Process SRA accessions and run Salmon quantification
-$(COUNTS_DIR)/all_counts.txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR)
+$(COUNTS_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR)
 	@echo "Processing SRA accessions in batches of $(BATCH_SIZE)..."
 	@# Calculate total number of accessions and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \
@@ -111,9 +108,9 @@ $(COUNTS_DIR)/all_counts.txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR)
 		sed -n "$$start_line,$$end_line p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$$batch_num.txt; \
 		while read -r acc; do \
 			if [ "$(ENDTYPE)" = "single" ]; then \
-				fasterq-dump $$acc --progress --threads $(THREADS) -O $(SRA_DIR) & \
+				fasterq-dump $$acc --progress --threads $(THREADS) -O $(SRA_DIR) -t $(SRA_DIR)/temp & \
 			else \
-				fasterq-dump $$acc --split-files --skip-technical --progress --threads $(THREADS) -O $(SRA_DIR) & \
+				fasterq-dump $$acc --split-files --skip-technical --progress --threads $(THREADS) -O $(SRA_DIR) -t $(SRA_DIR)/temp & \
 			fi; \
 		done < $(SRA_DIR)/batch_$$batch_num.txt; \
 		wait; \
@@ -142,7 +139,7 @@ $(COUNTS_DIR)/all_counts.txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR)
 	done < $(SRA_DIR)/accession_list.txt
 	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
 	@sed -i "1i gene\t$$(sort $(SRA_DIR)/accession_list.txt | tr '\n' '\t')" $@
-	@rm $(COUNTS_DIR)/*.count $(COUNTS_DIR)/genes.txt
+	@rm -r $(COUNTS_DIR)/!(all_counts_$(PROJECT).txt)
 
 # Clean up
 clean_salmon:
@@ -150,14 +147,26 @@ clean_salmon:
 
 # Help target
 help:
+	@echo ""
+	@echo "MRSA-CA project Makefile"
+	@echo " make help		- Show this help message"
+	@echo " make test		- Run tests"
+	@echo " make pyright		- Run Pyright static type checker"
+	@echo " make all		- Run all figure scripts"
+	@echo " make ./output/figure%.svg	- Run a specific figure script"
+	@echo " make clean_output		- Remove all generated files"
+	@echo ""
+	@echo ""
 	@echo "RNA-Seq Analysis Pipeline Makefile"
 	@echo "Usage:"
-	@echo "  make setup THREADS=<num_threads>    - Set up directories and download reference files"
-	@echo "  make quantify ENDTYPE=<single|paired> THREADS=<num_threads> BATCH_SIZE=<num>  - Run Salmon quantification"
-	@echo "  make clean                         - Remove all generated files"
-	@echo "  make help                          - Show this help message"
+	@echo "  make setup_salmon THREADS=<num_threads>		- Set up directories and download reference files"
+	@echo "  make quantify_salmon ENDTYPE=<single|paired> THREADS=<num_threads> BATCH_SIZE=<num> PROJECT=<your_project>		- Run Salmon quantification"
+	@echo "  make clean_salmon		- Remove all generated files"
+	@echo "  make Help		- Show this help message"
 	@echo ""
 	@echo "Variables:"
-	@echo "  THREADS    - Number of threads to use (default: 4)"
-	@echo "  ENDTYPE    - Type of sequencing reads: 'single' or 'paired' (default: paired)"
-	@echo "  BATCH_SIZE - Number of accessions to process simultaneously (default: 5)"
+	@echo "  THREADS			- Number of threads to use (default: 4)"
+	@echo "  ENDTYPE			- Type of sequencing reads: 'single' or 'paired' (default: paired)"
+	@echo "  BATCH_SIZE			- Number of accessions to process simultaneously (default: 5)"
+	@echo "  PROJECT			- Name of the project (default: current date)"
+	@echo ""

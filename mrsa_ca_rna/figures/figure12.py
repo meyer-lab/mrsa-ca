@@ -27,7 +27,7 @@ def figure12_setup():
     l1 = l1_base * 1
     rank = 50
 
-    factors, _, r2x = perform_parafac2(
+    _, factors, _, r2x = perform_parafac2(
         disease_data, condition_name="disease", rank=rank, l1=l1
     )
 

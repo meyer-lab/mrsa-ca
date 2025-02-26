@@ -3,7 +3,7 @@
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
-from mrsa_ca_rna.factorization import perform_parafac2, prepare_data
+from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import ca_data_split
 from mrsa_ca_rna.utils import concat_datasets
@@ -23,24 +23,23 @@ def figure11_setup():
     time_data, _, _ = ca_data_split()
     time_data.X = StandardScaler().fit_transform(time_data.X)
 
-    # split and organize into xarray datasets along corresponding expansion dimensions
-    # (disease->disease, time->subject_id)
-    disease_xr = prepare_data(disease_data, expansion_dim="disease")
-    time_xr = prepare_data(time_data, expansion_dim="subject_id")
-
-    ranks_d = range(2, 10)
-    ranks_t = range(2, 10)
+    ranks_d = range(1, 10)
+    ranks_t = range(1, 10)
 
     r2x_d = []
     r2x_t = []
 
     for rank_d in ranks_d:
-        _, _, rec_error_d = perform_parafac2(disease_xr, rank=rank_d)
-        r2x_d.append(1 - rec_error_d)
+        _, _, r2x = perform_parafac2(
+            disease_data, condition_name="disease", rank=rank_d
+        )
+        r2x_d.append(r2x)
 
     for rank_t in ranks_t:
-        _, _, rec_error_t = perform_parafac2(time_xr, rank=rank_t)
-        r2x_t.append(1 - rec_error_t)
+        _, _, r2x = perform_parafac2(
+            time_data, condition_name="subject_id", rank=rank_t
+        )
+        r2x_t.append(r2x)
 
     return r2x_d, r2x_t
 

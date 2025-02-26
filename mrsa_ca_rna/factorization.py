@@ -63,7 +63,8 @@ def perform_parafac2(
     X = prepare_data(X, expansion_dim=condition_name)
 
     decomposition, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
+    weights = decomposition[0]
     factors = decomposition[1]
     projections = decomposition[2]
 
-    return factors, projections, R2X
+    return weights, factors, projections, R2X

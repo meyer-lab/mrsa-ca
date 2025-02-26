@@ -133,6 +133,9 @@ dmypy.json
 # vscode
 .vscode/
 
+# RNAseq analysis
+salmon_processing/
+
 # Pyre type checker
 .pyre/
 

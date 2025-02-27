@@ -42,7 +42,11 @@ def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
 
 
 def perform_parafac2(
-    X: ad.AnnData, condition_name: str = "disease", rank: int = 10, l1: float = 0.0
+    X: ad.AnnData,
+    condition_name: str = "disease",
+    rank: int = 10,
+    l1: float = 0.0,
+    callback=None,
 ):
     """
     Perform the parafac2 tensor factorization on the data.
@@ -62,7 +66,9 @@ def perform_parafac2(
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)
 
-    decomposition, R2X = parafac2_nd(X_in=X, rank=rank, n_iter_max=100, l1=l1)
+    decomposition, R2X = parafac2_nd(
+        X_in=X, rank=rank, n_iter_max=100, l1=l1, callback=callback
+    )
     weights = decomposition[0]
     factors = decomposition[1]
     projections = decomposition[2]

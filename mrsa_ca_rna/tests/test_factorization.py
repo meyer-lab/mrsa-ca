@@ -58,7 +58,7 @@ def test_perform_parafac2():
     disease_data = concat_datasets(disease_list, scale=True, tpm=True)
     rank = 50
     l1 = 0.1
-    factors, projections, r2x = perform_parafac2(
+    _, factors, projections, r2x = perform_parafac2(
         disease_data, condition_name="disease", rank=rank, l1=l1
     )
 

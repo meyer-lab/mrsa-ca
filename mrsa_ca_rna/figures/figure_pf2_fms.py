@@ -92,8 +92,7 @@ def genFig():
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("R2X Difference (%)")
     a.set_title(
-        "FMS and R2X percent difference of PF2 factor matrices"
-        "over 30 trials"
-        )
+        "FMS and R2X percent difference of PF2 factor matrices over 30 trials"
+    )
 
     return f

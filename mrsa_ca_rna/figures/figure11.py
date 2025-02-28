@@ -30,13 +30,13 @@ def figure11_setup():
     r2x_t = []
 
     for rank_d in ranks_d:
-        _, _, r2x = perform_parafac2(
+        _, _, _, r2x = perform_parafac2(
             disease_data, condition_name="disease", rank=rank_d
         )
         r2x_d.append(r2x)
 
     for rank_t in ranks_t:
-        _, _, r2x = perform_parafac2(
+        _, _, _, r2x = perform_parafac2(
             time_data, condition_name="subject_id", rank=rank_t
         )
         r2x_t.append(r2x)

@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_pca
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_00_setup():

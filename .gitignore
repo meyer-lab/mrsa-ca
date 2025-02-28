@@ -131,6 +131,12 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# vscode
+.vscode/
+
+# RNAseq analysis
+salmon_processing/
+
 # Pyre type checker
 .pyre/
 

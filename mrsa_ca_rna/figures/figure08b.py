@@ -14,8 +14,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets, gene_converter, trim_RBC
 from mrsa_ca_rna.regression import perform_LR, perform_PLSR
+from mrsa_ca_rna.utils import concat_datasets, gene_converter
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -25,9 +25,6 @@ def figure08b_setup():
 
     # bring in whole dataset then split into MRSA (X, y) and CA (Y) sets
     whole_data = concat_datasets(scale=False, tpm=True)
-
-    # trim out RBC genes
-    whole_data = trim_RBC(whole_data)
 
     mrsa_X = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     mrsa_y = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]

@@ -10,8 +10,8 @@ To-do:
 
 import seaborn as sns
 
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_pca
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def genFig():

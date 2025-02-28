@@ -13,11 +13,12 @@ import pandas as pd
 import seaborn as sns
 from scipy.optimize import linear_sum_assignment
 from sklearn.utils import resample
+from tqdm import tqdm
 
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.import_data import concat_datasets
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def component_stability_test(data: ad.AnnData, iterations: int = 10):
@@ -48,12 +49,12 @@ def component_stability_test(data: ad.AnnData, iterations: int = 10):
     lperf_coef_list = []
     hperf_pats = []
     lperf_pats = []
-    for i in range(iterations):
+    for i in tqdm(range(iterations)):
         # resample the data and pop-out the y values
         resampled_data = resample(combined_data)
         y_resampled = resampled_data.pop("status")
 
-        # perform PCA on the combined dataset
+        # perform PCA on the combined dataset, perform_pca scales the data
         scores, _, _ = perform_pca(resampled_data, components=5)
 
         # perform the linear sum assignment to match components
@@ -123,7 +124,8 @@ def setup_figure():
     """
     collect the data necessary to plot
     """
-    data = concat_datasets(["mrsa", "ca"], scale=True, tpm=True)
+    # do not scale the data prior to resampling
+    data = concat_datasets(["mrsa", "ca"], scale=False, tpm=True)
     results = component_stability_test(data, iterations=100)
 
     return results

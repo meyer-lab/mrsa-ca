@@ -1,9 +1,7 @@
 """
-This file explores the stability of the parafac2 factor matrices with changing ranks
-and L1 strengths.
+This file bootstraps the factor match score and R2X difference of the PF2 factor
+matrices over 30 trials. The rank and l1 values are determined from wandb exploration.
 
-TODO: Add a loop to test different ranks and L1 strengths.
-    Add genFig() to plot FMS vs. rank and L1 strength.
 """
 
 import anndata as ad
@@ -19,15 +17,11 @@ from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
-    """Collect and organize data for plotting. This function will load the data and
-    perform resampling, then pf2 factorization to caluclate the factor match score.
-    It will use l1 and rank values determined from wandb exploration."""
 
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
     disease_data = concat_datasets(disease_list, scale=False, tpm=True)
 
-    """The rank and l1 strength are a combination of good fms score >.70
-    and low error <.4"""
+    # rank and l1 values determined from wandb exploration
     rank = 30
     l1 = 1.5e-5
 
@@ -35,11 +29,11 @@ def figure_setup():
     X = disease_data.copy()
     X.X = StandardScaler().fit_transform(X.X)
     weights_true, factors_true, _, R2X_true = perform_parafac2(
-            X,
-            condition_name="disease",
-            rank=rank,
-            l1=l1,
-        )
+        X,
+        condition_name="disease",
+        rank=rank,
+        l1=l1,
+    )
     # convert the factors to cp_tensors
     factors_true = (weights_true, factors_true)
 
@@ -51,9 +45,8 @@ def figure_setup():
     R2X_diff_list = []
     trials = 30
     for _i in range(trials):
-
         # resample the data
-        df_resampled: pd.DataFrame = resample(df, replace=True)
+        df_resampled: pd.DataFrame = resample(df, replace=True)  # type: ignore
 
         # make a unique index
         df_resampled = df_resampled.reset_index(drop=True)

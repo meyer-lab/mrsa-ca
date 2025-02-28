@@ -14,7 +14,10 @@ def figure12_setup():
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"],
+        filter_threshold=8.1,
+        scale=True,
+        tpm=True,
     )
 
     # disease_xr = prepare_data(disease_data, expansion_dim="disease")
@@ -24,8 +27,8 @@ def figure12_setup():
     # r2x = 1 - recon_err
 
     l1_base = 1e-5
-    l1 = l1_base * 1
-    rank = 50
+    l1 = l1_base * 3
+    rank = 30
 
     _, factors, _, r2x = perform_parafac2(
         disease_data, condition_name="disease", rank=rank, l1=l1

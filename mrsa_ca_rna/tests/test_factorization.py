@@ -57,7 +57,9 @@ def test_perform_parafac2():
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
     disease_data = concat_datasets(disease_list, scale=True, tpm=True)
     rank = 50
-    l1 = 0.1
+    # modifiers greater than ~4 will cause the test to fail
+    modifier = 10
+    l1 = 1e-5 * modifier
     factors, projections, r2x = perform_parafac2(
         disease_data, condition_name="disease", rank=rank, l1=l1
     )

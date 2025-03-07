@@ -4,6 +4,8 @@ a tensor dataset. The functions will prepare the data for the factorization and 
 perform the factorization using the parafac2_nd function from the parafac2 library.
 """
 
+import os
+
 import anndata as ad
 import cupy as cp
 import numpy as np
@@ -95,6 +97,8 @@ def perform_parafac2(
     tuple[np.ndarray, np.ndarray, np.ndarray, float]
         the weights, factors, projections, and R2X value of the decomposition
     """
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)

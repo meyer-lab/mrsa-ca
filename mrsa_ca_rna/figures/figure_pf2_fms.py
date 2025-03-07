@@ -28,11 +28,7 @@ def figure_setup():
     X = disease_data.copy()
     X.X = StandardScaler().fit_transform(X.X)
     weights_true, factors_true, _, R2X_true = perform_parafac2(
-        X,
-        condition_name="disease",
-        rank=rank,
-        l1=l1,
-        gpu_id=1
+        X, condition_name="disease", rank=rank, l1=l1, gpu_id=1
     )
     # convert the factors to cp_tensors
     factors_true = (weights_true, factors_true)

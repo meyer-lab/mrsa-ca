@@ -92,10 +92,10 @@ def perform_experiment():
         "method": "grid",
         "metric": {"name": "fms", "goal": "maximize"},
         "parameters": {
-            "rank": {"values": [10, 20, 30]},
-            "l1": {"values": [0, 1e-6, 3e-5, 1e-4]},
+            "rank": {"values": [30, 40, 50]},
+            "l1": {"values": [0, 5e-5, 1e-4, 2e-4]},
             "thresh": {"values": [0, 8.1]},
-            "random_state": {"values": [42, 69, 420]},
+            "random_state": {"value": None},
         },
     }
 

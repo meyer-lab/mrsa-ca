@@ -14,7 +14,7 @@ test: .venv
 wandb_%: .venv
 	@echo "Running wandb experiment: $*"
 	mkdir -p ./wandb_logs
-	PYTHONPATH=. rye run python -c "from mrsa_ca_rna.experiments.wandb_$* import perform_experiment; perform_experiment()" > ./sweep_logs/$*_$(shell date +%Y%m%d%_H%M%S).log 2>&1
+	PYTHONPATH=. rye run python -c "from mrsa_ca_rna.experiments.wandb_$* import perform_experiment; perform_experiment()" > ./wandb_logs/$*_$(shell date +%Y%m%d%_H%M%S).log 2>&1
 
 .venv: pyproject.toml
 	rye sync

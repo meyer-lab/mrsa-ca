@@ -22,7 +22,7 @@ def figure_setup():
 
     # rank and l1 values determined from wandb exploration
     rank = 30
-    l1 = 1.5e-5
+    l1 = 5e-5
 
     # scale and perform the parafac2 factorization on original data
     X = disease_data.copy()
@@ -55,7 +55,7 @@ def figure_setup():
 
         # perform the parafac2 factorization on the resampled data
         weights_resampled, factors_resampled, _, R2X_resampled = perform_parafac2(
-            X_resampled, condition_name="disease", rank=rank, l1=l1
+            X_resampled, condition_name="disease", rank=rank, l1=l1, gpu_id=1
         )
         factors_resampled = (weights_resampled, factors_resampled)
 
@@ -86,7 +86,7 @@ def genFig():
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("R2X Difference (%)")
     a.set_title(
-        "FMS and R2X percent difference of PF2 factor matrices"
+        "FMS and R2X percent difference of PF2 factor matrices "
         f"over {data.shape[0]} trials.\n"
         f"Rank: {rank}, L1: {l1}"
     )

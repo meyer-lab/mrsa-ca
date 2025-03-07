@@ -124,7 +124,7 @@ pandas==2.2.3
     # via statsmodels
     # via tlviz
     # via xarray
-parafac2 @ git+https://github.com/meyer-lab/parafac2@5d684653ce95f3fd2e34ccbbdb7178f108ea575d
+parafac2 @ git+https://github.com/meyer-lab/parafac2@5b743029bd5d5710dc41658b316eedf7752ca91d
     # via mrsa-ca-rna
 parso==0.8.4
     # via jedi
@@ -197,7 +197,7 @@ statsmodels==0.14.4
     # via tlviz
 svgutils==0.3.4
     # via mrsa-ca-rna
-tensorly @ git+https://github.com/tensorly/tensorly.git@041cd699d08ae846acbc4e921e0f490e39269760
+tensorly==0.9.0
     # via matcouply
     # via mrsa-ca-rna
     # via parafac2

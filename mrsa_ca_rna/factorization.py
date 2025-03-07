@@ -6,6 +6,8 @@ We will also introduce the xarray packages and the dataset class to
 hold our data in an all-in-one format to ease with manipulation.
 """
 
+import os
+
 import anndata as ad
 import numpy as np
 from parafac2 import parafac2_nd
@@ -46,6 +48,8 @@ def perform_parafac2(
     condition_name: str = "disease",
     rank: int = 10,
     l1: float = 0.0,
+    gpu_id: int = 0,
+    rnd_seed: int = None,
     callback=None,
 ):
     """
@@ -63,11 +67,18 @@ def perform_parafac2(
     R2X (float): The R2X value of the decomposition
     """
 
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)
 
     decomposition, R2X = parafac2_nd(
-        X_in=X, rank=rank, n_iter_max=100, l1=l1, callback=callback
+        X_in=X,
+        rank=rank,
+        n_iter_max=100,
+        l1=l1,
+        random_state=rnd_seed,
+        callback=callback,
     )
     weights = decomposition[0]
     factors = decomposition[1]

@@ -17,7 +17,6 @@ from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
-
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
     disease_data = concat_datasets(disease_list, scale=False, tpm=True)
 

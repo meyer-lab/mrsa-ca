@@ -1,3 +1,5 @@
+"""This file will perform a sweep of the parafac2 tensor factorization to find the best
+rank, L1 strength, and data size for the model."""
 
 from datetime import datetime
 

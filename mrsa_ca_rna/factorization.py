@@ -1,9 +1,7 @@
 """
-This file will include parafac2 tensor factoization methods.
-We will use the tensorly library to perform the factorization.
-
-We will also introduce the xarray packages and the dataset class to
-hold our data in an all-in-one format to ease with manipulation.
+This file will include the functions necessary to perform parafac2 factorization on
+a tensor dataset. The functions will prepare the data for the factorization and then
+perform the factorization using the parafac2_nd function from the parafac2 library.
 """
 
 import os
@@ -15,16 +13,20 @@ from parafac2 import parafac2_nd
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
 def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
-    """
-    Prepare data for parafac2_nd tensor factorization by creating a new index
-    based on the expansion dimension and calculating the gene means.
+    """Prepares the data for tensor factorization by creating a unique index for the
+    condition by which we slice the tensor and pre-calculating the gene means.
 
-    Parameters:
-        data_ad (anndata.AnnData): The anndata object to convert to an xarray dataset
-        expansion_dim (str): The dimension to index on. Default is "None"
+    Parameters
+    ----------
+    X : ad.AnnData
+        The data to be prepared for tensor factorization
+    expansion_dim : str
+        The dimension by which to expand the data
 
-    Returns:
-        X (ad.AnnData): The anndata object with the new index and gene means
+    Returns
+    -------
+    ad.AnnData
+        Data prepared for tensor factorization via parafac2_nd
     """
 
     assert (
@@ -49,22 +51,33 @@ def perform_parafac2(
     rank: int = 10,
     l1: float = 0.0,
     gpu_id: int = 0,
-    rnd_seed: int = None,
+    rnd_seed: int | None = None,
     callback=None,
 ):
-    """
-    Perform the parafac2 tensor factorization on the data.
+    """Performs the parafac2 tensor factorization on the data by calling our custom
+    parafac2_nd function.
 
-    Parameters:
-    X (ad.AnnData): The anndata object to perform the factorization on
-    condition_name (str): The name of the condition to expand the data on
-    rank (int): The rank of the factorization
-    l1 (float): The L1 regularization parameter
+    Parameters
+    ----------
+    X : ad.AnnData
+        formatted data for tensor factorization
+    condition_name : str
+        The condition by which to slice the data, by default "disease"
+    rank : int, optional
+        The rank of the resulting decomposition, by default 10
+    l1 : float, optional
+        the l1 strength to apply to the A and C matrices, by default 0.0
+    gpu_id : int, options: 0 or 1
+        the GPU target to run the factorization on, by default 0
+    rnd_seed : int, optional
+        specify a random state for the factorization, by default None
+    callback : func, optional
+        for interior value extraction during wandb experiments, by default None
 
-    Returns:
-    factors (list): The factor matrices of the decomposition
-    projections (list): The projections of the data
-    R2X (float): The R2X value of the decomposition
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray, np.ndarray, float]
+        the weights, factors, projections, and R2X value of the decomposition
     """
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)

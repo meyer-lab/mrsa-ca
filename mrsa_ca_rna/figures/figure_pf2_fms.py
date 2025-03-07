@@ -32,6 +32,7 @@ def figure_setup():
         condition_name="disease",
         rank=rank,
         l1=l1,
+        gpu_id=1
     )
     # convert the factors to cp_tensors
     factors_true = (weights_true, factors_true)

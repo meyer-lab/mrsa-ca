@@ -31,7 +31,7 @@ def figure12_setup():
     rank = 30
 
     _, factors, _, r2x = perform_parafac2(
-        disease_data, condition_name="disease", rank=rank, l1=l1
+        disease_data, condition_name="disease", rank=rank, l1=l1, gpu_id=1
     )
 
     return factors, r2x, disease_data, l1

@@ -84,7 +84,7 @@ def sweep():
     wb.log({"fms": fms})
 
 
-def perform_wandb_experiment():
+def perform_experiment():
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     sweep_config = {

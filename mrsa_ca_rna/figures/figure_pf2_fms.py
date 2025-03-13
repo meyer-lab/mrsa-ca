@@ -68,15 +68,15 @@ def bootstrap_fms(X, rank, l1, target_trials=30):
     # Track successful and failed trials
     successful_trials = 0
     failed_trials = 0
-    target_trials = 100
+    target_trials = 50
 
-    seeds = np.random.randint(0, 1000, size=(target_trials,))
+    seeds = np.random.randint(0, 1000, size=(target_trials * 2,))
 
     # continue until we have enough successful trials
     while successful_trials < target_trials:
         try:
             # uniquely set the seed for the current trial
-            seed = seeds[successful_trials]
+            seed = seeds[successful_trials + failed_trials]
 
             # factorize the original and resampled data
             factors_true, R2X_true = factorize(X, rank, l1, random_state=seed)
@@ -110,24 +110,25 @@ def bootstrap_fms(X, rank, l1, target_trials=30):
 def figure_setup():
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
     disease_data = concat_datasets(
-        disease_list, filter_threshold=8.1, scale=False, tpm=True
+        disease_list, filter_threshold=0, scale=False, tpm=True
     )
 
-    l1 = 1.2e-4
+    l1 = 1.0e-4
+    ranks = [10, 20]
 
-    fms_20, R2X_20, s_20, f_20 = bootstrap_fms(
-        disease_data.copy(), rank=10, l1=l1, target_trials=30
+    fms_0, R2X_0, s_0, f_0 = bootstrap_fms(
+        disease_data.copy(), rank=ranks[0], l1=l1, target_trials=30
     )
-    fms_30, R2X_30, s_30, f_30 = bootstrap_fms(
-        disease_data.copy(), rank=13, l1=l1, target_trials=30
+    fms_1, R2X_1, s_1, f_1 = bootstrap_fms(
+        disease_data.copy(), rank=ranks[1], l1=l1, target_trials=30
     )
 
     # combined the matrics from the 20 and 30 rank trials
-    fms_list = fms_30 + fms_20
-    R2X_diff_list = R2X_30 + R2X_20
-    s_trials = s_30 + s_20
-    f_trials = f_30 + f_20
-    ranks = [13] * len(fms_30) + [10] * len(fms_20)
+    fms_list = fms_0 + fms_1
+    R2X_diff_list = R2X_0 + R2X_1
+    s_trials = s_0 + s_1
+    f_trials = f_0 + f_1
+    ranks = [ranks[0]] * len(fms_0) + [ranks[1]] * len(fms_1)
 
     metrics = {"rank": ranks, "fms": fms_list, "R2X_diff": R2X_diff_list}
     metrics = pd.DataFrame(

@@ -74,10 +74,13 @@ def genFig():
     genes_df = pd.DataFrame(
         disease_factors[2],
         index=disease_data.var.index,
-        columns=pd.Index(disease_ranks_labels)
+        columns=pd.Index(disease_ranks_labels),
     )
     genes_df = gene_converter(
-        genes_df, old_id="EnsemblGeneID", new_id="Symbol", method="index" # type: ignore
+        genes_df,
+        old_id="EnsemblGeneID",
+        new_id="Symbol",
+        method="index",  # type: ignore
     )
     genes_df.to_csv("output/figure12_pf2_genes.csv")
 

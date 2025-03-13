@@ -90,6 +90,7 @@ def perform_parafac2(
         X_in=X,
         rank=rank,
         n_iter_max=100,
+        tol=1e-12,
         l1=l1,
         random_state=rnd_seed,
         callback=callback,

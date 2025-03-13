@@ -4,14 +4,47 @@ rank, L1 strength, and data size for the model."""
 from datetime import datetime
 
 import anndata as ad
-import pandas as pd
-import wandb as wb
+import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils import resample
 from tlviz.factor_tools import factor_match_score
 
+import wandb as wb
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.utils import check_sparsity, concat_datasets
+
+
+def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
+    """Resamples AnnData with unique observation indices, with replacement.
+
+    Parameters
+    ----------
+    X_in : ad.AnnData
+        AnnData object to be resampled
+
+    Returns
+    -------
+    ad.AnnData
+        Resampled AnnData object with unique observation indices
+    """
+
+    # make a random index with replacement for resampling
+    random_index = np.random.randint(0, X_in.shape[0], size=(X_in.shape[0],))
+
+    # independently subset the data and obs with the random indices
+    assert isinstance(X_in.X, np.ndarray)
+    X_resampled = X_in.X[random_index]
+    obs_resampled = X_in.obs.iloc[random_index].copy()
+
+    # Create unique indices for the resampled observations
+    obs_resampled.index = [f"bootstrap_{i}" for i in range(len(obs_resampled))]
+
+    # Create a new AnnData object with the resampled data
+    uns_dict = dict(X_in.uns) 
+    X_in_resampled = ad.AnnData(
+        X=X_resampled, obs=obs_resampled, var=X_in.var.copy(), uns=uns_dict
+    )
+
+    return X_in_resampled
 
 
 def objective(config):
@@ -23,30 +56,25 @@ def objective(config):
     disease_data = concat_datasets(
         disease_list, filter_threshold=thresh, scale=False, tpm=True
     )
-    data_size = disease_data.shape[1]
+    data_size = disease_data.shape[1] / 16315
     wb.log({"data_size": data_size})
 
     # scale original data
     X = disease_data.copy()
     X.X = StandardScaler().fit_transform(X.X)
 
-    # resample the data
-    df = disease_data.to_df()
-    df.insert(0, "disease", X.obs["disease"].values)
-    df_resampled: pd.DataFrame = resample(df, replace=True)  # type: ignore
-
-    # make a unique index
-    df_resampled = df_resampled.reset_index(drop=True)
-
-    # convert back to AnnData and scale
-    df_resampled.index = df_resampled.index.astype(str)
-    X_resampled = ad.AnnData(df_resampled.loc[:, df_resampled.columns != "disease"])
-    X_resampled.obs["disease"] = df_resampled["disease"].to_numpy()
+    # resample the data and scale the data
+    X_resampled = disease_data.copy()
+    X_resampled = resample_adata(X_resampled)
     X_resampled.X = StandardScaler().fit_transform(X_resampled.X)
 
     def callback(it, error, factors, _):
+        R2X = 1 - error
         sparsity = check_sparsity(factors[2])
-        wb.log({"iteration": it, "error": error, "sparsity": sparsity})
+        wb.log({"iteration": it, "R2X": R2X, "sparsity": sparsity})
+
+    # factorize the original and resampled data with the same random state
+    random_state = np.random.randint(0, 1000)
 
     _, factors_true, _, _ = perform_parafac2(
         X,
@@ -54,7 +82,7 @@ def objective(config):
         rank=rank,
         l1=l1,
         gpu_id=1,
-        rnd_seed=config.random_state,
+        rnd_seed=random_state,
         callback=callback,
     )
 
@@ -64,7 +92,7 @@ def objective(config):
         rank=rank,
         l1=l1,
         gpu_id=1,
-        rnd_seed=config.random_state,
+        rnd_seed=random_state,
     )
 
     """calculate the factor match score for different ranks and L1 strengths."""
@@ -87,19 +115,22 @@ def sweep():
 def perform_experiment():
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+    ranks = [x for x in range(10, 21)]
+    l1_values = [0, 8e-5, 1e-4, 1.2e-4, 1.4e-4]
+    thresh_values = [0, 4.0, 8.1]
+
     sweep_config = {
         "name": "sweep_pf2_" + current_time,
         "method": "grid",
         "metric": {"name": "fms", "goal": "maximize"},
         "parameters": {
-            "rank": {"values": [30, 40, 50]},
-            "l1": {"values": [0, 5e-5, 1e-4, 2e-4]},
-            "thresh": {"values": [0, 8.1]},
-            "random_state": {"value": None},
+            "rank": {"values": ranks},
+            "l1": {"values": l1_values},
+            "thresh": {"values": thresh_values},
         },
     }
 
-    sweep_id = wb.sweep(sweep=sweep_config, project="pf2_gpu1_l1_rank_fms")
+    sweep_id = wb.sweep(sweep=sweep_config, project="pf2_r2x_fms")
     wb.agent(sweep_id, function=sweep)
 
     return sweep_id

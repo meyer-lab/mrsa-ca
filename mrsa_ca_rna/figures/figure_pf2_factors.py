@@ -35,7 +35,7 @@ def figure12_setup():
     l1 = l1_base * 10
     rank = 20
 
-    def callback(iteration, err, factors, projections):
+    def callback(iteration, err, factors, _):
         sparsity = check_sparsity(factors[2])
         R2X = 1 - err
         print(f"Iteration: {iteration} | R2X: {R2X:.2e} | Sparsity: {sparsity:.2f}")

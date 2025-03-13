@@ -4,7 +4,6 @@ a tensor dataset. The functions will prepare the data for the factorization and 
 perform the factorization using the parafac2_nd function from the parafac2 library.
 """
 
-
 import anndata as ad
 import cupy as cp
 import numpy as np

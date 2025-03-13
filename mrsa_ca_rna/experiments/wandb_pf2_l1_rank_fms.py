@@ -39,7 +39,7 @@ def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
     obs_resampled.index = [f"bootstrap_{i}" for i in range(len(obs_resampled))]
 
     # Create a new AnnData object with the resampled data
-    uns_dict = dict(X_in.uns) 
+    uns_dict = dict(X_in.uns)
     X_in_resampled = ad.AnnData(
         X=X_resampled, obs=obs_resampled, var=X_in.var.copy(), uns=uns_dict
     )

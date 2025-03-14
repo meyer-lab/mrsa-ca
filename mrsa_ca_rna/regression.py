@@ -37,8 +37,6 @@ def perform_LR(
                                 and subsequent nested cross validation
         y_data (pd.DataFrame): y data for regularization
                                 and subsequent nested cross validation
-        return_clf (bool): whether to return the classifier or not.
-                            Default = False
         splits (int): number of splits for nested cross validation.
                         Default = 10
 
@@ -46,7 +44,7 @@ def perform_LR(
         nested_score (float): nested cross validation score of the final model
         nested_proba (np.ndarray): nested cross validation predicted probabilities
                                     of the final model
-        clf_cv (LogisticRegressionCV): classifier object if return_clf is True
+        clf_cv (LogisticRegressionCV): classifier object fit to the data
     """
 
     assert (

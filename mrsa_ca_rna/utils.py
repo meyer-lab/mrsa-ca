@@ -27,7 +27,11 @@ def gene_converter(
     Parameters:
         dataframe (pd.DataFrame): dataframe containing gene ids to convert
         old_id (str): column name of the current gene id
+            Options: "Symbol", "EnsemblGeneID"
         new_id (str): column name of the desired gene id
+            Options: "Symbol", "EnsemblGeneID"
+        method (str): method to use for conversion
+            Options: "values", "index", "columns" | Default = "values"
 
     Returns:
         dataframe (pd.DataFrame) or adata (ad.AnnData): data with gene ids converted"""

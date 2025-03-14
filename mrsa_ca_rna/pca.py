@@ -28,7 +28,7 @@ def perform_pca(
         pca (PCA): The PCA object used to perform the analysis.
     """
 
-    pca = PCA(n_components=components)
+    pca = PCA(n_components=components, svd_solver="full")
     scaler: StandardScaler = StandardScaler().set_output(transform="pandas")
 
     scaled_rna = scaler.fit_transform(data)

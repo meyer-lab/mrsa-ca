@@ -16,7 +16,7 @@ from mrsa_ca_rna.utils import concat_datasets
 
 def figure_03_setup():
     """Create a dataFrame of regression performance over component #"""
-    components = 70
+    components = 15
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]

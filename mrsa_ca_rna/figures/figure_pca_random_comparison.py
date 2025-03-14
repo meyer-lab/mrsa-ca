@@ -127,6 +127,3 @@ def genFig():
     )
 
     return f
-
-
-genFig()

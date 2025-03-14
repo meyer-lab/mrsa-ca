@@ -26,8 +26,10 @@ def figure_setup():
     # import and convert the data to pandas for resample
     mrsa_ca = concat_datasets(["mrsa", "ca"], scale=True).to_df()
 
+
+    n_comp = 15
     # start with a pca decomposition of the true data
-    _, loadings_true, _ = perform_pca(mrsa_ca, components=70)
+    _, loadings_true, _ = perform_pca(mrsa_ca, components=n_comp)
 
     # resample the data
     n_resamples = 100
@@ -37,20 +39,20 @@ def figure_setup():
     ]
 
     # set up dataframes
-    pc_index = pd.Index([f"{i}" for i in range(1, 71)])
+    pc_index = pd.Index([f"{i}" for i in range(1, n_comp + 1)])
     pc_columns = pd.Index([f"Resample {i+1}" for i in range(n_resamples)])
 
     pca_singular_values = pd.DataFrame(
-        np.zeros((70, n_resamples)), columns=pc_columns, index=pc_index
+        np.zeros((n_comp, n_resamples)), columns=pc_columns, index=pc_index
     )
     pca_diff = pd.DataFrame(
-        np.zeros((70, n_resamples)), columns=pc_columns, index=pc_index
+        np.zeros((n_comp, n_resamples)), columns=pc_columns, index=pc_index
     )
 
     # perform PCA on each resampled dataset, storing the metrics of interest
     # into the dataframes
     for i, data in enumerate(resampled_data):
-        _, loadings, pca = perform_pca(data, components=70)
+        _, loadings, pca = perform_pca(data, components=n_comp)
         pca_singular_values.iloc[:, i] = pca.singular_values_
         pca_diff.iloc[:, i] = matrix_cosines(loadings_true.T, loadings.T)
 
@@ -58,7 +60,7 @@ def figure_setup():
 
 
 def genFig():
-    fig_size = (12, 8)
+    fig_size = (6, 8)
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 

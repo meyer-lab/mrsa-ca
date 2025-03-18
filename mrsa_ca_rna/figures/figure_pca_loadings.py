@@ -4,8 +4,6 @@ mrsa+ca+healthy data, based on previous scores analysis.
 This file may become obsolete post scores heatmap analysis currently
 planned.
 
-To-do:
-    homogenize structure with figure01 once I figure that one out.
 """
 
 import seaborn as sns
@@ -25,9 +23,8 @@ def setup_figure():
     loadings = gene_converter(
         loadings, old_id="EnsemblGeneID", new_id="Symbol", method="columns"
     )
-    loadings.T.to_csv("output/gene_components.csv")
+    # loadings.T.to_csv("output/gene_components.csv")
     loadings = gene_filter(loadings, threshold=0, method="mean", top_n=100)
-    
 
     return loadings.T
 

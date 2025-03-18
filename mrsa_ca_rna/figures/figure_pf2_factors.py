@@ -16,24 +16,19 @@ from mrsa_ca_rna.utils import (
 def figure12_setup():
     """Set up the data for the tensor factorization and return the results"""
 
+    # parameters from wandb experiments
+    threshold = 4
+    l1 = 1.0e-4
+    rank = 20
+
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
         ["mrsa", "ca", "bc", "covid", "healthy"],
-        filter_threshold=0,
+        filter_threshold=threshold,
         scale=True,
         tpm=True,
     )
-
-    # disease_xr = prepare_data(disease_data, expansion_dim="disease")
-
-    # tensor_decomp, _, recon_err = perform_parafac2(disease_xr, rank=10)
-    # disease_factors = tensor_decomp[1]
-    # r2x = 1 - recon_err
-
-    l1_base = 1e-5
-    l1 = l1_base * 10
-    rank = 20
 
     def callback(iteration, err, factors, _):
         sparsity = check_sparsity(factors[2])
@@ -69,8 +64,7 @@ def genFig():
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
-    # push disease_factors[2] to a pandas and pick out the top 20 most
-    # correlated/anti-correlated, then trim the data
+
     genes_df = pd.DataFrame(
         disease_factors[2],
         index=disease_data.var.index,
@@ -82,7 +76,7 @@ def genFig():
         new_id="Symbol",
         method="index",  # type: ignore
     )
-    genes_df.to_csv("output/figure12_pf2_genes.csv")
+    genes_df.to_csv("output/pf2_genes.csv")
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())

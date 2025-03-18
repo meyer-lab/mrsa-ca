@@ -26,7 +26,6 @@ def figure_setup():
     # import and convert the data to pandas for resample
     mrsa_ca = concat_datasets(["mrsa", "ca"], scale=True).to_df()
 
-
     n_comp = 15
     # start with a pca decomposition of the true data
     _, loadings_true, _ = perform_pca(mrsa_ca, components=n_comp)

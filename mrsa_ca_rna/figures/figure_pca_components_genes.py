@@ -72,6 +72,7 @@ def figure_setup():
         lambda x: gene_filter(x.to_frame().T, threshold=0, method="mean", top_n=top_n),
         axis=1,
     )
+    gene_comps = gene_comps.loc[:"PC5", :].copy()
 
     return y_proba, y_true, weights_dict, top_genes
 

@@ -97,7 +97,6 @@ def genFig():
     a.set_ylabel("Weight")
     a.set_title("Beta Coefficients of the PCA Components")
 
-
     for i, comp in enumerate(comp_genes):
         a = sns.barplot(data=comp, ax=ax[i + 2])
         a.set_xlabel("Gene")

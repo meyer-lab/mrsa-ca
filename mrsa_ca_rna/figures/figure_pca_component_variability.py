@@ -65,8 +65,7 @@ def genFig():
 
     pca_singular_values, pca_diff = figure_setup()
 
-    # convert to long form for plotting
-
+    # Convert to long form for plotting
     pca_singular_values = pca_singular_values.reset_index(names=["Component"]).melt(
         id_vars="Component", var_name="Resample", value_name="Singular Values"
     )
@@ -74,17 +73,34 @@ def genFig():
     pca_diff = pca_diff.reset_index(names=["Component"]).melt(
         id_vars="Component", var_name="Resample", value_name="Cosine Distance"
     )
-
-    a = sns.boxplot(
-        data=pca_singular_values, x="Component", y="Singular Values", ax=ax[0]
+    
+    # singular values
+    a = sns.lineplot(
+        data=pca_singular_values, 
+        x="Component", 
+        y="Singular Values", 
+        errorbar=("ci", 95),
+        markers=True,
+        dashes=False,
+        ax=ax[0]
     )
     a.set_xlabel("PCA Component")
     a.set_ylabel("Singular values")
-    a.set_title("Singular values of PCA Components across resampling")
-
-    a = sns.boxplot(data=pca_diff, x="Component", y="Cosine Distance", ax=ax[1])
+    a.set_title("Average Singular values of PCA Components with 95% CI")
+    
+    # cosine distances
+    a = sns.lineplot(
+        data=pca_diff, 
+        x="Component", 
+        y="Cosine Distance", 
+        errorbar=("ci", 95),
+        markers=True,
+        dashes=False,
+        ax=ax[1]
+    )
     a.set_xlabel("PCA Component")
     a.set_ylabel("Cosine Distance")
-    a.set_title("Cosine Distance of PCA Components across resampling")
+    a.set_title("Average Cosine Distance of PCA Components with 95% CI")
 
+    
     return f

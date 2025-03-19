@@ -75,7 +75,7 @@ def setupBase(figsize, gridd):
         style="whitegrid",
         font_scale=0.7,
         color_codes=True,
-        palette="viridis"
+        palette="turbo"
     )
     
     # Seaborn set_theme overrides some plt.rcParams, so we need to reset them

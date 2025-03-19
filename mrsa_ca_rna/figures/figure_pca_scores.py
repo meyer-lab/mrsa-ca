@@ -60,6 +60,9 @@ def genFig():
 
     data, accuracy = setup_figure()
 
+    n_cats = len(data["status"].unique())
+    sns.set_palette("turbo", n_cats)
+
     # plot PC1 and PC2
     a = sns.scatterplot(data, x="PC1", y="PC2", hue="status", style="disease", ax=ax[0])
     a.set_title(f"PC1 vs PC2 weighted by LR betas\nAccuracy: {accuracy:.2f}")

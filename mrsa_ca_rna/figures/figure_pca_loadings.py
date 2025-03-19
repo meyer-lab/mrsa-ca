@@ -24,7 +24,7 @@ def setup_figure():
         loadings, old_id="EnsemblGeneID", new_id="Symbol", method="columns"
     )
     # loadings.T.to_csv("output/gene_components.csv")
-    loadings = gene_filter(loadings, threshold=0, method="mean", top_n=100)
+    loadings = gene_filter(loadings, threshold=0, method="mean", top_n=500)
 
     return loadings.T
 
@@ -37,7 +37,7 @@ def genFig():
     data = setup_figure()
 
     # plot a heatmap of the loadings
-    a = sns.heatmap(data, cmap="coolwarm", center=0, ax=ax[0])
+    a = sns.heatmap(data, ax=ax[0])
     a.set_title("PCA Loadings")
     a.set_xlabel("Principal Components")
     a.set_ylabel("Genes")

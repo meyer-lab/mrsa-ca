@@ -157,4 +157,5 @@ def genFig():
     a.set_ylabel("Factor Match Score")
     a.set_title("Average Factor Match Score of PCA Components with 95% CI")
 
+    
     return f

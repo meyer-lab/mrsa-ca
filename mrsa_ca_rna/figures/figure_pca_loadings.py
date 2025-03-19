@@ -37,7 +37,7 @@ def genFig():
     data = setup_figure()
 
     # plot a heatmap of the loadings
-    a = sns.heatmap(data, ax=ax[0])
+    a = sns.heatmap(data, cmap="vlag", ax=ax[0])
     a.set_title("PCA Loadings")
     a.set_xlabel("Principal Components")
     a.set_ylabel("Genes")
@@ -66,7 +66,7 @@ def genFig():
             y=component_data.iloc[:, 0],
             hue=component_data["status"],
             hue_order=["tops", "mids", "bottoms"],
-            palette=sns.color_palette("coolwarm", 3),
+            palette=sns.color_palette("icefire", 3),
             ax=ax[i + 1],
             dodge=False,
         )

@@ -71,13 +71,8 @@ def setupBase(figsize, gridd):
         f (matplotlib.figure): figure object with subplots
         gs (gridspec.GridSpec): gridded subplots present on figure
     """
-    sns.set_theme(
-        style="whitegrid",
-        font_scale=0.7,
-        color_codes=True,
-        palette="turbo"
-    )
-    
+    sns.set_theme(style="whitegrid", font_scale=0.7, color_codes=True, palette="turbo")
+
     # Seaborn set_theme overrides some plt.rcParams, so we need to reset them
     matplotlib.rcParams["font.family"] = ["sans-serif"]
     matplotlib.rcParams["font.sans-serif"] = ["Helvetica"]
@@ -88,7 +83,6 @@ def setupBase(figsize, gridd):
     matplotlib.rcParams["legend.fontsize"] = 9
     matplotlib.rcParams["xtick.labelsize"] = 9
     matplotlib.rcParams["ytick.labelsize"] = 9
-    
 
     f = plt.figure(figsize=figsize, constrained_layout=True)
     gs = gridspec.GridSpec(**gridd, figure=f)

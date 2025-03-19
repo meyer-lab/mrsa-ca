@@ -81,7 +81,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
         callback=callback,
     )
@@ -91,7 +90,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
     )
 

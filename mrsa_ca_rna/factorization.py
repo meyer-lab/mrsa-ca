@@ -9,6 +9,8 @@ import cupy as cp
 import numpy as np
 from parafac2 import parafac2_nd
 
+# set the gpu id to use for the factorization
+cp.cuda.Device(1).use()
 
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
 def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
@@ -49,7 +51,6 @@ def perform_parafac2(
     condition_name: str = "disease",
     rank: int = 10,
     l1: float = 0.0,
-    gpu_id: int = 1,
     rnd_seed: int | None = None,
     callback=None,
 ):
@@ -78,9 +79,6 @@ def perform_parafac2(
     tuple[np.ndarray, np.ndarray, np.ndarray, float]
         the weights, factors, projections, and R2X value of the decomposition
     """
-
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-    cp.cuda.Device(gpu_id).use()
 
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)

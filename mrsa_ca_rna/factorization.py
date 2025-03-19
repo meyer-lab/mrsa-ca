@@ -12,6 +12,7 @@ from parafac2 import parafac2_nd
 # set the gpu id to use for the factorization
 cp.cuda.Device(1).use()
 
+
 # prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
 def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
     """Prepares the data for tensor factorization by creating a unique index for the

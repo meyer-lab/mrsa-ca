@@ -28,11 +28,11 @@ def matrix_fms(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
     """
     For two matrices, compute the factor match score between the two matrices
     for each number of columns from 1 to the number of columns in the matrices.
-    
+
     Basically, we are computing the factor match score between the matrices if
     just the first column is used, then the first two columns, and so on.
     """
-    
+
     fms_scores = []
     for i in range(1, a.shape[1] + 1):
         f_a = [
@@ -49,6 +49,7 @@ def matrix_fms(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
         cp_b = (None, f_b)
         fms_scores.append(factor_match_score(cp_a, cp_b, consider_weights=False))
     return np.array(fms_scores)
+
 
 def figure_setup():
     # import and convert the data to pandas for resample
@@ -81,10 +82,12 @@ def figure_setup():
 
     # perform PCA on each resampled dataset, storing the metrics of interest
     # into the dataframes
-    for i, data in tqdm(enumerate(resampled_data),
-                        total=len(resampled_data),
-                        desc="Resampling PCA",
-                        leave=True):
+    for i, data in tqdm(
+        enumerate(resampled_data),
+        total=len(resampled_data),
+        desc="Resampling PCA",
+        leave=True,
+    ):
         _, loadings, pca = perform_pca(data, components=n_comp)
         pca_singular_values.iloc[:, i] = pca.singular_values_
         pca_diff.iloc[:, i] = matrix_cosines(loadings_true.T, loadings.T)

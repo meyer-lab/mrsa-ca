@@ -64,7 +64,6 @@ def genFig():
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
-
     genes_df = pd.DataFrame(
         disease_factors[2],
         index=disease_data.var.index,

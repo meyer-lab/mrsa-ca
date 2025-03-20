@@ -6,6 +6,7 @@ planned.
 
 """
 
+import numpy as np
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
@@ -82,11 +83,12 @@ def genFig():
         b.legend(handles, labels)
 
         # get the x positions of the points
-        x_positions = b.collections[0].get_offsets()[:, 0]
+        offsets = b.collections[0].get_offsets()
+        x_positions = np.array(offsets)[:, 0]
 
         # label the top and bottom 3 genes
         for gene in top_genes:
-            gene_index = component_data.index.get_loc(gene)
+            gene_index: int = component_data.index.get_loc(gene)
             b.text(
                 x_positions[gene_index],
                 component_data.iloc[gene_index, 0],

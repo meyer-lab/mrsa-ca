@@ -48,8 +48,11 @@ def figure03a_setup():
     patient_comps = patient_comps.loc[mrsa_index, :"PC5"].copy()
 
     # convert the gene components to gene symbols and truncate to the first 5 components
-    gene_comps = gene_converter(
-        gene_comps, old_id="EnsemblGeneID", new_id="Symbol", method="columns"
+    gene_comps: pd.DataFrame = gene_converter(
+        gene_comps,
+        old_id="EnsemblGeneID",
+        new_id="Symbol",
+        method="columns",  # type: ignore
     )
     gene_comps = gene_comps.loc[:"PC5", :].copy()
 
@@ -65,7 +68,7 @@ def figure03a_setup():
 
     ## TODO: this move is too slick, refactor
     # transform into a series of dataframes with the top genes for each component
-    top_genes: pd.DataFrame = gene_comps.apply(
+    top_genes: pd.DataFrame = gene_comps.apply(  # type: ignore
         lambda x: gene_filter(x.to_frame().T, threshold=0, method="mean", top_n=top_n),
         axis=1,
     )

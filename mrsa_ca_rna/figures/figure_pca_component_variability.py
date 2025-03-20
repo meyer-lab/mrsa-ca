@@ -4,10 +4,10 @@ assess the variability of the components across runs with resampling."""
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import tqdm as tqdm
 from scipy import spatial
 from sklearn.utils import resample
 from tlviz.factor_tools import factor_match_score
+from tqdm import tqdm
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca

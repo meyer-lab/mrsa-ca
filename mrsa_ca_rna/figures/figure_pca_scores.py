@@ -10,6 +10,7 @@ To-do:
 """
 
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
@@ -18,7 +19,7 @@ from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.utils import concat_datasets
 
 
-def setup_figure():
+def setup_figure() -> tuple[pd.DataFrame, float]:
     """
     Collect data for plotting the PCA scores. Prior analysis
     reveals that the first 5 components are the most important, and that
@@ -42,7 +43,8 @@ def setup_figure():
     betas = model.coef_
 
     # weigh the whole scores by the betas
-    data = scores @ np.diag(betas.reshape(-1))
+    data = pd.DataFrame(scores @ np.diag(betas.reshape(-1)), index=scores.index)
+
     # relabel the columns after the matrix multiplication
     data.columns = data.columns.map({0: "PC1", 1: "PC2", 2: "PC3", 3: "PC4", 4: "PC5"})
     data["disease"] = adata.obs["disease"]
@@ -60,7 +62,7 @@ def genFig():
 
     data, accuracy = setup_figure()
 
-    n_cats = len(data["status"].unique())
+    n_cats = len(data.loc[:, "status"].unique())
     sns.set_palette("turbo", n_cats)
 
     # plot PC1 and PC2

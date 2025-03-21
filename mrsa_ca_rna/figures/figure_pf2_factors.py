@@ -41,7 +41,6 @@ def figure12_setup():
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         callback=callback,
     )
 

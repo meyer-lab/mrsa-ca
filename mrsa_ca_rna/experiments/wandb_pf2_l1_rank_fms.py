@@ -3,48 +3,13 @@ rank, L1 strength, and data size for the model."""
 
 from datetime import datetime
 
-import anndata as ad
 import numpy as np
 import wandb as wb
 from sklearn.preprocessing import StandardScaler
 from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.utils import check_sparsity, concat_datasets
-
-
-def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
-    """Resamples AnnData with unique observation indices, with replacement.
-
-    Parameters
-    ----------
-    X_in : ad.AnnData
-        AnnData object to be resampled
-
-    Returns
-    -------
-    ad.AnnData
-        Resampled AnnData object with unique observation indices
-    """
-
-    # make a random index with replacement for resampling
-    random_index = np.random.randint(0, X_in.shape[0], size=(X_in.shape[0],))
-
-    # independently subset the data and obs with the random indices
-    assert isinstance(X_in.X, np.ndarray)
-    X_resampled = X_in.X[random_index]
-    obs_resampled = X_in.obs.iloc[random_index].copy()
-
-    # Create unique indices for the resampled observations
-    obs_resampled.index = [f"bootstrap_{i}" for i in range(len(obs_resampled))]
-
-    # Create a new AnnData object with the resampled data
-    uns_dict = dict(X_in.uns)
-    X_in_resampled = ad.AnnData(
-        X=X_resampled, obs=obs_resampled, var=X_in.var.copy(), uns=uns_dict
-    )
-
-    return X_in_resampled
+from mrsa_ca_rna.utils import check_sparsity, concat_datasets, resample_adata
 
 
 def objective(config):
@@ -81,7 +46,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
         callback=callback,
     )
@@ -91,7 +55,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
     )
 

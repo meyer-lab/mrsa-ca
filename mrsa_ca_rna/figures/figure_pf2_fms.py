@@ -13,7 +13,7 @@ from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import concat_datasets, resample_adata
 
 
 def factorize(X_in: ad.AnnData, rank: int, l1: float, random_state=None):
@@ -25,40 +25,6 @@ def factorize(X_in: ad.AnnData, rank: int, l1: float, random_state=None):
     factors = (weights, factors)
 
     return factors, R2X
-
-
-def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
-    """Resamples AnnData with unique observation indices, with replacement.
-
-    Parameters
-    ----------
-    X_in : ad.AnnData
-        AnnData object to be resampled
-
-    Returns
-    -------
-    ad.AnnData
-        Resampled AnnData object with unique observation indices
-    """
-
-    # make a random index with replacement for resampling
-    random_index = np.random.randint(0, X_in.shape[0], size=(X_in.shape[0],))
-
-    # independently subset the data and obs with the random indices
-    assert isinstance(X_in.X, np.ndarray)
-    X_resampled = X_in.X[random_index]
-    obs_resampled = X_in.obs.iloc[random_index].copy()
-
-    # Create unique indices for the resampled observations
-    obs_resampled.index = [f"bootstrap_{i}" for i in range(len(obs_resampled))]
-
-    # Create a new AnnData object with the resampled data
-    uns_dict = dict(X_in.uns)
-    X_in_resampled = ad.AnnData(
-        X=X_resampled, obs=obs_resampled, var=X_in.var.copy(), uns=uns_dict
-    )
-
-    return X_in_resampled
 
 
 def bootstrap_fms(X, rank, l1, target_trials=30):

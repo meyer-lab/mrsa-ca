@@ -4,7 +4,7 @@ flist = $(wildcard mrsa_ca_rna/figures/figure*.py)
 
 all: $(patsubst mrsa_ca_rna/figures/figure%.py, output/figure%.svg, $(flist))
 
-figure%.svg: mrsa_ca_rna/figures/figure%.py
+output/figure%.svg: mrsa_ca_rna/figures/figure%.py
 	@ mkdir -p ./output
 	rye run fbuild $*
 

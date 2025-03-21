@@ -88,11 +88,18 @@ def gsea_analysis_per_cmp(
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.utils import concat_datasets, gene_converter
 
-# Load the data
+# make X data
 disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
 X = concat_datasets(disease_list, filter_threshold=4)
-_, factors, _, _ = perform_parafac2(X, condition_name="disease", rank=20, l1=1e-4)
 X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns")
-X.varm["Pf2_C"] = factors[2]
-gsea_overrep_per_cmp(X, 2, pos=True, enrichr=True)
-gsea_analysis_per_cmp(X, 2, term_rank=0)
+
+# use previously generated gene data
+genes = pd.read_csv("output/pf2_genes_4.csv", index_col=0)
+X.varm["Pf2_C"] = genes.to_numpy()
+
+components = range(1, 21)
+# terms = slice(5)
+# analyze the data
+for cmp in components:
+    gsea_overrep_per_cmp(X, cmp, pos=True, enrichr=True, output_file=f"output_gsea/enrichr_cmp_{cmp}.svg")
+    gsea_analysis_per_cmp(X, cmp, term_rank=0, output_file=f"output_gsea/gsea_cmp_{cmp}.svg")

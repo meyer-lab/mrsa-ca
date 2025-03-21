@@ -13,7 +13,7 @@ def figure10_setup():
 
     time_data, _, _ = ca_data_split()
 
-    time_factors, _, _ = perform_parafac2(
+    _, time_factors, _, _ = perform_parafac2(
         time_data, condition_name="subject_id", rank=4
     )
 

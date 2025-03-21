@@ -5,7 +5,12 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.utils import check_sparsity, concat_datasets, gene_filter
+from mrsa_ca_rna.utils import (
+    check_sparsity,
+    concat_datasets,
+    gene_converter,
+    gene_filter,
+)
 
 
 def figure12_setup():
@@ -14,7 +19,10 @@ def figure12_setup():
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid", "healthy"], scale=True, tpm=True
+        ["mrsa", "ca", "bc", "covid", "healthy"],
+        filter_threshold=0,
+        scale=True,
+        tpm=True,
     )
 
     # disease_xr = prepare_data(disease_data, expansion_dim="disease")
@@ -24,11 +32,21 @@ def figure12_setup():
     # r2x = 1 - recon_err
 
     l1_base = 1e-5
-    l1 = l1_base * 1
-    rank = 50
+    l1 = l1_base * 10
+    rank = 20
 
-    factors, _, r2x = perform_parafac2(
-        disease_data, condition_name="disease", rank=rank, l1=l1
+    def callback(iteration, err, factors, _):
+        sparsity = check_sparsity(factors[2])
+        R2X = 1 - err
+        print(f"Iteration: {iteration} | R2X: {R2X:.2e} | Sparsity: {sparsity:.2f}")
+        return 0
+
+    _, factors, _, r2x = perform_parafac2(
+        disease_data,
+        condition_name="disease",
+        rank=rank,
+        l1=l1,
+        callback=callback,
     )
 
     return factors, r2x, disease_data, l1
@@ -52,7 +70,18 @@ def genFig():
 
     # push disease_factors[2] to a pandas and pick out the top 20 most
     # correlated/anti-correlated, then trim the data
-    genes_df = pd.DataFrame(disease_factors[2], index=disease_data.var.index)
+    genes_df = pd.DataFrame(
+        disease_factors[2],
+        index=disease_data.var.index,
+        columns=pd.Index(disease_ranks_labels),
+    )
+    genes_df = gene_converter(
+        genes_df,
+        old_id="EnsemblGeneID",
+        new_id="Symbol",
+        method="index",  # type: ignore
+    )
+    genes_df.to_csv("output/figure12_pf2_genes.csv")
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())

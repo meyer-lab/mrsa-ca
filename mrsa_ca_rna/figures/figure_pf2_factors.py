@@ -20,7 +20,7 @@ def figure12_setup():
     threshold = 4
     l1 = 1.0e-4
     rank = 20
-
+    
     # data import, concatenation, scaling, and preparation
     # same as figure11_setup
     disease_data = concat_datasets(
@@ -74,6 +74,7 @@ def genFig():
         new_id="Symbol",
         method="index",  # type: ignore
     )
+
     genes_df.to_csv("output/pf2_genes.csv")
 
     # Check sparsity of the gene factor matrix

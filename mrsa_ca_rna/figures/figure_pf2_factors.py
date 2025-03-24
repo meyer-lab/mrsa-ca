@@ -13,16 +13,14 @@ from mrsa_ca_rna.utils import (
 )
 
 
-def figure12_setup():
+def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
     # parameters from wandb experiments
     threshold = 4
     l1 = 1.0e-4
     rank = 20
-    
-    # data import, concatenation, scaling, and preparation
-    # same as figure11_setup
+
     disease_data = concat_datasets(
         ["mrsa", "ca", "bc", "covid", "healthy"],
         filter_threshold=threshold,
@@ -54,7 +52,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    disease_factors, r2x, disease_data, l1 = figure12_setup()
+    disease_factors, r2x, disease_data, l1 = figure_setup()
 
     disease_ranks = range(1, disease_factors[0].shape[1] + 1)
     disease_ranks_labels = [str(x) for x in disease_ranks]

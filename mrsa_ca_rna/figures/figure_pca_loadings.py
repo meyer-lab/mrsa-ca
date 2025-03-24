@@ -14,7 +14,7 @@ from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.utils import concat_datasets, gene_converter, gene_filter
 
 
-def setup_figure():
+def figure_setup():
     disease_list = ["mrsa", "ca"]
 
     adata = concat_datasets(disease_list, scale=False, tpm=True)
@@ -35,7 +35,7 @@ def genFig():
     layout = {"ncols": 2, "nrows": 3}
     ax, f, _ = setupBase(fig_size, layout)
 
-    data = setup_figure()
+    data = figure_setup()
 
     # plot a heatmap of the loadings
     a = sns.heatmap(data, cmap="vlag", ax=ax[0])

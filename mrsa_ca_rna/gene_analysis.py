@@ -1,105 +1,131 @@
-import anndata
+import anndata as ad
 import gseapy as gp
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from gseapy import dotplot
-from gseapy.plot import gseaplot
+from gseapy.plot import gseaplot2
+
+from mrsa_ca_rna.figures.base import setupBase
 
 
-def gsea_overrep_per_cmp(
-    X: anndata,
-    cmp: int,
-    pos: bool = True,
-    enrichr=True,
-    gene_set="GO_Biological_Process_2023",
-    output_file="output/figureS13b.svg",
-):
-    """Perform GSEA overrepresentation analysis and plot the results."""
-    df = pd.DataFrame([])
-    df["Gene"] = X.var.index
-    df["Rank"] = X.varm["Pf2_C"][:, cmp - 1]
-    df = df[df["Rank"] > 0] if pos else df[df["Rank"] < 0]
-
-    df = df.sort_values("Rank").reset_index(drop=True)
-
-    if enrichr is True:
-        enr_up = gp.enrichr(df["Gene"].values.tolist(), gene_sets=gene_set)
-        enr_up.res2d.Term = enr_up.res2d.Term.str.split(" \(GO").str[0]
-        dotplot(enr_up.res2d, title=gene_set, cmap=plt.cm.viridis, ofname=output_file)
-    else:
-        pre_res = gp.prerank(rnk=df, gene_sets=gene_set, seed=0)
-        dotplot(
-            pre_res.res2d,
-            column="FDR q-val",
-            title=gene_set,
-            cutoff=0.25,
-            cmap=plt.cm.viridis,
-            ofname=output_file,
-        )
-
-
+# Edit this function to match figure_pf2_*.py style
 def gsea_analysis_per_cmp(
-    X: anndata,
+    X: ad.AnnData,
     cmp: int,
-    term_rank=0,
+    term_ranks=slice(0, 5),
     gene_set="GO_Biological_Process_2023",
-    output_file="output/figureS13a.svg",
+    ax=None,
+    figsize=(10, 12),
 ):
-    """Perform GSEA analysis and plot the results."""
+    """Perform GSEA analysis and plot the results in a vertical layout.
+
+    Parameters
+    ----------
+    X : ad.AnnData
+        AnnData object with gene data and Pf2_C in varm
+    cmp : int
+        Component number (1-based indexing)
+    term_ranks : slice or int, default slice(0, 5)
+        Terms to include in the GSEA plot
+    gene_set : str, default "GO_Biological_Process_2023"
+        Gene set to use for enrichment analysis
+    ax : matplotlib axes or None, default None
+        If provided, should be a 2-element list/array of axes objects
+        If None, new figure with axes will be created
+    figsize : tuple, default (10, 12)
+        Figure size if creating a new figure
+
+    Returns
+    -------
+    tuple
+        (figure, axes) containing the plots
+    """
+    # Create figure and axes if not provided
+    if ax is None:
+        layout = {"ncols": 1, "nrows": 2}
+        ax, fig, _ = setupBase(figsize, layout)
+    else:
+        # If axes are provided, try to get the figure
+        if isinstance(ax, (list, np.ndarray)):
+            fig = ax[0].figure
+        else:
+            fig = ax.figure
+            # Convert single axis to list for consistency
+            ax = [ax]
+
+    # make a two column dataframe for prerank (gene, rank)
     df = pd.DataFrame([])
     df["Gene"] = X.var.index
     df["Rank"] = X.varm["Pf2_C"][:, cmp - 1]
-    df = df.sort_values("Rank").reset_index(drop=True)
+
+    # sort the dataframe by rank (most expressed genes first)
+    df = df.sort_values("Rank", ascending=False).reset_index(drop=True)
+
+    # run the analysis and extract the results
     pre_res = gp.prerank(rnk=df, gene_sets=gene_set, seed=0)
+    terms = pre_res.res2d.Term[term_ranks]
+    hits = [pre_res.results[t]["hits"] for t in terms]
+    runes = [pre_res.results[t]["RES"] for t in terms]
 
-    out = []
+    # Generate titles with component info
+    dot_title = f"Component {cmp} Gene Enrichment Analysis\n{gene_set}"
+    gsea_title = f"Component {cmp} GSEA Plot"
 
-    for term in list(pre_res.results):
-        out.append(
-            [
-                term,
-                pre_res.results[term]["fdr"],
-                pre_res.results[term]["es"],
-                pre_res.results[term]["nes"],
-                pre_res.results[term]["pval"],
-            ]
-        )
-
-    out_df = (
-        pd.DataFrame(out, columns=["Term", "fdr", "es", "nes", "pval"])
-        .sort_values(by=["nes", "es"], ascending=False)
-        .reset_index(drop=True)
+    # plot the dotplot at the top position
+    dot_plot = dotplot(
+        pre_res.res2d,
+        column="FDR q-val",
+        title=dot_title,
+        cmap=plt.cm.viridis,
+        top_term=10,
+        show_ring=True,
+        ax=ax[0],
     )
-    term_to_plot = out_df["Term"][term_rank]
 
-    gseaplot(
-        term=term_to_plot,
-        hits=pre_res.results[term_to_plot]["hits"],
-        nes=pre_res.results[term_to_plot]["nes"],
-        pval=pre_res.results[term_to_plot]["pval"],
-        fdr=pre_res.results[term_to_plot]["fdr"],
-        RES=pre_res.results[term_to_plot]["RES"],
+    # plot the GSEA plot at the bottom position
+    gsea_plot = gseaplot2(
+        terms=terms,
+        RESs=runes,
+        hits=hits,
         rank_metric=pre_res.ranking,
-        ofname=output_file,
+        ax=ax[1],
+        title=gsea_title,
     )
 
-# DELETE:
-# debug section
-from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.utils import concat_datasets, gene_converter
+    return fig, ax
 
-# make X data
-disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
-X = concat_datasets(disease_list, filter_threshold=4)
-X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns")
 
-# use previously generated gene data
-genes = pd.read_csv("output/pf2_genes_4.csv", index_col=0)
-X.varm["Pf2_C"] = genes.to_numpy()
+# delete this and replace with figure function within TBD figure_pf2_*.py file
+def generate_gsea_figure(X, components=[1, 2], gene_set="GO_Biological_Process_2023"):
+    """Create a GSEA figure with multiple components in a grid.
 
-components = range(1, 21)
-# terms = slice(5)
-# analyze the data
-for cmp in components:
-    gsea_overrep_per_cmp(X, cmp, pos=True, enrichr=True, output_file=f"output_gsea/enrichr_cmp_{cmp}.svg")
-    gsea_analysis_per_cmp(X, cmp, term_rank=0, output_file=f"output_gsea/gsea_cmp_{cmp}.svg")
+    Parameters
+    ----------
+    X : ad.AnnData
+        AnnData object with gene data
+    components : list, default [1, 2]
+        List of components to analyze (1-based indexing)
+    gene_set : str, default "GO_Biological_Process_2023"
+        Gene set to use for enrichment analysis
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The complete figure
+    """
+    n_components = len(components)
+    layout = {"ncols": 1 * n_components, "nrows": 2}
+    figsize = (10, 10 * n_components)
+
+    ax, fig, _ = setupBase(figsize, layout)
+
+    for i, cmp in enumerate(components):
+        # Get the two axes for this component
+        component_axes = [ax[2 * i], ax[2 * i + 1]]
+
+        # Create GSEA plots for this component
+        gsea_analysis_per_cmp(X, cmp=cmp, gene_set=gene_set, ax=component_axes)
+
+    fig.tight_layout()
+    return fig

@@ -1,27 +1,21 @@
-import os
-import tempfile
-from matplotlib.image import imread
 
 import anndata as ad
 import gseapy as gp
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from gseapy import dotplot
 from gseapy.plot import gseaplot2
-
-from mrsa_ca_rna.figures.base import setupBase
 
 
 def gsea_analysis_per_cmp(
     X: ad.AnnData,
     cmp: int,
-    term_ranks=slice(0, 5),
+    term_ranks=5,
     gene_set="GO_Biological_Process_2023",
     figsize=(6, 4),
     ofname=None,
 ):
     """Perform GSEA analysis and plot the results in a vertical layout."""
+
+    term_ranks = slice(0, 5)
 
     # make a two column dataframe for prerank
     df = pd.DataFrame([])
@@ -37,7 +31,6 @@ def gsea_analysis_per_cmp(
 
     # Generate titles with component info
     gsea_title = f"Component {cmp} GSEA Plot"
-
 
     fig = gseaplot2(
         terms=terms,

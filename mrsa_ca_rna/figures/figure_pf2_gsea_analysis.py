@@ -126,7 +126,7 @@ def genFig():
     cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
     for cmp in cmps:
         gsea_analysis_per_cmp(
-            X, cmp, figsize=(4, 4), ofname=f"output_gsea/gsea_AIO_cmp_{cmp}.svg"
+            X, cmp, figsize=(4, 4), out_dir="output_gsea/"
         )
 
     return f

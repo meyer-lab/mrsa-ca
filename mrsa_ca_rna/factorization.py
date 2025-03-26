@@ -72,6 +72,7 @@ def perform_parafac2(
         specify a random state for the factorization, by default None
     callback : func, optional
         for interior value extraction during wandb experiments, by default None
+        | args: iteration, error, factors, projections
 
     Returns
     -------

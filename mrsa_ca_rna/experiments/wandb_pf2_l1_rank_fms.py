@@ -1,6 +1,7 @@
 """This file will perform a sweep of the parafac2 tensor factorization to find the best
 rank, L1 strength, and data size for the model."""
 
+import os
 from datetime import datetime
 
 import anndata as ad
@@ -11,6 +12,8 @@ from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.utils import check_sparsity, concat_datasets
+
+os.environ["WANDB_DIR"] = os.path.dirname(os.path.abspath(__file__))
 
 
 def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
@@ -107,7 +110,8 @@ def objective(config):
 
 
 def sweep():
-    wb.init()
+    experiments_dir = os.path.dirname(os.path.abspath(__file__))
+    wb.init(dir=experiments_dir)
     fms = objective(wb.config)
     wb.log({"fms": fms})
 
@@ -115,22 +119,23 @@ def sweep():
 def perform_experiment():
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    ranks = [x for x in range(10, 21)]
-    l1_values = [0, 8e-5, 1e-4, 1.2e-4, 1.4e-4]
-    thresh_values = [0, 4.0, 8.1]
+    ranks = {"max": 20, "min": 10}
+    l1_values = {"max": 2e-4, "min": 1e-5}
+    thresh_values = {"max": 10, "min": 0}
 
     sweep_config = {
         "name": "sweep_pf2_" + current_time,
-        "method": "grid",
+        "method": "bayes",
         "metric": {"name": "fms", "goal": "maximize"},
         "parameters": {
-            "rank": {"values": ranks},
-            "l1": {"values": l1_values},
-            "thresh": {"values": thresh_values},
+            "rank": ranks,
+            "l1": l1_values,
+            "thresh": thresh_values,
         },
+        "early_terminate": {"type": "hyperband", "min_iter": 50},
     }
 
-    sweep_id = wb.sweep(sweep=sweep_config, project="pf2_r2x_fms")
-    wb.agent(sweep_id, function=sweep)
+    sweep_id = wb.sweep(sweep=sweep_config, project="pf2_comprehensive_fms")
+    wb.agent(sweep_id, function=sweep, count=400)
 
     return sweep_id

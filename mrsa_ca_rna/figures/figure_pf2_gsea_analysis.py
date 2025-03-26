@@ -1,11 +1,12 @@
 """Plots gsea analysis for multiple components in a grid"""
 
 import anndata as ad
+import pandas as pd
 
-from .base import setupBase
-from ..factorization import perform_parafac2
-from ..gene_analysis import gsea_analysis_per_cmp
-from ..utils import concat_datasets, gene_converter
+from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.factorization import perform_parafac2
+from mrsa_ca_rna.gene_analysis import gsea_analysis_per_cmp
+from mrsa_ca_rna.utils import concat_datasets, gene_converter
 
 
 def setup_figure():
@@ -17,19 +18,22 @@ def setup_figure():
     X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns")
 
     # perform pf2
-    _, factors, _, _ = perform_parafac2(X, condition_name="disease", rank=20, l1=1e-4)
+    # _, factors, _, _ = perform_parafac2(X, condition_name="disease", rank=20, l1=1e-4)
+    # or import from previous analysis
+    pf2_genes_4 = pd.read_csv("output/pf2_genes_4.csv", index_col=0)
+    X.varm["Pf2_C"] = pf2_genes_4.to_numpy()
     
-    # add the c factor matrix as a varm attribute
-    X.varm["Pf2_C"] = factors[2]
+    # # add the c factor matrix as a varm attribute
+    # X.varm["Pf2_C"] = factors[2]
 
     return X
 
 def genFig():
-    layout = {"ncols": 1, "nrows": 2}
-    fig_size = (10, 12)
-    ax, f, _ = setupBase(fig_size, layout)
-
     X = setup_figure()
-    a = gsea_analysis_per_cmp(X, 1, ax=ax)
-
+    
+    cmps = [x for x in range(1, 11)]
+    for cmp in cmps:
+        f = gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), ofname=f"output_gsea/gsea_cmp_{cmp}.svg")
+        f.savefig(f"output_gsea/gsea_cmp_{cmp}.svg", bbox_inches="tight", pad_inches=0.1)
+    
     return f

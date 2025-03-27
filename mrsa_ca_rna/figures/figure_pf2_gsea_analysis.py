@@ -3,6 +3,7 @@
 import anndata as ad
 import pandas as pd
 import seaborn as sns
+from tqdm import tqdm
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
@@ -13,6 +14,29 @@ from mrsa_ca_rna.utils import (
     gene_converter,
     gene_filter,
 )
+
+
+def export_projections(X: ad.AnnData, projections):
+    rank_labels = [x for x in range(1, projections[0].shape[1] + 1)]
+
+    # extract the MRSA and CA projections (104 and 88 samples, respectively)
+    for projection in projections:
+        if projection.shape[0] == 104:
+            ca_index = X.obs[X.obs["disease"] == "Candidemia"].index
+            Pf2_CA = pd.DataFrame(
+                projection, index=ca_index, columns=pd.Index(rank_labels)
+            )
+
+        if projection.shape[0] == 88:
+            mrsa_index = X.obs[X.obs["disease"] == "MRSA"].index
+            Pf2_MRSA = pd.DataFrame(
+                projection, index=mrsa_index, columns=pd.Index(rank_labels)
+            )
+
+    Pf2_CA.to_csv("output_gsea/Pf2_CA.csv")
+    Pf2_MRSA.to_csv("output_gsea/Pf2_MRSA.csv")
+
+    return 0
 
 
 def setup_figure():
@@ -38,7 +62,7 @@ def setup_figure():
         sparsities.append(sparsity)
         return 0
 
-    _, factors, _, R2X = perform_parafac2(
+    _, factors, projections, R2X = perform_parafac2(
         X, condition_name="disease", rank=rank, l1=l1, rnd_seed=42, callback=callback
     )
 
@@ -46,8 +70,9 @@ def setup_figure():
     X.varm["Pf2_C"] = factors[2]
 
     # dress up the factors for heatmap plotting by making pd.DataFrames with labels
+    rank_labels = [x for x in range(1, factors[0].shape[1] + 1)]
     disease_labels = X.obs["disease"].unique()
-    rank_labels = [x for x in range(1, rank + 1)]
+
     Pf2_A = pd.DataFrame(
         factors[0], index=pd.Index(disease_labels), columns=pd.Index(rank_labels)
     )
@@ -56,10 +81,13 @@ def setup_figure():
     )
     Pf2_C = pd.DataFrame(factors[2], index=X.var.index, columns=pd.Index(rank_labels))
 
+    # export_projections(X, projections)
+
     # trim the gene factor matrix to the top 100 genes
     Pf2_C = gene_filter(Pf2_C.T, threshold=0, method="mean", top_n=100)
     Pf2_C = Pf2_C.T
 
+    # collect metrics for the heatmaps
     metrics = {
         "l1": l1,
         "rank": rank,
@@ -124,9 +152,7 @@ def genFig():
 
     # perfrom gsea analysis on each component of the gene factor matrix
     cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
-    for cmp in cmps:
-        gsea_analysis_per_cmp(
-            X, cmp, figsize=(4, 4), out_dir="output_gsea/"
-        )
+    for cmp in tqdm(cmps, desc="Performing GSEA Analysis", leave=True):
+        gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), out_dir="output_gsea/")
 
     return f

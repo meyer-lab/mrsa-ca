@@ -1,8 +1,8 @@
 import anndata as ad
 import gseapy as gp
-import pandas as pd
 import matplotlib.pyplot as plt
-from gseapy.plot import gseaplot2, dotplot
+import pandas as pd
+from gseapy.plot import dotplot, gseaplot2
 
 
 def gsea_analysis_per_cmp(
@@ -66,7 +66,7 @@ def gsea_analysis_per_cmp(
     )
     fig_g.suptitle(gsea_title)
 
-    try: 
+    try:
         fig_d = dotplot(
             pre_res.res2d,
             column="FDR q-val",
@@ -79,7 +79,7 @@ def gsea_analysis_per_cmp(
         fig_d = dotplot(
             pre_res.res2d,
             column="FDR q-val",
-            title="No genes within cutoff, showing all",
+            title="None w/in cutoff, showing all",
             cutoff=1,
             cmap=plt.cm.viridis,
             ofname=dotplot_ofname,

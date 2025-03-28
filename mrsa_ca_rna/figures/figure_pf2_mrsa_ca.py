@@ -6,16 +6,14 @@ for mrsa, and a strip plot of component 3, 6, 9 and 7 for mrsa and ca
 import anndata as ad
 import pandas as pd
 import seaborn as sns
+from sklearn.metrics import roc_auc_score, roc_curve
 
-from sklearn.metrics import roc_curve, roc_auc_score
-
-from mrsa_ca_rna.utils import concat_datasets
-from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.regression import perform_LR
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
-
     disease_list = ["mrsa", "ca"]
 
     meta = concat_datasets(disease_list).obs
@@ -24,7 +22,7 @@ def figure_setup():
     data = pd.concat([Pf2_MRSA, Pf2_CA], axis=0)
 
     X = ad.AnnData(data, obs=meta)
-    
+
     # perform logistic regression on MRSA data
     mrsa_data = X[X.obs["disease"] == "MRSA"].copy()
     y_true = mrsa_data.obs.loc[:, "status"].astype(int)
@@ -41,6 +39,7 @@ def figure_setup():
     df["status"] = X.obs["status"]
 
     return df, LR_data, LR_score
+
 
 def genFig():
     figure_size = (12, 4)
@@ -66,8 +65,12 @@ def genFig():
 
     # plot the strip plot of components 3, 6, 9, and 7
     df = df.loc[:, ["disease", "status", 3, 6, 9, 7]]
-    df = df.melt(id_vars=["disease", "status"], var_name="Component", value_name="Value")
-    a = sns.stripplot(data=df, x="Component", y="Value", hue="status", ax=ax[2], dodge=True)
+    df = df.melt(
+        id_vars=["disease", "status"], var_name="Component", value_name="Value"
+    )
+    a = sns.stripplot(
+        data=df, x="Component", y="Value", hue="status", ax=ax[2], dodge=True
+    )
     a.set_title("Component 3, 6, 9, 7")
     a.set_xlabel("Component")
     a.set_ylabel("Value")

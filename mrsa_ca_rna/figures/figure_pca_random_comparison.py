@@ -43,7 +43,7 @@ def make_roc_curve(X, y):
     return data, score
 
 
-def setup_figure03b():
+def figure_setup():
     """Performs logistic regression on MRSA data, transformed using CA's PCA model,
     and using random data. The statuses are either shuffled or not for each case"""
 
@@ -85,7 +85,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    mrsa_dict, y_shuffled, y_true = setup_figure03b()
+    mrsa_dict, y_shuffled, y_true = figure_setup()
 
     # perform logistic regression for the following cases:
     # - MRSA data, True status

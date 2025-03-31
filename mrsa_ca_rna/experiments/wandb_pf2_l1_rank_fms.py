@@ -4,7 +4,6 @@ rank, L1 strength, and data size for the model."""
 import os
 from datetime import datetime
 
-import anndata as ad
 import numpy as np
 import wandb as wb
 from sklearn.preprocessing import StandardScaler
@@ -84,7 +83,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
         callback=callback,
     )
@@ -94,7 +92,6 @@ def objective(config):
         condition_name="disease",
         rank=rank,
         l1=l1,
-        gpu_id=1,
         rnd_seed=random_state,
     )
 

@@ -30,7 +30,7 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
 
 
 # setup figure
-def figure03a_setup():
+def figure_setup():
     """Collect the data required for figure03a"""
     top_n = 5
 
@@ -81,7 +81,7 @@ def genFig():
     layout = {"ncols": 2, "nrows": 4}
     ax, f, _ = setupBase(fig_size, layout)
 
-    y_proba, y_true, weights, comp_genes = figure03a_setup()
+    y_proba, y_true, weights, comp_genes = figure_setup()
 
     data, auc = make_roc_curve(y_true, y_proba)
 

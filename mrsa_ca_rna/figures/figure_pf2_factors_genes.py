@@ -154,9 +154,10 @@ def genFig():
     c.set_xlabel("Rank")
     c.set_ylabel("Genes")
 
-    # # perfrom gsea analysis on each component of the gene factor matrix
-    # cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
-    # for cmp in tqdm(cmps, desc="Performing GSEA Analysis", leave=True):
-    #     gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), out_dir="output_gsea/")
+    # perfrom gsea analysis on each component of the gene factor matrix
+    # change from None to out_dir to save figures!!!
+    cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
+    for cmp in tqdm(cmps, desc="Performing GSEA Analysis", leave=True):
+        gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), out_dir=None)
 
     return f

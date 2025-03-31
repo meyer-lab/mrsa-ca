@@ -12,7 +12,7 @@ from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.utils import concat_datasets
 
 
-def figure_00_setup():
+def figure_setup():
     """Make and organize the data to be used in genFig"""
 
     # list the datasets we want to compare and define total components
@@ -60,7 +60,10 @@ def genFig():
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    explained_variance = figure_00_setup()
+    explained_variance = figure_setup()
+
+    # subset the data to only include the first 15 components
+    explained_variance = explained_variance[explained_variance["components"] <= 15]
 
     # convert the data to long form for seaborn
     explained_variance = explained_variance.melt(
@@ -72,6 +75,7 @@ def genFig():
         x="components",
         y="explained_variance",
         hue="dataset",
+        hue_order=["ca", "combined", "mrsa"],
         ax=ax[0],
     )
     a.set_title("Comparison of PCA Explained Variance across datasets")

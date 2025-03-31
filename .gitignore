@@ -1,5 +1,3 @@
-mrsa_ca_rna/output
-
 *.pyc
 
 # Byte-compiled / optimized / DLL files
@@ -114,6 +112,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode
 
 # Spyder project settings
 .spyderproject
@@ -144,5 +143,8 @@ salmon_processing/
 .idea/
 .DS_Store
 
+# output data
 *.svg
-output/modified_ca_series.txt
+output/*.csv
+
+# Unsorted ('add to gitignore' dialogue)

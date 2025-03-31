@@ -39,12 +39,17 @@ def gsea_analysis_per_cmp(
     # make a two column dataframe for prerank
     df = pd.DataFrame([])
     df["Gene"] = X.var.index
-    df["Rank"] = X.varm["Pf2_C"][:, cmp - 1] # type: ignore
+    df["Rank"] = X.varm["Pf2_C"][:, cmp - 1]  # type: ignore
     df = df.sort_values("Rank", ascending=False).reset_index(drop=True)
 
     # run the analysis and extract the results
     pre_res = gp.prerank(rnk=df, gene_sets=gene_set, seed=0)
+
+    # check if the analysis ran successfully
     assert isinstance(pre_res.res2d, pd.DataFrame), "GSEA analysis failed to run"
+    assert isinstance(pre_res.ranking, pd.Series), "GSEA analysis failed to run"
+
+    # collect the results
     terms = pre_res.res2d.Term[term_ranks]
     hits = [pre_res.results[t]["hits"] for t in terms]
     runes = [pre_res.results[t]["RES"] for t in terms]
@@ -59,11 +64,12 @@ def gsea_analysis_per_cmp(
         terms=terms,
         RESs=runes,
         hits=hits,
-        rank_metric=pre_res.ranking, #type: ignore
+        rank_metric=pre_res.ranking.to_list(),
         figsize=figsize,
         ofname=gsea_ofname,
     )
 
+    # dotplot will fail if there are no genes within the cutoff but we want it anyway
     try:
         fig_d = dotplot(
             pre_res.res2d,
@@ -73,6 +79,7 @@ def gsea_analysis_per_cmp(
             ofname=dotplot_ofname,
         )
     except ValueError:
+        # make a dotplot with no cutoff with title indicating it failed
         print("Dotplot failed to generate. No genes within cutoff.")
         fig_d = dotplot(
             pre_res.res2d,

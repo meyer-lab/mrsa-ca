@@ -35,9 +35,7 @@ def export_projections(X: ad.AnnData, projections):
             )
             Pf2_MRSA.to_csv("output_gsea/Pf2_MRSA.csv")
         else:
-            raise ValueError(
-                "Projection shape does not match MRSA or CA dataset size"
-            )
+            raise ValueError("Projection shape does not match MRSA or CA dataset size")
     print("Exported projections to CSV files")
 
     return 0
@@ -56,7 +54,7 @@ def setup_figure():
     )
 
     # convert to gene symbols
-    X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns") #type: ignore
+    X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns")  # type: ignore
 
     # define a callback to probe pf2 fitting
     sparsities = []

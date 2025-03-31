@@ -4,6 +4,7 @@ rank, L1 strength, and data size for the model."""
 import os
 from datetime import datetime
 
+import anndata as ad
 import numpy as np
 import wandb as wb
 from sklearn.preprocessing import StandardScaler

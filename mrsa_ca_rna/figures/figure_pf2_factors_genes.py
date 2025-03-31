@@ -26,15 +26,19 @@ def export_projections(X: ad.AnnData, projections):
             Pf2_CA = pd.DataFrame(
                 projection, index=ca_index, columns=pd.Index(rank_labels)
             )
+            Pf2_CA.to_csv("output_gsea/Pf2_CA.csv")
 
         if projection.shape[0] == 88:
             mrsa_index = X.obs[X.obs["disease"] == "MRSA"].index
             Pf2_MRSA = pd.DataFrame(
                 projection, index=mrsa_index, columns=pd.Index(rank_labels)
             )
-
-    Pf2_CA.to_csv("output_gsea/Pf2_CA.csv")
-    Pf2_MRSA.to_csv("output_gsea/Pf2_MRSA.csv")
+            Pf2_MRSA.to_csv("output_gsea/Pf2_MRSA.csv")
+        else:
+            raise ValueError(
+                "Projection shape does not match MRSA or CA dataset size"
+            )
+    print("Exported projections to CSV files")
 
     return 0
 
@@ -52,7 +56,7 @@ def setup_figure():
     )
 
     # convert to gene symbols
-    X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns")
+    X = gene_converter(X, old_id="EnsemblGeneID", new_id="Symbol", method="columns") #type: ignore
 
     # define a callback to probe pf2 fitting
     sparsities = []
@@ -116,8 +120,8 @@ def genFig():
         ax=ax[0],
         cmap=A_cmap,
         vmin=0,
-        xticklabels=Pf2_A.columns,
-        yticklabels=Pf2_A.index,
+        xticklabels=Pf2_A.columns.tolist(),
+        yticklabels=Pf2_A.index.tolist(),
     )
     a.set_title(f"Disease Factors\nR2X: {metrics["R2X"]:.2f}")
     a.set_xlabel("Rank")
@@ -128,8 +132,8 @@ def genFig():
         ax=ax[1],
         cmap=BC_cmap,
         center=0,
-        xticklabels=Pf2_B.columns,
-        yticklabels=Pf2_B.index,
+        xticklabels=Pf2_B.columns.tolist(),
+        yticklabels=Pf2_B.index.tolist(),
     )
     b.set_title("Eigenstate Factors")
     b.set_xlabel("Rank")
@@ -140,7 +144,7 @@ def genFig():
         ax=ax[2],
         cmap=BC_cmap,
         center=0,
-        xticklabels=Pf2_C.columns,
+        xticklabels=Pf2_C.columns.tolist(),
         yticklabels=False,
     )
     c.set_title(
@@ -150,9 +154,9 @@ def genFig():
     c.set_xlabel("Rank")
     c.set_ylabel("Genes")
 
-    # perfrom gsea analysis on each component of the gene factor matrix
-    cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
-    for cmp in tqdm(cmps, desc="Performing GSEA Analysis", leave=True):
-        gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), out_dir="output_gsea/")
+    # # perfrom gsea analysis on each component of the gene factor matrix
+    # cmps = [x for x in range(1, Pf2_C.shape[1] + 1)]
+    # for cmp in tqdm(cmps, desc="Performing GSEA Analysis", leave=True):
+    #     gsea_analysis_per_cmp(X, cmp, figsize=(4, 4), out_dir="output_gsea/")
 
     return f

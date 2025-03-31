@@ -1,6 +1,5 @@
 import anndata as ad
 import gseapy as gp
-import matplotlib.pyplot as plt
 import pandas as pd
 from gseapy.plot import dotplot, gseaplot2
 
@@ -40,17 +39,17 @@ def gsea_analysis_per_cmp(
     # make a two column dataframe for prerank
     df = pd.DataFrame([])
     df["Gene"] = X.var.index
-    df["Rank"] = X.varm["Pf2_C"][:, cmp - 1]
+    df["Rank"] = X.varm["Pf2_C"][:, cmp - 1] # type: ignore
     df = df.sort_values("Rank", ascending=False).reset_index(drop=True)
 
     # run the analysis and extract the results
     pre_res = gp.prerank(rnk=df, gene_sets=gene_set, seed=0)
+    assert isinstance(pre_res.res2d, pd.DataFrame), "GSEA analysis failed to run"
     terms = pre_res.res2d.Term[term_ranks]
     hits = [pre_res.results[t]["hits"] for t in terms]
     runes = [pre_res.results[t]["RES"] for t in terms]
 
     # Generate titles with component info
-    gsea_title = f"Component {cmp} GSEA Plot"
     dotplot_title = f"Component {cmp} Dotplot"
 
     gsea_ofname = out_dir + f"gsea_{cmp}.svg" if out_dir is not None else None
@@ -60,18 +59,17 @@ def gsea_analysis_per_cmp(
         terms=terms,
         RESs=runes,
         hits=hits,
-        rank_metric=pre_res.ranking,
+        rank_metric=pre_res.ranking, #type: ignore
         figsize=figsize,
         ofname=gsea_ofname,
     )
-    fig_g.suptitle(gsea_title)
 
     try:
         fig_d = dotplot(
             pre_res.res2d,
             column="FDR q-val",
             title=dotplot_title,
-            cmap=plt.cm.viridis,
+            cmap="viridis",
             ofname=dotplot_ofname,
         )
     except ValueError:
@@ -81,7 +79,7 @@ def gsea_analysis_per_cmp(
             column="FDR q-val",
             title="None w/in cutoff, showing all",
             cutoff=1,
-            cmap=plt.cm.viridis,
+            cmap="viridis",
             ofname=dotplot_ofname,
         )
 

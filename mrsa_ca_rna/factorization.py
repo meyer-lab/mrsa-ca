@@ -89,16 +89,12 @@ def perform_parafac2(
         specify a random state for the factorization, by default None
     callback : func, optional
         for interior value extraction during wandb experiments, by default None
-        | args: iteration, error, factors, projections
 
     Returns
     -------
     tuple[np.ndarray, np.ndarray, np.ndarray, float]
         the weights, factors, projections, and R2X value of the decomposition
     """
-
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-    cp.cuda.Device(gpu_id).use()
 
     # Prepare the data for the tensor factorization
     X = prepare_data(X, expansion_dim=condition_name)

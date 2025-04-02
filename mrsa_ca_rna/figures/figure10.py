@@ -14,7 +14,7 @@ def figure10_setup():
     time_data, _, _ = ca_data_split()
 
     _, time_factors, _, _ = perform_parafac2(
-        time_data, condition_name="subject_id", rank=4, gpu_id=1
+        time_data, condition_name="subject_id", rank=4
     )
 
     return time_factors

@@ -65,9 +65,6 @@ def genFig():
     # subset the data to only include the first 15 components
     explained_variance = explained_variance[explained_variance["components"] <= 15]
 
-    # subset the data to only include the first 15 components
-    explained_variance = explained_variance[explained_variance["components"] <= 15]
-
     # convert the data to long form for seaborn
     explained_variance = explained_variance.melt(
         id_vars="components", var_name="dataset", value_name="explained_variance"

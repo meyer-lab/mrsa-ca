@@ -47,21 +47,6 @@ def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
     return X
 
 
-def new_parafac2(X: ad.AnnData, condition_name: str = "disease", rank: int = 10, l1: float = 0.0):
-
-
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(expansion_dim), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-    X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
-
-    # Pre-calculate gene means
-    means = np.mean(X.X, axis=0)  # type: ignore
-    X.var["means"] = means
-
-    return X
-
-
 def perform_parafac2(
     X: ad.AnnData,
     condition_name: str = "disease",

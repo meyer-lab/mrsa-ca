@@ -1,6 +1,6 @@
 """
 This figure shows the ROC results of the combined logistic regression model,
-the top 6 components tanked by predictive ability, and their associated genes.
+the top 5 components ranked by predictive ability, and their associated comp_genes.
 """
 
 # imports
@@ -12,7 +12,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets, gene_converter
+from mrsa_ca_rna.utils import concat_datasets, gene_converter, gene_filter
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -30,9 +30,9 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
 
 
 # setup figure
-def figure03a_setup():
+def figure_setup():
     """Collect the data required for figure03a"""
-    top_n = 6
+    top_n = 5
 
     # get the data
     datasets = ["mrsa", "ca"]
@@ -43,55 +43,37 @@ def figure03a_setup():
     combined_df = combined_ad.to_df()
     patient_comps, gene_comps, _ = perform_pca(combined_df)
 
-    # truncate the combined components to MRSA data
+    # truncate the combined components to MRSA data and only the first 5
     mrsa_index = combined_ad.obs["disease"] == "MRSA"
-    patient_comps = patient_comps.loc[mrsa_index, :]
+    patient_comps = patient_comps.loc[mrsa_index, :"PC5"].copy()
+
+    # convert the gene components to gene symbols and truncate to the first 5 components
+    gene_comps: pd.DataFrame = gene_converter(
+        gene_comps,
+        old_id="EnsemblGeneID",
+        new_id="Symbol",
+        method="columns",  # type: ignore
+    )
+    gene_comps = gene_comps.loc[:"PC5", :].copy()
+
+    # optionally print out the gene components to a csv
+    # gene_comps.T.to_csv("output/pca_genes.csv")
 
     # perform logistic regression on the combined data
-    _, y_proba, model = perform_LR(patient_comps, y_true, splits=20)
+    _, y_proba, model = perform_LR(patient_comps, y_true, splits=10)
 
-    # get the beta coefficients from the model
+    # get the beta coefficients from the model and associate them with the components
     weights: np.ndarray = model.coef_[0]
+    weights_dict = {f"PC{i+1}": weights[i] for i in range(len(weights))}
 
-    # get the location of the top 6 most important components
-    # (absolute value to capture both directions)
-    top_weights_locs = np.absolute(weights).argsort()[-top_n:]
-
-    # make new dataframe containing only the top 5 components
-    top_comps = gene_comps.iloc[top_weights_locs].copy()
-
-    # get the weights of the top 5 components
-    top_comp_weights = dict(
-        zip(top_comps.index, weights[top_weights_locs], strict=False)
+    ## TODO: this move is too slick, refactor
+    # transform into a series of dataframes with the top genes for each component
+    top_genes: pd.DataFrame = gene_comps.apply(  # type: ignore
+        lambda x: gene_filter(x.to_frame().T, threshold=0, method="mean", top_n=top_n),
+        axis=1,
     )
 
-    # get the top 100 genes for each of the top 5 components
-    top_comp_genes = {}
-    for comp in top_comps.index:
-        # find the top 100 genes for current component
-        gene_locs = top_comps.loc[comp].abs().nlargest(100).index
-
-        # go back to the top component dataframe and select the genes
-        genes_series = top_comps.loc[comp, gene_locs]
-
-        # create a dataframe of the top 100 genes and their weights
-        top_comp_genes[comp] = pd.DataFrame(
-            {"Gene": genes_series.index, "Weight": genes_series.values}
-        )
-
-        # convert EnsemblGeneID to Symbol
-        top_comp_genes[comp] = gene_converter(
-            top_comp_genes[comp], "EnsemblGeneID", "Symbol"
-        )
-
-        ## save the top 100 genes to a csv file
-        # top_comp_genes[comp].loc[:, "Gene"].to_csv(
-        # f"mrsa_ca_rna/figures/figure03a_top_genes_{comp}.csv",
-        # index=False,
-        # header=False
-        # )
-
-    return y_proba, y_true, top_comp_weights, top_comp_genes
+    return y_proba, y_true, weights_dict, top_genes
 
 
 def genFig():
@@ -99,7 +81,7 @@ def genFig():
     layout = {"ncols": 2, "nrows": 4}
     ax, f, _ = setupBase(fig_size, layout)
 
-    y_proba, y_true, top_comp_weights, top_comp_genes = figure03a_setup()
+    y_proba, y_true, weights, comp_genes = figure_setup()
 
     data, auc = make_roc_curve(y_true, y_proba)
 
@@ -107,27 +89,21 @@ def genFig():
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
     a.set_title(
-        "Classification of MRSA outcomes using 70 component\n"
+        "Classification of MRSA outcomes using a 5 component\n"
         "PCA decomposition of Combined data\n"
         f"AUC: {auc:.3f}"
     )
 
     # plot the top 5 components and their weights
-    a = sns.barplot(
-        x=list(top_comp_weights.keys()), y=list(top_comp_weights.values()), ax=ax[1]
-    )
+    a = sns.barplot(x=list(weights.keys()), y=list(weights.values()), ax=ax[1])
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
-    a.set_title("Top 5 Components determining prediction accuracy")
+    a.set_title("Beta Coefficients of the PCA Components")
 
-    # plot the top N genes for each of the top_n components
-    N = 10
-    for i, comp in enumerate(top_comp_genes):
-        a = sns.barplot(
-            data=top_comp_genes[comp].loc[:N, :], x="Weight", y="Gene", ax=ax[i + 2]
-        )
+    for i, comp in enumerate(comp_genes):
+        a = sns.barplot(data=comp, ax=ax[i + 2])
         a.set_xlabel("Gene")
         a.set_ylabel("Weight")
-        a.set_title(f"Top 5 Genes for Component {comp}")
+        a.set_title(f"Top 5 genes for Component component {i+1}")
 
     return f

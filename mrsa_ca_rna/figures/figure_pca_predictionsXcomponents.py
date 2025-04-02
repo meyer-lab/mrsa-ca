@@ -14,9 +14,9 @@ from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.utils import concat_datasets
 
 
-def figure_03_setup():
+def figure_setup():
     """Create a dataFrame of regression performance over component #"""
-    components = 70
+    components = 15
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]
@@ -76,7 +76,7 @@ def genFig():
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    performance_data = figure_03_setup()
+    performance_data = figure_setup()
 
     # melt the data for seaborn lineplot
     melted = performance_data.melt(

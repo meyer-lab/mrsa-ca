@@ -25,6 +25,10 @@ coverage.xml: .venv
 pyright: .venv
 	rye run pyright mrsa_ca_rna
 
+format: .venv
+	rye fmt
+	rye lint --fix
+
 clean_output:
 	rm -rf output
 

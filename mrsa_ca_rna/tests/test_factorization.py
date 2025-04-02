@@ -56,7 +56,7 @@ def test_prepare_data():
 def test_perform_parafac2():
     disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
     disease_data = concat_datasets(disease_list, scale=True, tpm=True)
-    rank = 50
+    rank = 20
     l1 = 0.1
     _, factors, projections, r2x = perform_parafac2(
         disease_data, condition_name="disease", rank=rank, l1=l1

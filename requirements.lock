@@ -76,8 +76,6 @@ llvmlite==0.44.0
     # via numba
 lxml==5.3.0
     # via svgutils
-matcouply==0.1.6
-    # via mrsa-ca-rna
 matplotlib==3.9.2
     # via ipympl
     # via mrsa-ca-rna
@@ -95,7 +93,6 @@ numpy==2.1.1
     # via cupy-cuda12x
     # via h5py
     # via ipympl
-    # via matcouply
     # via matplotlib
     # via numba
     # via pacmap
@@ -171,7 +168,6 @@ scikit-learn==1.6.1
     # via parafac2
 scipy==1.15.2
     # via anndata
-    # via matcouply
     # via parafac2
     # via scikit-learn
     # via statsmodels
@@ -198,7 +194,6 @@ statsmodels==0.14.4
 svgutils==0.3.4
     # via mrsa-ca-rna
 tensorly==0.9.0
-    # via matcouply
     # via mrsa-ca-rna
     # via parafac2
 threadpoolctl==3.5.0

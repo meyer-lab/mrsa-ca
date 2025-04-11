@@ -102,7 +102,10 @@ def search_geo_datasets(query, retmax=20):
     search_term = quote_plus(query)
 
     # Prepare search URL
-    search_url = f"{base_url}esearch.fcgi?db=gds&term={search_term}&retmax={retmax}&usehistory=y&api_key={ncbi_api_key}"
+    search_url = (
+        f"{base_url}esearch.fcgi?db=gds&term={search_term}&retmax={retmax}"
+        f"&usehistory=y&api_key={ncbi_api_key}"
+    )
 
     print(f"Executing search: {query}")
     response = make_api_request(search_url)
@@ -156,7 +159,10 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False):
     results = []
 
     # Prepare fetch URL
-    fetch_url = f"{base_url}esummary.fcgi?db=gds&query_key={query_key}&WebEnv={web_env}&api_key={ncbi_api_key}"
+    fetch_url = (
+        f"{base_url}esummary.fcgi?db=gds&query_key={query_key}"
+        f"&WebEnv={web_env}&api_key={ncbi_api_key}"
+    )
 
     response = make_api_request(fetch_url)
     if not response:
@@ -274,7 +280,10 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False):
         print(f"Processing accession: {accession}")
 
         # Step 1: Search for the GSE accession to get the UID
-        search_url = f"{base_url}esearch.fcgi?db=gds&term={accession}[Accession]&api_key={ncbi_api_key}"
+        search_url = (
+            f"{base_url}esearch.fcgi?db=gds&term={accession}[Accession]"
+            f"&api_key={ncbi_api_key}"
+        )
 
         search_response = make_api_request(search_url, retry_delay)
         if not search_response:
@@ -726,7 +735,8 @@ def main():
 
     for i, dataset in enumerate(datasets, 1):
         print(
-            f"\n{i}. {dataset.get('accession', 'Unknown')} - {dataset.get('title', 'No title')}"
+            f"\n{i}. {dataset.get('accession', 'Unknown')} - "
+            f"{dataset.get('title', 'No title')}"
         )
         print(f"   Link: {dataset.get('link', 'N/A')}")
         print(f"   Samples: {dataset.get('n_samples', 'Unknown')}")

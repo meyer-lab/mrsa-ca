@@ -559,12 +559,16 @@ def save_sample_accessions_to_file(series_accession, samples):
     """
     filename = f"{series_accession}_samples.txt"
 
+    # Write only the accession numbers to the file for now
     with open(filename, "w") as f:
-        f.write(f"# Sample accessions for {series_accession}\n")
-        f.write(f"# Total samples: {len(samples)}\n\n")
+        # f.write(f"# Sample accessions for {series_accession}\n")
+        # f.write(f"# Total samples: {len(samples)}\n\n")
 
+        # The titles contain useful information, but we will only include the accessions
+        # for now to make SRA fetching easier.
         for sample in samples:
-            f.write(f"{sample['accession']}\t{sample['title']}\n")
+            f.write(f"{sample['accession']}\n")
+            # f.write(f"{sample['accession']}\t{sample['title']}\n")
 
     print(f"Saved {len(samples)} sample accessions to {filename}")
 

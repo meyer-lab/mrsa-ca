@@ -47,6 +47,7 @@ SALMON_DIR := salmon_processing
 SRA_DIR := $(SALMON_DIR)/sra_out
 REF_DIR := $(SALMON_DIR)/salmon_ref
 COUNTS_DIR := $(SALMON_DIR)/salmon_gene_counts
+FINISHED_DIR := finished_projects
 
 # Reference files
 TRANSCRIPTS := $(REF_DIR)/human_transcripts.fa.gz
@@ -76,6 +77,9 @@ $(REF_DIR): | $(SALMON_DIR)
 $(COUNTS_DIR): | $(SALMON_DIR)
 	mkdir -p $@
 
+$(FINISHED_DIR):
+	mkdir -p $@
+
 # Download and prepare reference files
 $(TRANSCRIPTS): | $(REF_DIR)
 	curl https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.transcripts.fa.gz -o $@
@@ -99,10 +103,10 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 	salmon index -t $(GENTROME) -d $(DECOYS) --gencode -p $(THREADS) -i $@
 
 # Quantification rules
-quantify_salmon: $(COUNTS_DIR)/all_counts_$(PROJECT).txt
+quantify_salmon: $(FINISHED_DIR)/all_counts_$(PROJECT).txt
 
 # Process SRA accessions and run Salmon quantification
-$(COUNTS_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR)
+$(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR)
 	@echo "Processing SRA accessions in batches of $(BATCH_SIZE)..."
 	@# Calculate total number of accessions and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \
@@ -148,7 +152,7 @@ $(COUNTS_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNT
 	done < $(SRA_DIR)/accession_list.txt
 	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
 	@sed -i "1i gene\t$$(sort $(SRA_DIR)/accession_list.txt | tr '\n' '\t')" $@
-	@rm -r $(COUNTS_DIR)/!(all_counts_$(PROJECT).txt)
+	@rm -r $(COUNTS_DIR)/*
 
 # Clean up
 clean_salmon:

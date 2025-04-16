@@ -407,41 +407,173 @@ def parse_geo_docsum(doc):
     return None
 
 
-def extract_sample_accessions(doc, series_accession):
-    """Extracts the sample accessions from the DocSum XML element.
+def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
+    """
+    Convert a GSM accession to SRA accessions that can be used with sra-tools.
+    
+    Parameters
+    ----------
+    gsm_accession : str
+        The GSM accession number
+    retry_delay : float, optional
+        Delay between API requests in seconds, by default 1
+    get_experiment_ids : bool, optional
+        Whether to return SRX (experiment) IDs instead of SRR (run) IDs, by default True
+        
+    Returns
+    -------
+    dict
+        Dictionary with keys 'srx_accessions' and 'srr_accessions'
+    """
+    time.sleep(retry_delay)  # Respect rate limits
+    
+    # Search for the SRA entry linked to this GSM
+    search_url = f"{base_url}esearch.fcgi?db=sra&term={gsm_accession}&api_key={ncbi_api_key}"
+    
+    response = make_api_request(search_url, retry_delay)
+    if not response:
+        return {"srx_accessions": [], "srr_accessions": []}
+    
+    try:
+        root = ET.fromstring(response.content)
+        count = int(root.find("Count").text) if root.find("Count") is not None else 0
+        
+        if count == 0:
+            print(f"No SRA entries found for {gsm_accession}")
+            return {"srx_accessions": [], "srr_accessions": []}
+        
+        # Get the SRA UIDs
+        sra_uids = [id_elem.text for id_elem in root.findall(".//Id")]
+        
+        if not sra_uids:
+            return {"srx_accessions": [], "srr_accessions": []}
+        
+        # Use efetch with runinfo format
+        time.sleep(retry_delay)
+        fetch_url = f"{base_url}efetch.fcgi?db=sra&id={','.join(sra_uids)}&rettype=runinfo&api_key={ncbi_api_key}"
+        
+        fetch_response = make_api_request(fetch_url, retry_delay)
+        if not fetch_response:
+            return {"srx_accessions": [], "srr_accessions": []}
+        
+        # Parse the XML response
+        try:
+            runinfo_root = ET.fromstring(fetch_response.text)
+            
+            # Extract SRR and SRX accessions
+            srr_accessions = []
+            srx_accessions = set()  # Use a set to avoid duplicates
+            
+            for row in runinfo_root.findall(".//Row"):
+                run_elem = row.find("Run")
+                exp_elem = row.find("Experiment")
+                
+                if run_elem is not None and run_elem.text:
+                    srr_accessions.append(run_elem.text)
+                    
+                if exp_elem is not None and exp_elem.text:
+                    srx_accessions.add(exp_elem.text)
+            
+            srx_list = list(srx_accessions)
+            
+            print(f"Found {len(srx_list)} SRX accessions for {gsm_accession}: {srx_list}")
+            print(f"Found {len(srr_accessions)} SRR accessions for {gsm_accession}")
+            
+            return {
+                "srx_accessions": srx_list,
+                "srr_accessions": srr_accessions
+            }
+            
+        except ET.ParseError as e:
+            # Fall back to CSV parsing
+            print(f"XML parsing failed, trying CSV format: {e}")
+            lines = fetch_response.text.strip().split("\n")
+            if len(lines) < 2:  # Need at least header + 1 data row
+                return {"srx_accessions": [], "srr_accessions": []}
+            
+            # Parse CSV for both Run and Experiment columns
+            header = lines[0].split(",")
+            try:
+                results = {"srx_accessions": set(), "srr_accessions": []}
+                
+                if "Run" in header:
+                    run_index = header.index("Run")
+                    results["srr_accessions"] = [
+                        line.split(",")[run_index] 
+                        for line in lines[1:] 
+                        if len(line.split(",")) > run_index
+                    ]
+                
+                if "Experiment" in header:
+                    exp_index = header.index("Experiment")
+                    for line in lines[1:]:
+                        parts = line.split(",")
+                        if len(parts) > exp_index:
+                            results["srx_accessions"].add(parts[exp_index])
+                
+                # Convert set to list for srx_accessions
+                results["srx_accessions"] = list(results["srx_accessions"])
+                
+                print(f"Found {len(results['srx_accessions'])} SRX accessions for {gsm_accession}")
+                print(f"Found {len(results['srr_accessions'])} SRR accessions for {gsm_accession}")
+                
+                return results
+                
+            except (ValueError, IndexError):
+                print(f"Could not parse runinfo format for {gsm_accession}")
+                return {"srx_accessions": [], "srr_accessions": []}
+                
+    except Exception as e:
+        print(f"Error processing SRA data for {gsm_accession}: {str(e)}")
+        return {"srx_accessions": [], "srr_accessions": []}
 
+
+def extract_sample_accessions(doc, series_accession, convert_to_sra=True):
+    """
+    Extracts sample accessions from the DocSum XML element and optionally converts them to SRA accessions.
+    
     Parameters
     ----------
     doc : Element[str]
         The DocSum XML element containing dataset metadata
     series_accession : str
         The GSE accession number for the dataset
-
+    convert_to_sra : bool, optional
+        Whether to convert GSM accessions to SRA accessions, by default True
+        
     Returns
     -------
     list[dict]
         A list of dictionaries containing sample accessions and titles
     """
     samples = []
-
+    
     # Find the Samples list item
     samples_item = doc.find("./Item[@Name='Samples']")
     if samples_item is None:
         print(f"No samples found for {series_accession}")
         return samples
-
+        
     # Extract each sample accession
     for sample in samples_item.findall("./Item[@Name='Sample']"):
         accession_item = sample.find("./Item[@Name='Accession']")
         title_item = sample.find("./Item[@Name='Title']")
-
+        
         if accession_item is not None:
+            gsm_accession = accession_item.text
             sample_info = {
-                "accession": accession_item.text,
+                "gsm_accession": gsm_accession,
                 "title": title_item.text if title_item is not None else "Unknown",
+                "sra_accessions": []
             }
+            
+            # Convert to SRA accessions if requested
+            if convert_to_sra:
+                print(f"Converting {gsm_accession} to SRA accessions...")
+                sample_info["sra_accessions"] = gsm_to_sra(gsm_accession)
+                
             samples.append(sample_info)
-
+            
     return samples
 
 
@@ -544,33 +676,41 @@ def read_geo_links_file(filepath):
 
 
 def save_sample_accessions_to_file(series_accession, samples):
-    """Saves sample accessions to a text file named after the series accession.
-    The file will contain the sample accessions and their titles.
-
-    We will later modify this to only include the sample accessions for SRA
-    fetching.
-
+    """
+    Saves sample accessions to a text file named after the series accession.
+    If SRA accessions are available, they will be used instead of GSM accessions.
+    
     Parameters
     ----------
     series_accession : str
         GSE accession number for the dataset
     samples : list[dict]
-        List of dictionaries containing sample accessions and titles
+        List of dictionaries containing sample information
     """
-    filename = f"{series_accession}_samples.txt"
-
-    # Write only the accession numbers to the file for now
-    with open(filename, "w") as f:
-        # f.write(f"# Sample accessions for {series_accession}\n")
-        # f.write(f"# Total samples: {len(samples)}\n\n")
-
-        # The titles contain useful information, but we will only include the accessions
-        # for now to make SRA fetching easier.
+    gsm_filename = f"{series_accession}_gsm_samples.txt"
+    sra_filename = f"{series_accession}_sra_samples.txt"
+    
+    # Count samples with SRA accessions
+    samples_with_sra = sum(1 for sample in samples if sample.get("sra_accessions"))
+    
+    # Write GSM accessions to one file
+    with open(gsm_filename, "w") as f:
         for sample in samples:
-            f.write(f"{sample['accession']}\n")
-            # f.write(f"{sample['accession']}\t{sample['title']}\n")
-
-    print(f"Saved {len(samples)} sample accessions to {filename}")
+            f.write(f"{sample['gsm_accession']}\n")
+    
+    print(f"Saved {len(samples)} GSM sample accessions to {gsm_filename}")
+    
+    # Write SRA accessions to another file if available
+    if samples_with_sra > 0:
+        with open(sra_filename, "w") as f:
+            for sample in samples:
+                sra_accessions = sample.get("sra_accessions", [])
+                for sra_acc in sra_accessions:
+                    f.write(f"{sra_acc}\n")
+                    
+        print(f"Saved {samples_with_sra} samples with SRA accessions to {sra_filename}")
+    else:
+        print(f"No SRA accessions found for any samples in {series_accession}")
 
 
 def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):

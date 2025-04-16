@@ -1,4 +1,4 @@
-.PHONY: setup_salmon quantify_salmon clean_salmon help
+.PHONY: setup_salmon quantify_salmon clean_salmon help create_base_dirs create_project_dirs
 
 # Makefile for RNA-Seq analysis pipeline using Salmon
 # Default number of threads to use
@@ -24,12 +24,17 @@ DECOYS := $(REF_DIR)/decoys.txt
 SALMON_INDEX := $(REF_DIR)/salmon_index
 GTF := $(REF_DIR)/mappings.gtf
 
+# Group directory creation
+create_base_dirs: $(SALMON_DIR) $(REF_DIR) $(FINISHED_DIR) $(ACCESSIONS_DIR)
+
+create_project_dirs: $(PROJECT_DIR) $(SRA_DIR) $(SRA_DIR_TEMP) $(COUNTS_DIR)
+
 # Setup directories and reference files
-setup_salmon: $(SALMON_DIR) $(SRA_DIR) $(REF_DIR) $(COUNTS_DIR) $(SALMON_INDEX) $(GTF) $(FINISHED_DIR)
+setup_salmon: create_base_dirs $(SALMON_INDEX) $(GTF)
 	@echo "Setup complete. Directory structure created and reference files downloaded."
 	@echo "Next steps:"
 	@echo "1. Create your accession list file at: $(SRA_DIR)/accession_list.txt"
-	@echo "2. Run quantification with: make quantify THREADS=<num> ENDTYPE=<single|paired> BATCH_SIZE=<num>"
+	@echo "2. Run quantification with: make quantify_salmon THREADS=<num> ENDTYPE=<single|paired> BATCH_SIZE=<num>"
 
 # Create directories
 $(SALMON_DIR):
@@ -67,7 +72,7 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 	salmon index -t $(GENTROME) -d $(DECOYS) --gencode -p $(THREADS) -i $@
 
 # Quantification rules
-quantify_salmon: $(FINISHED_DIR)/all_counts_$(PROJECT).txt
+quantify_salmon: create_project_dirs $(FINISHED_DIR)/all_counts_$(PROJECT).txt
 
 # Make a project directory
 PROJECT_DIR := $(SALMON_DIR)/$(PROJECT)
@@ -88,12 +93,12 @@ $(COUNTS_DIR): | $(PROJECT_DIR)
 	mkdir -p $@
 
 # Copy and rename accession_list_PROJECT.txt into sra_out as accession_list.txt
-$(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt | $(SRA_DIR)
+$(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt | $(SRA_DIR) $(ACCESSIONS_DIR)
 	@echo "Copying and renaming accession list file..."
 	cp $< $@
 
 # Process SRA accessions and run Salmon quantification
-$(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR)
+$(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR) $(SRA_DIR_TEMP)
 	@echo "Processing SRA accessions in batches of $(BATCH_SIZE)..."
 	@# Calculate total number of accessions and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \

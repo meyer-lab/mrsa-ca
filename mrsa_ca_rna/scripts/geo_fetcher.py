@@ -6,11 +6,11 @@ This script provides functionality to:
 1. Search for GEO datasets using the NCBI E-utilities API
 2. Process lists of GEO accession links
 3. Generate sample accession lists for datasets
-4. Export dataset information to CSV
+4. Export dataset information to CSV with enhanced metadata
 
 Example usage:
   python geo_fetcher.py -s "tuberculosis AND whole blood[Sample Source]"
-  python geo_fetcher.py -f geo_links.txt --samples
+  python geo_fetcher.py -f geo_links.txt --samples --output-dir data
 """
 
 import argparse
@@ -20,6 +20,7 @@ import time
 import xml.etree.ElementTree as ET
 from urllib.parse import quote_plus
 
+import GEOparse
 import pandas as pd
 import requests
 
@@ -39,11 +40,8 @@ ncbi_api_key = "7f7ac246396cc1bd1f47c090de5ddebeb709"
 
 
 def make_api_request(url, retry_delay=1, max_retries=3):
-    """ Make an API request with retry logic for handling rate limits. 
-    API key grants us higher rate limits, but let's be curteous.
-    Registration of my name and email with NCBI w/Meyer Lab as our org
-    can resolve any banned IP issues.
-
+    """Make an API request with retry logic for handling rate limits.
+    
     Parameters
     ----------
     url : str
@@ -55,10 +53,9 @@ def make_api_request(url, retry_delay=1, max_retries=3):
 
     Returns
     -------
-    HTTP Response object if successful, else None
-        Response object from the requests library
+    requests.Response or None
+        Response object from the requests library if successful, else None
     """
-
     for retry in range(max_retries):
         response = requests.get(url)
 
@@ -78,10 +75,8 @@ def make_api_request(url, retry_delay=1, max_retries=3):
 
 
 def search_geo_datasets(query, retmax=20):
-    """Performs an esearch for GEO datasets using the NCBI E-utilities API.
-    Searches will utilitize the history feature to allow for batch retrieval.
-    History allows for large fetches without rate limit and bypasses retmax.
-
+    """Perform an esearch for GEO datasets using the NCBI E-utilities API.
+    
     Parameters
     ----------
     query : str
@@ -133,37 +128,30 @@ def search_geo_datasets(query, retmax=20):
         return [], None, None
 
 
-def fetch_dataset_details(query_key, web_env, generate_sample_lists=False):
-    """Fetches and parses dataset details using the query key and web environment
-    obtained from the esearch response. This function retrieves all datasets
-    matching the search criteria in a single request, using the history feature
-    to bypass the retmax limit.
-
+def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, output_dir="data"):
+    """Fetch dataset details using the history feature.
+    
     Parameters
     ----------
     query_key : str
-        Query key from the esearch response
+        Query key from the search
     web_env : str
-        web_env from the esearch response
-    generate_sample_lists : Bool, optional
-        Will create GSEXXXX_sample.txt files containing sample accession numbers
-        for each dataset found , by default False. Sample accession lists are used
-        by SRA tools for RNA data processing.
-
+        Web environment from the search
+    generate_sample_lists : bool, optional
+        Whether to generate sample lists, by default False
+    output_dir : str, optional
+        Directory for output files, by default "data"
+        
     Returns
     -------
     list[dict]
-        A list of dictionaries containing details for each dataset.
-        See parse_geo_docsum for the keys in each dict
+        List of dictionaries containing dataset details
     """
     results = []
 
     # Prepare fetch URL
-    fetch_url = (
-        f"{base_url}esummary.fcgi?db=gds&query_key={query_key}"
-        f"&WebEnv={web_env}&api_key={ncbi_api_key}"
-    )
-
+    fetch_url = f"{base_url}esummary.fcgi?db=gds&query_key={query_key}&WebEnv={web_env}&api_key={ncbi_api_key}"
+    
     response = make_api_request(fetch_url)
     if not response:
         return results
@@ -180,8 +168,10 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False):
                 if generate_sample_lists:
                     samples = extract_sample_accessions(doc, dataset["accession"])
                     if samples:
-                        dataset["samples"] = samples
-                        save_sample_accessions_to_file(dataset["accession"], samples)
+                        # Get detailed metadata and SRA accessions
+                        enhanced_samples = process_samples(dataset["accession"], samples)
+                        dataset["samples"] = enhanced_samples
+                        save_sample_metadata_to_csv(dataset["accession"], enhanced_samples, output_dir)
 
                 results.append(dataset)
 
@@ -192,24 +182,22 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False):
         return results
 
 
-def fetch_dataset_details_individually(id_list, generate_sample_lists=False):
-    """If the batch fetch using history fails, this function will fetch each dataset
-    individually using its ID. This is a fallback method to ensure we can still retrieve
-    dataset details even if the batch fetch fails. However, we must respect the rate
-    limits.
-
+def fetch_dataset_details_individually(id_list, generate_sample_lists=False, output_dir="data"):
+    """Fetch each dataset individually if batch history method fails.
+    
     Parameters
     ----------
     id_list : list[str]
         List of GDS IDs to fetch
-    generate_sample_lists : Bool, optional
-        Whether to print out sample accessions for the datasets, by default False
+    generate_sample_lists : bool, optional
+        Whether to generate enhanced sample metadata, by default False
+    output_dir : str, optional
+        Directory for output files, by default "data"
 
     Returns
     -------
     list[dict]
         A list of dictionaries containing details for each dataset.
-        See parse_geo_docsum for the keys in each dict.
     """
     results = []
     retry_delay = 1
@@ -240,10 +228,10 @@ def fetch_dataset_details_individually(id_list, generate_sample_lists=False):
                     if generate_sample_lists:
                         samples = extract_sample_accessions(doc, dataset["accession"])
                         if samples:
-                            dataset["samples"] = samples
-                            save_sample_accessions_to_file(
-                                dataset["accession"], samples
-                            )
+                            # Use the enhanced processing like other functions
+                            enhanced_samples = process_samples(dataset["accession"], samples)
+                            dataset["samples"] = enhanced_samples
+                            save_sample_metadata_to_csv(dataset["accession"], enhanced_samples, output_dir)
 
                     results.append(dataset)
 
@@ -253,24 +241,22 @@ def fetch_dataset_details_individually(id_list, generate_sample_lists=False):
     return results
 
 
-def fetch_geo_by_accessions(accessions, generate_sample_lists=False):
-    """Fetches GEO datasets by their GSE accessions. This process is 2 steps.
-    1. Search for the GSE accession to get the UID
-    2. Use the UID to fetch complete details
-    UIDs are used to retrieve the dataset details, not the GSE accessions.
-
+def fetch_geo_by_accessions(accessions, generate_sample_lists=False, output_dir="data"):
+    """Fetch GEO datasets by their GSE accessions using a two-step process.
+    
     Parameters
     ----------
     accessions : list[str]
         List of GEO accessions (e.g., GSE123456)
-    generate_sample_lists : Bool, optional
-        Whether to print sample accessions to txt file, by default False
+    generate_sample_lists : bool, optional
+        Whether to generate enhanced sample metadata, by default False
+    output_dir : str, optional
+        Directory for output files, by default "data"
 
     Returns
     -------
     list[dict]
         A list of dictionaries containing details for each dataset.
-        See parse_geo_docsum for the keys in each dict.
     """
     results = []
     retry_delay = 1
@@ -311,13 +297,6 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False):
             if not fetch_response:
                 continue
 
-            # Save example response for debugging
-            if not hasattr(fetch_geo_by_accessions, "debug_done"):
-                with open("geo_response_example.xml", "wb") as f:
-                    f.write(fetch_response.content)
-                print("Saved example response to geo_response_example.xml")
-                fetch_geo_by_accessions.debug_done = True
-
             # Parse the XML response
             root = ET.fromstring(fetch_response.content)
 
@@ -330,8 +309,10 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False):
                     if generate_sample_lists:
                         samples = extract_sample_accessions(doc, accession)
                         if samples:
-                            dataset["samples"] = samples
-                            save_sample_accessions_to_file(accession, samples)
+                            # Use the same enhanced processing as the search mode
+                            enhanced_samples = process_samples(accession, samples)
+                            dataset["samples"] = enhanced_samples
+                            save_sample_metadata_to_csv(accession, enhanced_samples, output_dir)
 
                     results.append(dataset)
             else:
@@ -343,73 +324,8 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False):
     return results
 
 
-#############################################
-# Data Parsing Functions
-#############################################
-
-
-def parse_geo_docsum(doc):
-    """Parses the DocSum XML element to extract dataset metadata.
-    The fetch functions use the esummary utility which outputs an XML
-    document summary. This function extracts the relevant fields.
-
-    Parameters
-    ----------
-    doc : Element[str]
-        The DocSum XML element containing dataset metadata
-
-    Returns
-    -------
-    dict
-        The parsed dataset metadata as a dictionary
-        Keys include 'id', 'accession', 'title', 'summary', 'n_samples',
-        'organism', 'type', 'publication_date', 'link', and 'sample_type'
-    """
-    dataset = {}
-
-    # Extract the UID (ID)
-    id_elem = doc.find("Id")
-    if id_elem is not None:
-        dataset["id"] = id_elem.text
-
-    # Process each Item element
-    for item in doc.findall("./Item"):
-        name = item.get("Name")
-
-        # Extract common fields
-        if name == "Accession":
-            dataset["accession"] = item.text
-        elif name == "title":
-            dataset["title"] = item.text
-        elif name == "summary":
-            dataset["summary"] = item.text
-        elif name == "n_samples":
-            dataset["n_samples"] = item.text
-        elif name == "taxon":
-            dataset["organism"] = item.text
-        elif name == "gdsType":
-            dataset["type"] = item.text
-        elif name == "PDAT":
-            dataset["publication_date"] = item.text
-
-    # Only process if we found an accession
-    if "accession" in dataset:
-        # Construct GEO link
-        dataset["link"] = (
-            f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={dataset['accession']}"
-        )
-
-        # Extract sample type
-        dataset["sample_type"] = determine_sample_type(dataset)
-
-        return dataset
-
-    return None
-
-
 def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
-    """
-    Convert a GSM accession to SRA accessions that can be used with sra-tools.
+    """Convert a GSM accession to SRA accessions for use with sra-tools.
     
     Parameters
     ----------
@@ -418,7 +334,7 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
     retry_delay : float, optional
         Delay between API requests in seconds, by default 1
     get_experiment_ids : bool, optional
-        Whether to return SRX (experiment) IDs instead of SRR (run) IDs, by default True
+        Whether to return SRX (experiment) IDs rather than SRR (run) IDs, by default True
         
     Returns
     -------
@@ -528,23 +444,80 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
         return {"srx_accessions": [], "srr_accessions": []}
 
 
-def extract_sample_accessions(doc, series_accession, convert_to_sra=True):
-    """
-    Extracts sample accessions from the DocSum XML element and optionally converts them to SRA accessions.
+#############################################
+# Data Parsing Functions
+#############################################
+
+
+def parse_geo_docsum(doc):
+    """Parse the DocSum XML element to extract dataset metadata.
     
     Parameters
     ----------
-    doc : Element[str]
+    doc : Element
         The DocSum XML element containing dataset metadata
+
+    Returns
+    -------
+    dict or None
+        The parsed dataset metadata as a dictionary, or None if no accession found
+    """
+    dataset = {}
+
+    # Extract the UID (ID)
+    id_elem = doc.find("Id")
+    if id_elem is not None:
+        dataset["id"] = id_elem.text
+
+    # Process each Item element
+    for item in doc.findall("./Item"):
+        name = item.get("Name")
+
+        # Extract common fields
+        if name == "Accession":
+            dataset["accession"] = item.text
+        elif name == "title":
+            dataset["title"] = item.text
+        elif name == "summary":
+            dataset["summary"] = item.text
+        elif name == "n_samples":
+            dataset["n_samples"] = item.text
+        elif name == "taxon":
+            dataset["organism"] = item.text
+        elif name == "gdsType":
+            dataset["type"] = item.text
+        elif name == "PDAT":
+            dataset["publication_date"] = item.text
+
+    # Only process if we found an accession
+    if "accession" in dataset:
+        # Construct GEO link
+        dataset["link"] = (
+            f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={dataset['accession']}"
+        )
+
+        # Extract sample type
+        dataset["sample_type"] = determine_sample_type(dataset)
+
+        return dataset
+
+    return None
+
+
+def extract_sample_accessions(doc, series_accession):
+    """Extract basic GSM sample accessions from a GSE series document.
+    
+    Parameters
+    ----------
+    doc : Element
+        DocSum XML element for the GSE series
     series_accession : str
-        The GSE accession number for the dataset
-    convert_to_sra : bool, optional
-        Whether to convert GSM accessions to SRA accessions, by default True
+        The GSE accession number
         
     Returns
     -------
     list[dict]
-        A list of dictionaries containing sample accessions and titles
+        List of dictionaries with basic sample information
     """
     samples = []
     
@@ -563,40 +536,139 @@ def extract_sample_accessions(doc, series_accession, convert_to_sra=True):
             gsm_accession = accession_item.text
             sample_info = {
                 "gsm_accession": gsm_accession,
-                "title": title_item.text if title_item is not None else "Unknown",
-                "sra_accessions": []
+                "title": title_item.text if title_item is not None else "Unknown"
             }
-            
-            # Convert to SRA accessions if requested
-            if convert_to_sra:
-                print(f"Converting {gsm_accession} to SRA accessions...")
-                sample_info["sra_accessions"] = gsm_to_sra(gsm_accession)
-                
             samples.append(sample_info)
             
+    print(f"Found {len(samples)} GSM accessions for {series_accession}")
     return samples
 
 
-def determine_sample_type(dataset):
-    """Fills out the sample type field in the dataset dictionary.
-    This function uses the summary and title fields to determine the sample type.
-
-    What's odd is that we can perform an esearch for the sample type as
-    [Sample Source] but the esummary does not return this field. We can
-    only determine the sample type from the summary and title fields.
-
+def fetch_gsm_metadata(gsm_accession, retry_delay=1):
+    """Fetch detailed metadata for a GSM sample using GEOparse library.
+    
     Parameters
     ----------
-    dataset : Element[str]
+    gsm_accession : str
+        The GSM accession number
+    retry_delay : float, optional
+        Delay between API requests, by default 1
+        
+    Returns
+    -------
+    dict
+        Dictionary containing sample metadata including characteristics
+    """
+    print(f"Fetching metadata for {gsm_accession} with GEOparse...")
+    
+    try:
+        # Create a temporary directory for GEOparse files
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # GEOparse will download the GSM data to the temp directory
+            gsm = GEOparse.get_GEO(geo=gsm_accession, silent=True, destdir=tmp_dir)
+            
+            metadata = {
+                "characteristics": {},
+                "platform": gsm.metadata.get("platform_id", [""])[0],
+                "instrument": gsm.metadata.get("instrument_model", [""])[0],
+                "library_strategy": gsm.metadata.get("library_strategy", [""])[0],
+                "submission_date": gsm.metadata.get("submission_date", [""])[0],
+                "channel_count": gsm.metadata.get("channel_count", [""])[0]
+            }
+            
+            # Extract characteristics into a flat dictionary
+            if "characteristics_ch1" in gsm.metadata:
+                for char_entry in gsm.metadata["characteristics_ch1"]:
+                    # Format is typically "key: value"
+                    if ":" in char_entry:
+                        key, value = char_entry.split(":", 1)
+                        safe_key = key.strip().replace(" ", "_").replace("-", "_").lower()
+                        metadata["characteristics"][safe_key] = value.strip()
+            
+            # DEBUG CODE - Uncomment for troubleshooting
+            # if not hasattr(fetch_gsm_metadata, "debug_done"):
+            #     import json
+            #     with open("gsm_metadata_example.json", "w") as f:
+            #         # Convert metadata keys to strings since some might be complex objects
+            #         simple_metadata = {k: str(v) for k, v in gsm.metadata.items()}
+            #         json.dump(simple_metadata, f, indent=2)
+            #     print("Saved example GSM metadata to gsm_metadata_example.json")
+            #     fetch_gsm_metadata.debug_done = True
+                
+            # When this block ends, the temporary directory and its contents are deleted
+            
+        return metadata
+        
+    except Exception as e:
+        print(f"Error fetching metadata for {gsm_accession} with GEOparse: {str(e)}")
+        # Fall back to empty characteristics if GEOparse fails
+        return {"characteristics": {}}
+
+
+def process_samples(gse_accession, samples):
+    """Process a list of samples to get full metadata and SRA accessions.
+    
+    Parameters
+    ----------
+    gse_accession : str
+        The GSE accession number
+    samples : list[dict]
+        List of dictionaries with basic sample information
+        
+    Returns
+    -------
+    list[dict]
+        Enhanced sample list with metadata and SRA accessions
+    """
+    print(f"Processing {len(samples)} samples for {gse_accession}")
+    enhanced_samples = []
+    
+    for i, sample in enumerate(samples, 1):
+        gsm_accession = sample["gsm_accession"]
+        print(f"Processing sample {i}/{len(samples)}: {gsm_accession}")
+        
+        # Get detailed metadata using GEOparse
+        metadata = fetch_gsm_metadata(gsm_accession)
+        
+        # Get SRA accessions
+        sra_data = gsm_to_sra(gsm_accession)
+        
+        # Combine all information
+        enhanced_sample = {
+            "gsm_accession": gsm_accession,
+            "title": sample["title"],
+            "srx_accessions": ",".join(sra_data.get("srx_accessions", [])),
+            "srr_accessions": ",".join(sra_data.get("srr_accessions", [])),
+            "platform": metadata.get("platform", ""),
+            "instrument": metadata.get("instrument", ""),
+            "library_strategy": metadata.get("library_strategy", ""),
+            "submission_date": metadata.get("submission_date", "")
+        }
+        
+        # Add characteristics
+        for key, value in metadata.get("characteristics", {}).items():
+            # Create safe column name
+            safe_key = key.replace(" ", "_").replace("-", "_").lower()
+            enhanced_sample[f"char_{safe_key}"] = value
+        
+        enhanced_samples.append(enhanced_sample)
+        
+    return enhanced_samples
+
+
+def determine_sample_type(dataset):
+    """Determine sample type from dataset metadata by looking for key terms.
+    
+    Parameters
+    ----------
+    dataset : dict
         The dataset dictionary containing metadata
 
     Returns
     -------
     str
-        Sample type as a string.
-        Possible values include "Whole Blood", "Peripheral Blood",
-        "Blood (unspecified)", "Serum", "Plasma", "Lung/Respiratory",
-        "Skin", "Liver", or "Unknown" if not found.
+        Sample type as a string
     """
     sample_type = "Unknown"
 
@@ -631,9 +703,17 @@ def determine_sample_type(dataset):
 
 
 def extract_geo_accession(url):
-    """
-    Extract GEO accession number from a URL.
-    Example URL: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123456
+    """Extract GEO accession number from a URL.
+    
+    Parameters
+    ----------
+    url : str
+        URL potentially containing a GEO accession
+        
+    Returns
+    -------
+    str or None
+        Extracted GEO accession number or None if not found
     """
     match = re.search(r"GSE\d+", url)
     if match:
@@ -642,14 +722,12 @@ def extract_geo_accession(url):
 
 
 def read_geo_links_file(filepath):
-    """Reads a text file containing GEO links on each line and extracts the 
-    GEO accession numbers. The file can contain comments starting with #.
-
+    """Read a text file containing GEO links and extract accession numbers.
+    
     Parameters
     ----------
     filepath : str
         Path to the text file containing GEO links
-        Each line should contain a GEO link (e.g., GSE123456)
 
     Returns
     -------
@@ -675,56 +753,59 @@ def read_geo_links_file(filepath):
     return accessions
 
 
-def save_sample_accessions_to_file(series_accession, samples):
-    """
-    Saves sample accessions to a text file named after the series accession.
-    If SRA accessions are available, they will be used instead of GSM accessions.
+def save_sample_metadata_to_csv(gse_accession, samples, output_dir="data"):
+    """Save sample metadata to a CSV file in the specified output directory.
     
     Parameters
     ----------
-    series_accession : str
-        GSE accession number for the dataset
+    gse_accession : str
+        The GSE accession number
     samples : list[dict]
-        List of dictionaries containing sample information
+        List of dictionaries with sample information
+    output_dir : str, optional
+        Base directory for outputs, by default "data"
     """
-    gsm_filename = f"{series_accession}_gsm_samples.txt"
-    sra_filename = f"{series_accession}_sra_samples.txt"
+    if not samples:
+        print(f"No samples to save for {gse_accession}")
+        return
     
-    # Count samples with SRA accessions
-    samples_with_sra = sum(1 for sample in samples if sample.get("sra_accessions"))
+    # Create output directories if they don't exist
+    metadata_dir = os.path.join(output_dir, "metadata")
+    accessions_dir = os.path.join(output_dir, "accessions")
+    os.makedirs(metadata_dir, exist_ok=True)
+    os.makedirs(accessions_dir, exist_ok=True)
     
-    # Write GSM accessions to one file
-    with open(gsm_filename, "w") as f:
+    # Path for CSV file
+    csv_path = os.path.join(metadata_dir, f"{gse_accession}_samples.csv")
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(samples)
+    
+    # Reorder columns to put key fields first
+    cols = df.columns.tolist()
+    key_cols = ["gsm_accession", "title", "srx_accessions", "srr_accessions"]
+    reordered_cols = [col for col in key_cols if col in cols] + [col for col in cols if col not in key_cols]
+    df = df[reordered_cols]
+    
+    # Save to CSV
+    df.to_csv(csv_path, index=False)
+    print(f"Saved {len(samples)} samples with metadata to {csv_path}")
+    
+    # Create SRX accessions file
+    srx_path = os.path.join(accessions_dir, f"{gse_accession}_srx_accessions.txt")
+    with open(srx_path, "w") as f:
         for sample in samples:
-            f.write(f"{sample['gsm_accession']}\n")
+            srx_list = sample.get("srx_accessions", "").split(",")
+            for srx in srx_list:
+                if srx.strip():
+                    f.write(f"{srx.strip()}\n")
     
-    print(f"Saved {len(samples)} GSM sample accessions to {gsm_filename}")
-    
-    # Write SRA accessions to another file if available
-    if samples_with_sra > 0:
-        with open(sra_filename, "w") as f:
-            for sample in samples:
-                sra_accessions = sample.get("sra_accessions", [])
-                for sra_acc in sra_accessions:
-                    f.write(f"{sra_acc}\n")
-                    
-        print(f"Saved {samples_with_sra} samples with SRA accessions to {sra_filename}")
-    else:
-        print(f"No SRA accessions found for any samples in {series_accession}")
+    print(f"Saved SRX accessions to {srx_path}")
 
 
 def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):
-    """Prints out all of the datasets to a CSV file for manual review.
-    The CSV will contain the following columns:
-    - Accession
-    - Number of Samples
-    - Sample Type
-    - Organism
-    - GEO Link
-    - Publication Date
-    - Title
-    - Summary
-
+    """Export datasets to a CSV file for manual review.
+    
     Parameters
     ----------
     datasets : list[dict]
@@ -778,20 +859,10 @@ def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):
 
 
 def main():
-    """
-    Main function for running the GEO fetcher.
-    Parses command line arguments and executes appropriate workflow.
-
-    The script can be run in two modes:
-    1. Search mode: -s <search term>
-       - Searches GEO datasets using the specified search term.
-       - Generates sample accession lists if --samples is specified.
-       - Exports results to a CSV file if --csv is specified.
-
-    2. File mode: -f <file path>
-         - Reads GEO links from a file, one per line.
-         - Generates sample accession lists if --samples is specified.
-         - Exports results to a CSV file if --csv is specified.
+    """Main function to execute the GEO fetcher workflow.
+    
+    Parses command line arguments and performs the appropriate workflow based on
+    whether the user specified a search query or a file with GEO links.
     """
     # Set up command line arguments
     parser = argparse.ArgumentParser(description="Fetch GEO dataset information")
@@ -816,6 +887,12 @@ def main():
         default="geo_datasets.csv",
         help="Output CSV filename (default: geo_datasets.csv)",
     )
+    parser.add_argument(
+        "--output-dir", 
+        type=str,
+        default="data",
+        help="Directory for output files (default: data)"
+    )
     args = parser.parse_args()
 
     datasets = []
@@ -838,20 +915,20 @@ def main():
         # Fetch dataset details
         try:
             datasets = fetch_dataset_details(
-                query_key, web_env, generate_sample_lists=args.samples
+                query_key, web_env, generate_sample_lists=args.samples, output_dir=args.output_dir
             )
 
             # If batch fetch returns no results, try individual fetches
             if not datasets:
                 print("Batch fetch returned no results. Trying individual fetches...")
                 datasets = fetch_dataset_details_individually(
-                    id_list, generate_sample_lists=args.samples
+                    id_list, generate_sample_lists=args.samples, output_dir=args.output_dir
                 )
         except Exception as e:
             print(f"Error during batch fetch: {e}")
             print("Falling back to individual fetches...")
             datasets = fetch_dataset_details_individually(
-                id_list, generate_sample_lists=args.samples
+                id_list, generate_sample_lists=args.samples, output_dir=args.output_dir
             )
 
     elif args.file:
@@ -870,7 +947,7 @@ def main():
 
         # Fetch dataset details by accessions
         datasets = fetch_geo_by_accessions(
-            accessions, generate_sample_lists=args.samples
+            accessions, generate_sample_lists=args.samples, output_dir=args.output_dir
         )
 
     # Display results

@@ -47,6 +47,8 @@ fastrlock==0.8.2
     # via cupy-cuda12x
 fonttools==4.54.1
     # via matplotlib
+geoparse==2.0.4
+    # via mrsa-ca-rna
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
@@ -91,6 +93,7 @@ numpy==2.1.1
     # via anndata
     # via contourpy
     # via cupy-cuda12x
+    # via geoparse
     # via h5py
     # via ipympl
     # via matplotlib
@@ -112,6 +115,7 @@ packaging==24.1
     # via xarray
 pandas==2.2.3
     # via anndata
+    # via geoparse
     # via mrsa-ca-rna
     # via seaborn
     # via statsmodels
@@ -162,6 +166,7 @@ pytz==2024.2
 pyyaml==6.0.2
     # via wandb
 requests==2.32.3
+    # via geoparse
     # via tlviz
     # via wandb
 scikit-learn==1.6.1
@@ -202,6 +207,7 @@ threadpoolctl==3.5.0
 tlviz==0.1.1
     # via mrsa-ca-rna
 tqdm==4.67.1
+    # via geoparse
     # via parafac2
 traitlets==5.14.3
     # via comm

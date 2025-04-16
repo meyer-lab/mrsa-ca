@@ -12,10 +12,9 @@ PROJECT ?= $(shell date +%Y%m%d)
 
 # Directories
 SALMON_DIR := salmon_processing
-SRA_DIR := $(SALMON_DIR)/sra_out
 REF_DIR := $(SALMON_DIR)/salmon_ref
-COUNTS_DIR := $(SALMON_DIR)/salmon_gene_counts
 FINISHED_DIR := finished_projects
+ACCESSIONS_DIR := accession_lists
 
 # Reference files
 TRANSCRIPTS := $(REF_DIR)/human_transcripts.fa.gz
@@ -36,16 +35,13 @@ setup_salmon: $(SALMON_DIR) $(SRA_DIR) $(REF_DIR) $(COUNTS_DIR) $(SALMON_INDEX) 
 $(SALMON_DIR):
 	mkdir -p $@
 
-$(SRA_DIR): | $(SALMON_DIR)
-	mkdir -p $@
-
 $(REF_DIR): | $(SALMON_DIR)
 	mkdir -p $@
 
-$(COUNTS_DIR): | $(SALMON_DIR)
+$(FINISHED_DIR):
 	mkdir -p $@
 
-$(FINISHED_DIR):
+$(ACCESSIONS_DIR):
 	mkdir -p $@
 
 # Download and prepare reference files
@@ -72,6 +68,29 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 
 # Quantification rules
 quantify_salmon: $(FINISHED_DIR)/all_counts_$(PROJECT).txt
+
+# Make a project directory
+PROJECT_DIR := $(SALMON_DIR)/$(PROJECT)
+SRA_DIR := $(PROJECT_DIR)/sra_out
+SRA_DIR_TEMP := $(SRA_DIR)/temp
+COUNTS_DIR := $(PROJECT_DIR)/salmon_gene_counts
+
+$(PROJECT_DIR): | $(SALMON_DIR)
+	mkdir -p $@
+
+$(SRA_DIR): | $(PROJECT_DIR)
+	mkdir -p $@
+
+$(SRA_DIR_TEMP): | $(SRA_DIR)
+	mkdir -p $@
+
+$(COUNTS_DIR): | $(PROJECT_DIR)
+	mkdir -p $@
+
+# Copy and rename accession_list_PROJECT.txt into sra_out as accession_list.txt
+$(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt | $(SRA_DIR)
+	@echo "Copying and renaming accession list file..."
+	cp $< $@
 
 # Process SRA accessions and run Salmon quantification
 $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR)
@@ -120,7 +139,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 	done < $(SRA_DIR)/accession_list.txt
 	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
 	@sed -i "1i gene\t$$(sort $(SRA_DIR)/accession_list.txt | tr '\n' '\t')" $@
-	@rm -r $(COUNTS_DIR)/*
+	@rm -r $(PROJECT_DIR)/*
 
 # Clean up
 clean_salmon:
@@ -134,7 +153,7 @@ help:
 	@echo "  make setup_salmon THREADS=<num_threads>		- Set up directories and download reference files"
 	@echo "  make quantify_salmon ENDTYPE=<single|paired> THREADS=<num_threads> BATCH_SIZE=<num> PROJECT=<your_project>		- Run Salmon quantification"
 	@echo "  make clean_salmon		- Remove all generated files"
-	@echo "  make Help		- Show this help message"
+	@echo "  make help		- Show this help message"
 	@echo ""
 	@echo "Variables:"
 	@echo "  THREADS			- Number of threads to use (default: 4)"

@@ -15,6 +15,8 @@ SALMON_DIR := salmon_processing
 REF_DIR := $(SALMON_DIR)/salmon_ref
 FINISHED_DIR := finished_projects
 ACCESSIONS_DIR := accession_lists
+# Use scratch space for processing
+SCRATCH_DIR := /u/scratch/j/jrpopoli
 
 # Reference files
 TRANSCRIPTS := $(REF_DIR)/human_transcripts.fa.gz
@@ -32,9 +34,6 @@ create_project_dirs: $(PROJECT_DIR) $(SRA_DIR) $(SRA_DIR_TEMP) $(COUNTS_DIR)
 # Setup directories and reference files
 setup_salmon: create_base_dirs $(SALMON_INDEX) $(GTF)
 	@echo "Setup complete. Directory structure created and reference files downloaded."
-	@echo "Next steps:"
-	@echo "1. Create your accession list file at: $(SRA_DIR)/accession_list.txt"
-	@echo "2. Run quantification with: make quantify_salmon THREADS=<num> ENDTYPE=<single|paired> BATCH_SIZE=<num>"
 
 # Create directories
 $(SALMON_DIR):
@@ -74,13 +73,13 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 # Quantification rules
 quantify_salmon: create_project_dirs $(FINISHED_DIR)/all_counts_$(PROJECT).txt
 
-# Make a project directory
-PROJECT_DIR := $(SALMON_DIR)/$(PROJECT)
+# Make a project directory - now using scratch space
+PROJECT_DIR := $(SCRATCH_DIR)/$(PROJECT)
 SRA_DIR := $(PROJECT_DIR)/sra_out
 SRA_DIR_TEMP := $(SRA_DIR)/temp
 COUNTS_DIR := $(PROJECT_DIR)/salmon_gene_counts
 
-$(PROJECT_DIR): | $(SALMON_DIR)
+$(PROJECT_DIR):
 	mkdir -p $@
 
 $(SRA_DIR): | $(PROJECT_DIR)
@@ -92,7 +91,7 @@ $(SRA_DIR_TEMP): | $(SRA_DIR)
 $(COUNTS_DIR): | $(PROJECT_DIR)
 	mkdir -p $@
 
-# Copy and rename accession_list_PROJECT.txt into sra_out as accession_list.txt
+# Copy and rename accession_list_PROJECT.txt into scratch sra_out as accession_list.txt
 $(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt | $(SRA_DIR) $(ACCESSIONS_DIR)
 	@echo "Copying and renaming accession list file..."
 	cp $< $@
@@ -100,6 +99,7 @@ $(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt |
 # Process SRA accessions and run Salmon quantification
 $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR) $(SRA_DIR_TEMP)
 	@echo "Processing GSM-SRR mapped accessions in batches of $(BATCH_SIZE)..."
+	@echo "Using scratch directory: $(SCRATCH_DIR)"
 	@# Create temporary directories
 	@mkdir -p $(SRA_DIR)/fastq_temp
 	@mkdir -p $(SRA_DIR)/mapping
@@ -190,13 +190,16 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 	done < $(SRA_DIR)/gsm_list.txt
 	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
 	@sed -i "1i gene\t$$(cat $(SRA_DIR)/gsm_list.txt | tr '\n' '\t')" $@
-	@# Clean up final files
+	@# Clean up scratch project directory
+	@echo "Cleaning up scratch directory..."
 	@rm -rf $(PROJECT_DIR)
 	@echo "Quantification complete. Results available in $(FINISHED_DIR)/all_counts_$(PROJECT).txt"
 
 # Clean up
 clean_salmon:
 	rm -rf $(SALMON_DIR)
+	# Also clean any leftover scratch directories if possible
+	rm -rf $(SCRATCH_DIR)/*
 
 # Help target
 help:
@@ -211,6 +214,8 @@ help:
 	@echo "Variables:"
 	@echo "  THREADS			- Number of threads to use (default: 4)"
 	@echo "  ENDTYPE			- Type of sequencing reads: 'single' or 'paired' (default: paired)"
-	@echo "  BATCH_SIZE			- Number of accessions to process simultaneously (default: 5)"
+	@echo "  BATCH_SIZE			- Number of accessions to process simultaneously (default: 6)"
 	@echo "  PROJECT			- Name of the project (default: current date)"
+	@echo ""
+	@echo "Scratch space at $(SCRATCH_DIR) is used for temporary files"
 	@echo ""

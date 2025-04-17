@@ -6,7 +6,7 @@ THREADS ?= 4
 # Default to paired-end reads unless specified otherwise
 ENDTYPE ?= paired
 # Default batch size for processing
-BATCH_SIZE ?= 5
+BATCH_SIZE ?= 6
 # Default project name
 PROJECT ?= $(shell date +%Y%m%d)
 
@@ -99,8 +99,11 @@ $(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt |
 
 # Process SRA accessions and run Salmon quantification
 $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR) $(SRA_DIR_TEMP)
-	@echo "Processing SRA accessions in batches of $(BATCH_SIZE)..."
-	@# Calculate total number of accessions and batches
+	@echo "Processing GSM-SRR mapped accessions in batches of $(BATCH_SIZE)..."
+	@# Create temporary directories
+	@mkdir -p $(SRA_DIR)/fastq_temp
+	@mkdir -p $(SRA_DIR)/mapping
+	@# Calculate total number of GSM samples and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \
 	batch_count=$$(( (total_lines + $(BATCH_SIZE) - 1) / $(BATCH_SIZE) )); \
 	for batch_num in $$(seq 1 $$batch_count); do \
@@ -109,42 +112,87 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		if [ $$end_line -gt $$total_lines ]; then \
 			end_line=$$total_lines; \
 		fi; \
-		echo "Processing batch $$batch_num of $$batch_count (lines $$start_line to $$end_line)"; \
+		echo "Processing batch $$batch_num of $$batch_count (GSMs $$start_line to $$end_line)"; \
+		# Extract current batch of GSM-SRR mappings \
 		sed -n "$$start_line,$$end_line p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$$batch_num.txt; \
-		while read -r acc; do \
+		# Create list of all SRRs in this batch \
+		rm -f $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
+		cat $(SRA_DIR)/batch_$$batch_num.txt | cut -d '|' -f 2 | tr ' ' '\n' | grep -v '^$$' > $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
+		echo "Downloading $$(wc -l < $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt) SRR files for batch $$batch_num..."; \
+		# Download all SRRs in parallel \
+		while read -r srr; do \
 			if [ "$(ENDTYPE)" = "single" ]; then \
-				fasterq-dump $$acc --progress --threads $(THREADS) -O $(SRA_DIR) -t $(SRA_DIR)/temp & \
+				fasterq-dump $$srr --progress --threads $(THREADS) -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) & \
 			else \
-				fasterq-dump $$acc --split-files --skip-technical --progress --threads $(THREADS) -O $(SRA_DIR) -t $(SRA_DIR)/temp & \
+				fasterq-dump $$srr --split-files --skip-technical --progress --threads $(THREADS) -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) & \
 			fi; \
-		done < $(SRA_DIR)/batch_$$batch_num.txt; \
+		done < $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
 		wait; \
-		echo "Quantifying batch $$batch_num..."; \
-		while read -r acc; do \
-			if [ "$(ENDTYPE)" = "single" ]; then \
-				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
-					--geneMap $(GTF) --validateMappings --gcBias -l A \
-					-r $(SRA_DIR)/$$acc.fastq \
-					-o $(COUNTS_DIR)/$$acc; \
+		echo "Concatenating files and quantifying for batch $$batch_num..."; \
+		# Process each GSM mapping \
+		while IFS=' | ' read -r gsm srr_list || [ -n "$$gsm" ]; do \
+			echo "Processing GSM: $$gsm"; \
+			# Convert space-separated SRRs to array \
+			srr_array=($${srr_list}); \
+			# Determine if paired-end or single-end based on first SRR \
+			is_paired=false; \
+			if [ -f "$(SRA_DIR)/fastq_temp/$${srr_array[0]}_1.fastq" ] && [ -f "$(SRA_DIR)/fastq_temp/$${srr_array[0]}_2.fastq" ]; then \
+				is_paired=true; \
+				# Initialize concatenated files for paired-end \
+				rm -f $(SRA_DIR)/$${gsm}_1.fastq $(SRA_DIR)/$${gsm}_2.fastq; \
+				for srr in $${srr_array[@]}; do \
+					if [ -f "$(SRA_DIR)/fastq_temp/$${srr}_1.fastq" ] && [ -f "$(SRA_DIR)/fastq_temp/$${srr}_2.fastq" ]; then \
+						cat $(SRA_DIR)/fastq_temp/$${srr}_1.fastq >> $(SRA_DIR)/$${gsm}_1.fastq; \
+						cat $(SRA_DIR)/fastq_temp/$${srr}_2.fastq >> $(SRA_DIR)/$${gsm}_2.fastq; \
+					elif [ -f "$(SRA_DIR)/fastq_temp/$$srr.fastq" ]; then \
+						echo "Warning: SRR $$srr is single-end but expected paired-end"; \
+					fi; \
+				done; \
 			else \
+				# Initialize concatenated file for single-end \
+				rm -f $(SRA_DIR)/$$gsm.fastq; \
+				for srr in $${srr_array[@]}; do \
+					if [ -f "$(SRA_DIR)/fastq_temp/$$srr.fastq" ]; then \
+						cat $(SRA_DIR)/fastq_temp/$$srr.fastq >> $(SRA_DIR)/$$gsm.fastq; \
+					fi; \
+				done; \
+			fi; \
+			# Run Salmon quantification on concatenated files \
+			if $$is_paired; then \
+				echo "Quantifying paired-end reads for $$gsm"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
 					--geneMap $(GTF) --validateMappings --gcBias -l A \
-					-1 $(SRA_DIR)/$${acc}_1.fastq -2 $(SRA_DIR)/$${acc}_2.fastq \
-					-o $(COUNTS_DIR)/$$acc; \
+					-1 $(SRA_DIR)/$${gsm}_1.fastq -2 $(SRA_DIR)/$${gsm}_2.fastq \
+					-o $(COUNTS_DIR)/$$gsm; \
+			else \
+				echo "Quantifying single-end reads for $$gsm"; \
+				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
+					--geneMap $(GTF) --validateMappings --gcBias -l A \
+					-r $(SRA_DIR)/$$gsm.fastq \
+					-o $(COUNTS_DIR)/$$gsm; \
 			fi; \
 		done < $(SRA_DIR)/batch_$$batch_num.txt; \
-		rm $(SRA_DIR)/*.fastq $(SRA_DIR)/batch_$$batch_num.txt; \
+		# Clean up batch files \
+		echo "Cleaning up batch $$batch_num files..."; \
+		rm -f $(SRA_DIR)/fastq_temp/*.fastq $(SRA_DIR)/batch_$$batch_num.txt $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt $(SRA_DIR)/*.fastq; \
 	done
 	@echo "Aggregating gene counts..."
-	@head -n 1 $(SRA_DIR)/accession_list.txt | while read -r sample; do \
-		tail -n +2 $(COUNTS_DIR)/$$sample/quant.genes.sf | cut -f 1 > $(COUNTS_DIR)/genes.txt; \
-	done
-	@while read -r sample; do \
-		tail -n +2 $(COUNTS_DIR)/$$sample/quant.genes.sf | cut -f 4 > $(COUNTS_DIR)/$$sample.count; \
-	done < $(SRA_DIR)/accession_list.txt
+	@# Extract all GSM accessions for the count table header
+	@cut -d '|' -f 1 $(SRA_DIR)/accession_list.txt | tr -d ' ' > $(SRA_DIR)/gsm_list.txt
+	@# Create genes.txt from first sample
+	@first_sample=$$(head -n 1 $(SRA_DIR)/gsm_list.txt); \
+	tail -n +2 $(COUNTS_DIR)/$$first_sample/quant.genes.sf | cut -f 1 > $(COUNTS_DIR)/genes.txt
+	@# Create count files for each sample
+	@while read -r gsm; do \
+		if [ -d "$(COUNTS_DIR)/$$gsm" ]; then \
+			tail -n +2 $(COUNTS_DIR)/$$gsm/quant.genes.sf | cut -f 4 > $(COUNTS_DIR)/$$gsm.count; \
+		fi; \
+	done < $(SRA_DIR)/gsm_list.txt
 	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
-	@sed -i "1i gene\t$$(sort $(SRA_DIR)/accession_list.txt | tr '\n' '\t')" $@
-	@rm -r $(PROJECT_DIR)/*
+	@sed -i "1i gene\t$$(cat $(SRA_DIR)/gsm_list.txt | tr '\n' '\t')" $@
+	@# Clean up final files
+	@rm -rf $(PROJECT_DIR)
+	@echo "Quantification complete. Results available in $(FINISHED_DIR)/all_counts_$(PROJECT).txt"
 
 # Clean up
 clean_salmon:

@@ -791,16 +791,18 @@ def save_sample_metadata_to_csv(gse_accession, samples, output_dir="data"):
     df.to_csv(csv_path, index=False)
     print(f"Saved {len(samples)} samples with metadata to {csv_path}")
     
-    # Create SRX accessions file
-    srx_path = os.path.join(accessions_dir, f"{gse_accession}_srx_accessions.txt")
-    with open(srx_path, "w") as f:
+    # Create SRR accessions file with GSM associations
+    srr_path = os.path.join(accessions_dir, f"{gse_accession}_srr_accessions.txt")
+    with open(srr_path, "w") as f:
         for sample in samples:
-            srx_list = sample.get("srx_accessions", "").split(",")
-            for srx in srx_list:
-                if srx.strip():
-                    f.write(f"{srx.strip()}\n")
+            gsm_accession = sample.get("gsm_accession", "")
+            srr_list = sample.get("srr_accessions", "").split(",")
+            srr_accessions = [srr.strip() for srr in srr_list if srr.strip()]
+            
+            if srr_accessions:  # Only write if there are SRR accessions
+                f.write(f"{gsm_accession} | {' '.join(srr_accessions)}\n")
     
-    print(f"Saved SRX accessions to {srx_path}")
+    print(f"Saved GSM-SRR mappings to {srr_path}")
 
 
 def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):

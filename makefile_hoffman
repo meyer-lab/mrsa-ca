@@ -114,20 +114,38 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		fi; \
 		echo "Processing batch $$batch_num of $$batch_count (GSMs $$start_line to $$end_line)"; \
 		# Extract current batch of GSM-SRR mappings \
-		sed -n "$$start_line,$$end_line p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$$batch_num.txt; \
+		sed -n "$$start_line,$$end_line p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$${batch_num}.txt; \
 		# Create list of all SRRs in this batch \
-		rm -f $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
-		cat $(SRA_DIR)/batch_$$batch_num.txt | cut -d '|' -f 2 | tr ' ' '\n' | grep -v '^$$' > $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
-		echo "Downloading $$(wc -l < $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt) SRR files for batch $$batch_num..."; \
+		rm -f $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
+		cat $(SRA_DIR)/batch_$${batch_num}.txt | cut -d '|' -f 2 | tr ' ' '\n' | grep -v '^$$' > $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
+		# Count SRRs in current batch and adjust thread allocation dynamically \
+		srr_count=$$(wc -l < $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt); \
+		echo "Downloading $${srr_count} SRR files for batch $${batch_num}..."; \
+		# Calculate threads per process, with minimum of 1 \
+		threads_per_process=$$(( $(THREADS) / $${srr_count} )); \
+		if [ $${threads_per_process} -lt 1 ]; then \
+		    threads_per_process=1; \
+		fi; \
+		echo "Allocating $${threads_per_process} threads per download process"; \
 		# Download all SRRs in parallel \
 		while read -r srr; do \
-			if [ "$(ENDTYPE)" = "single" ]; then \
-				fasterq-dump $$srr --progress --threads $(THREADS) -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) & \
-			else \
-				fasterq-dump $$srr --split-files --skip-technical --progress --threads $(THREADS) -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) & \
-			fi; \
-		done < $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt; \
-		wait; \
+		    echo "Starting download of $${srr}..."; \
+		    if [ "$(ENDTYPE)" = "single" ]; then \
+		        fasterq-dump $${srr} --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
+		    else \
+		        fasterq-dump $${srr} --split-files --skip-technical --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
+		    fi; \
+		done < $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
+		echo "Starting download monitoring..."; \
+		start_time=$$(date +%s); \
+		while jobs %% > /dev/null 2>&1; do \
+		    current=$$(date +%s); \
+		    elapsed=$$(( current - start_time )); \
+		    running=$$(jobs -p | wc -l); \
+		    echo "[$$elapsed sec] Still waiting for $$running fasterq-dump processes to complete..."; \
+		    sleep 30; \
+		done; \
+		echo "All downloads complete."; \
 		echo "Concatenating files and quantifying for batch $$batch_num..."; \
 		# Process each GSM mapping \
 		while IFS=' | ' read -r gsm srr_list || [ -n "$$gsm" ]; do \
@@ -174,7 +192,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		done < $(SRA_DIR)/batch_$$batch_num.txt; \
 		# Clean up batch files \
 		echo "Cleaning up batch $$batch_num files..."; \
-		rm -f $(SRA_DIR)/fastq_temp/*.fastq $(SRA_DIR)/batch_$$batch_num.txt $(SRA_DIR)/mapping/batch_$$batch_num_srrs.txt $(SRA_DIR)/*.fastq; \
+		rm -f $(SRA_DIR)/fastq_temp/*.fastq $(SRA_DIR)/batch_$${batch_num}.txt $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt $(SRA_DIR)/*.fastq; \
 	done
 	@echo "Aggregating gene counts..."
 	@# Extract all GSM accessions for the count table header

@@ -1,4 +1,4 @@
-.PHONY: setup_salmon quantify_salmon clean_salmon help create_base_dirs create_project_dirs
+.PHONY: setup_salmon quantify_salmon clean_salmon help create_base_dirs create_project_dirs setup_r_deps preprocess_srr_list
 
 # Makefile for RNA-Seq analysis pipeline using Salmon
 # Default number of threads to use
@@ -26,13 +26,17 @@ DECOYS := $(REF_DIR)/decoys.txt
 SALMON_INDEX := $(REF_DIR)/salmon_index
 GTF := $(REF_DIR)/mappings.gtf
 
+# Add R dependencies
+R_DEPS := tximport readr GenomicFeatures AnnotationDbi jsonlite
+SCRIPTS_DIR := $(SALMON_DIR)/scripts
+
 # Group directory creation
 create_base_dirs: $(SALMON_DIR) $(REF_DIR) $(FINISHED_DIR) $(ACCESSIONS_DIR)
 
 create_project_dirs: $(PROJECT_DIR) $(SRA_DIR) $(SRA_DIR_TEMP) $(COUNTS_DIR)
 
 # Setup directories and reference files
-setup_salmon: create_base_dirs $(SALMON_INDEX) $(GTF)
+setup_salmon: create_base_dirs $(SALMON_INDEX) $(GTF) setup_r_deps $(SCRIPTS_DIR)/salmon_to_counts.R
 	@echo "Setup complete. Directory structure created and reference files downloaded."
 
 # Create directories
@@ -71,7 +75,7 @@ $(SALMON_INDEX): $(GENTROME) $(DECOYS)
 	salmon index -t $(GENTROME) -d $(DECOYS) --gencode -p $(THREADS) -i $@
 
 # Quantification rules
-quantify_salmon: create_project_dirs $(FINISHED_DIR)/all_counts_$(PROJECT).txt
+quantify_salmon: setup_r_deps $(SCRIPTS_DIR)/salmon_to_counts.R create_project_dirs $(FINISHED_DIR)/all_counts_$(PROJECT).txt
 
 # Make a project directory - now using scratch space
 PROJECT_DIR := $(SCRATCH_DIR)/$(PROJECT)
@@ -91,10 +95,40 @@ $(SRA_DIR_TEMP): | $(SRA_DIR)
 $(COUNTS_DIR): | $(PROJECT_DIR)
 	mkdir -p $@
 
+# Preprocess SRR-only list if needed before copying
+preprocess_srr_list:
+	@echo "Checking if accession list contains only SRR identifiers..."
+	@if [ -f "$(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt" ]; then \
+		if ! grep -q "|" $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt; then \
+			echo "Detected SRR-only format. Converting to GSM-SRR format..."; \
+			mv $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt $(ACCESSIONS_DIR)/srr_list_$(PROJECT).txt; \
+			while read -r srr; do \
+				echo "SRR_$$srr | $$srr" >> $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt; \
+			done < $(ACCESSIONS_DIR)/srr_list_$(PROJECT).txt; \
+			echo "Created synthetic GSM-SRR mapping. Original list saved as $(ACCESSIONS_DIR)/srr_list_$(PROJECT).txt"; \
+		else \
+			echo "Accession list already contains GSM-SRR mappings. No preprocessing needed."; \
+		fi; \
+	else \
+		echo "ERROR: Accession list file not found at $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt"; \
+		exit 1; \
+	fi
+
 # Copy and rename accession_list_PROJECT.txt into scratch sra_out as accession_list.txt
 $(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt | $(SRA_DIR) $(ACCESSIONS_DIR)
-	@echo "Copying and renaming accession list file..."
-	cp $< $@
+	@echo "Checking accession list format..."
+	@if ! grep -q "|" $<; then \
+		echo "Detected SRR-only list. Converting to GSM-SRR format..."; \
+		rm -f $(ACCESSIONS_DIR)/tmp_accession_list.txt; \
+		while read -r srr; do \
+			echo "SRR_$$srr | $$srr" >> $(ACCESSIONS_DIR)/tmp_accession_list.txt; \
+		done < $<; \
+		mv $(ACCESSIONS_DIR)/tmp_accession_list.txt $@; \
+		echo "Created synthetic GSM-SRR mapping in scratch directory."; \
+	else \
+		echo "Copying and renaming accession list file..."; \
+		cp $< $@; \
+	fi
 
 # Process SRA accessions and run Salmon quantification
 $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR) $(SRA_DIR_TEMP)
@@ -137,7 +171,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		echo "Downloading $${srr_count} SRR files for batch $${batch_num}..."; \
 		# Calculate threads per process, with minimum of 1 \
 		threads_per_process=$$(( $(THREADS) / $${srr_count} )); \
-		if [ $${threads_per_process} -lt 1 ]; then \
+		if [ $${threads_per_process} -lt 1]; then \
 			threads_per_process=1; \
 		fi; \
 		echo "Allocating $${threads_per_process} threads per download process"; \
@@ -189,19 +223,19 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 					fi; \
 				done; \
 			fi; \
-			# Run Salmon quantification on concatenated files \
+			# Run Salmon quantification on concatenated files
 			if $${is_paired}; then \
 				echo "Quantifying paired-end reads for $${gsm}"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
-					--geneMap $(GTF) --validateMappings --gcBias -l A \
-					-1 $(SRA_DIR)/$${gsm}_1.fastq -2 $(SRA_DIR)/$${gsm}_2.fastq \
-					-o $(COUNTS_DIR)/$${gsm}; \
+						--validateMappings --gcBias -l A \
+						-1 $(SRA_DIR)/$${gsm}_1.fastq -2 $(SRA_DIR)/$${gsm}_2.fastq \
+						-o $(COUNTS_DIR)/$${gsm}; \
 			else \
 				echo "Quantifying single-end reads for $${gsm}"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
-					--geneMap $(GTF) --validateMappings --gcBias -l A \
-					-r $(SRA_DIR)/$${gsm}.fastq \
-					-o $(COUNTS_DIR)/$${gsm}; \
+						--validateMappings --gcBias -l A \
+						-r $(SRA_DIR)/$${gsm}.fastq \
+						-o $(COUNTS_DIR)/$${gsm}; \
 			fi; \
 		done < $(SRA_DIR)/batch_$${batch_num}.txt; \
 		# Clean up batch files \
@@ -221,17 +255,13 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 			exit 1; \
 		fi; \
 	else \
-		echo "Aggregating gene counts..."; \
-		cut -d '|' -f 1 $(SRA_DIR)/accession_list.txt | tr -d ' ' > $(SRA_DIR)/gsm_list.txt; \
-		first_sample=$$(head -n 1 $(SRA_DIR)/gsm_list.txt); \
-		tail -n +2 $(COUNTS_DIR)/$${first_sample}/quant.genes.sf | cut -f 1 > $(COUNTS_DIR)/genes.txt; \
-		while read -r gsm; do \
-			if [ -d "$(COUNTS_DIR)/$${gsm}" ]; then \
-				tail -n +2 $(COUNTS_DIR)/$${gsm}/quant.genes.sf | cut -f 4 > $(COUNTS_DIR)/$${gsm}.count; \
-			fi; \
-		done < $(SRA_DIR)/gsm_list.txt; \
-		paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@; \
-		sed -i "1i gene\t$$(cat $(SRA_DIR)/gsm_list.txt | tr '\n' '\t')" $@; \
+		echo "Aggregating gene counts using tximport..."; \
+		# Use tximport to get gene-level counts from transcript-level estimates \
+		Rscript $(SCRIPTS_DIR)/salmon_to_counts.R \
+			$(COUNTS_DIR) \
+			$(GTF) \
+			$@ \
+			$(PROJECT); \
 		touch $(SRA_DIR)/checkpoints/aggregation.done; \
 	fi
 	@# Clean up only if aggregation is complete
@@ -262,8 +292,14 @@ help:
 	@echo "Usage:"
 	@echo "  make setup_salmon THREADS=<num_threads>		- Set up directories and download reference files"
 	@echo "  make quantify_salmon ENDTYPE=<single|paired> THREADS=<num_threads> BATCH_SIZE=<num> PROJECT=<your_project>		- Run Salmon quantification"
+	@echo "  make preprocess_srr_list PROJECT=<your_project>	- Preprocess SRR-only list into GSM-SRR format"
 	@echo "  make clean_salmon		- Remove all generated files"
 	@echo "  make help		- Show this help message"
+	@echo ""
+	@echo "Input Files:"
+	@echo "  accession_lists/accession_list_<PROJECT>.txt - Either:"
+	@echo "    * GSM-SRR mappings in format: 'GSM123456 | SRR123456 SRR123457'"
+	@echo "    * SRR-only list with one SRR ID per line (will be auto-converted)"
 	@echo ""
 	@echo "Variables:"
 	@echo "  THREADS			- Number of threads to use (default: 4)"
@@ -273,3 +309,93 @@ help:
 	@echo ""
 	@echo "Scratch space at $(SCRATCH_DIR) is used for temporary files"
 	@echo ""
+
+# Add a step to ensure R packages are installed
+setup_r_deps:
+	@echo "Checking R dependencies..."
+	@Rscript -e 'missing <- setdiff(c("$(R_DEPS)"), installed.packages()[,"Package"]); if(length(missing) > 0) { install.packages(missing, repos="https://cloud.r-project.org") }'
+	@Rscript -e 'if(!"tximport" %in% installed.packages()[,"Package"]) { if(!"BiocManager" %in% installed.packages()[,"Package"]) { install.packages("BiocManager", repos="https://cloud.r-project.org") }; BiocManager::install("tximport") }'
+	@echo "R dependencies check complete."
+
+# Create scripts directory if it doesn't exist
+$(SCRIPTS_DIR):
+	mkdir -p $@
+
+# Ensure salmon_to_counts.R script exists
+$(SCRIPTS_DIR)/salmon_to_counts.R: | $(SCRIPTS_DIR)
+	@if [ ! -f "$@" ]; then \
+    	echo "Creating tximport R script..."; \
+    	echo '#!/usr/bin/env Rscript' > $@; \
+    	echo '' >> $@; \
+    	echo '# Load required libraries' >> $@; \
+        echo 'suppressPackageStartupMessages({' >> $@; \
+        echo '  library(tximport)' >> $@; \
+        echo '  library(readr)' >> $@; \
+        echo '  library(GenomicFeatures)' >> $@; \
+        echo '})' >> $@; \
+        echo '' >> $@; \
+        echo '# Get command line arguments' >> $@; \
+        echo 'args <- commandArgs(trailingOnly = TRUE)' >> $@; \
+        echo 'if (length(args) < 4) {' >> $@; \
+        echo '  stop("Usage: Rscript salmon_to_counts.R <counts_dir> <gtf_file> <output_file> <project_name>")' >> $@; \
+        echo '}' >> $@; \
+        echo '' >> $@; \
+        echo 'counts_dir <- args[1]' >> $@; \
+        echo 'gtf_file <- args[2]' >> $@; \
+        echo 'output_file <- args[3]' >> $@; \
+        echo 'project_name <- args[4]' >> $@; \
+        echo '' >> $@; \
+        echo '# Print diagnostic information' >> $@; \
+        echo 'message("Processing project: ", project_name)' >> $@; \
+        echo 'message("Processing counts directory: ", counts_dir)' >> $@; \
+        echo 'message("Using GTF file: ", gtf_file)' >> $@; \
+        echo 'message("Output will be written to: ", output_file)' >> $@; \
+        echo '' >> $@; \
+        echo '# Create transcript-to-gene mapping from GTF' >> $@; \
+        echo 'message("Creating transcript-to-gene mapping from GTF...")' >> $@; \
+        echo 'txdb <- makeTxDbFromGFF(gtf_file)' >> $@; \
+        echo 'k <- keys(txdb, keytype = "TXNAME")' >> $@; \
+        echo 'tx2gene <- AnnotationDbi::select(txdb, k, "GENEID", "TXNAME")' >> $@; \
+        echo '' >> $@; \
+        echo '# Get all sample folders (excluding non-sample directories)' >> $@; \
+        echo 'message("Scanning for sample directories...")' >> $@; \
+        echo 'samples <- list.dirs(counts_dir, full.names = FALSE, recursive = FALSE)' >> $@; \
+        echo 'samples <- samples[samples != "" & !grepl("genes\\.txt", samples)]' >> $@; \
+        echo 'message(paste("Found", length(samples), "sample directories"))' >> $@; \
+        echo '' >> $@; \
+        echo '# Create file paths to quant.sf files' >> $@; \
+        echo 'files <- file.path(counts_dir, samples, "quant.sf")' >> $@; \
+        echo 'names(files) <- samples' >> $@; \
+        echo '' >> $@; \
+        echo '# Check if all files exist' >> $@; \
+        echo 'missing_files <- files[!file.exists(files)]' >> $@; \
+        echo 'if (length(missing_files) > 0) {' >> $@; \
+        echo '  warning("The following quant files are missing: ", paste(missing_files, collapse=", "))' >> $@; \
+        echo '  files <- files[file.exists(files)]' >> $@; \
+        echo '}' >> $@; \
+        echo '' >> $@; \
+        echo '# Run tximport to get gene-level counts' >> $@; \
+        echo 'message("Running tximport for gene-level summarization...")' >> $@; \
+        echo 'txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreAfterBar = TRUE,' >> $@; \
+        echo '                countsFromAbundance = "no")  # Use "no" for raw estimated counts' >> $@; \
+        echo '' >> $@; \
+        echo '# Extract different count types' >> $@; \
+        echo 'message("Extracting count matrices...")' >> $@; \
+        echo 'raw_counts <- round(txi$$counts)  # Raw estimated counts, rounded to integers' >> $@; \
+        echo 'tpm <- txi$$abundance  # TPM values' >> $@; \
+        echo '' >> $@; \
+        echo '# Write output files' >> $@; \
+        echo 'message("Writing count matrices...")' >> $@; \
+        echo '# Raw counts' >> $@; \
+        echo 'write.table(raw_counts, file = output_file,' >> $@; \
+        echo '            sep = "\t", quote = FALSE, col.names = NA)' >> $@; \
+        echo '' >> $@; \
+        echo '# TPM values - save alongside raw counts' >> $@; \
+        echo 'tpm_file <- file.path(dirname(output_file), paste0("tpm_counts_", basename(output_file)))' >> $@; \
+        echo 'write.table(tpm, file = tpm_file,' >> $@; \
+        echo '            sep = "\t", quote = FALSE, col.names = NA)' >> $@; \
+        echo '' >> $@; \
+        echo 'message("Gene-level counts successfully written to ", output_file)' >> $@; \
+        echo 'message("TPM values written to ", tpm_file)' >> $@; \
+        chmod +x $@; \
+    fi

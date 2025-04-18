@@ -103,20 +103,34 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 	@# Create temporary directories
 	@mkdir -p $(SRA_DIR)/fastq_temp
 	@mkdir -p $(SRA_DIR)/mapping
+	@mkdir -p $(SRA_DIR)/checkpoints
 	@# Calculate total number of GSM samples and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \
-	batch_count=$$(( (total_lines + $(BATCH_SIZE) - 1) / $(BATCH_SIZE) )); \
-	for batch_num in $$(seq 1 $$batch_count); do \
-		start_line=$$(( (batch_num - 1) * $(BATCH_SIZE) + 1 )); \
-		end_line=$$(( batch_num * $(BATCH_SIZE) )); \
-		if [ $$end_line -gt $$total_lines ]; then \
-			end_line=$$total_lines; \
+	batch_count=$$(( ($${total_lines} + $(BATCH_SIZE) - 1) / $(BATCH_SIZE) )); \
+	# Determine the starting batch number based on checkpoints \
+	start_batch=1; \
+	if [ -d "$(SRA_DIR)/checkpoints" ]; then \
+		last_checkpoint=$$(ls -1 $(SRA_DIR)/checkpoints/batch_*.done 2>/dev/null | sort -V | tail -n 1 || echo ""); \
+		if [ -n "$${last_checkpoint}" ]; then \
+			last_batch=$$(echo $${last_checkpoint} | sed -E 's|.*/batch_([0-9]+)\.done$$|\1|'); \
+			start_batch=$$(( $${last_batch} + 1 )); \
+			echo "Resuming from batch $${start_batch} (previous batch $${last_batch} completed)"; \
+		else \
+			echo "No checkpoints found. Starting from batch 1"; \
 		fi; \
-		echo "Processing batch $$batch_num of $$batch_count (GSMs $$start_line to $$end_line)"; \
+	fi; \
+	for batch_num in $$(seq $${start_batch} $${batch_count}); do \
+		start_line=$$(( ($${batch_num} - 1) * $(BATCH_SIZE) + 1 )); \
+		end_line=$$(( $${batch_num} * $(BATCH_SIZE) )); \
+		if [ $${end_line} -gt $${total_lines} ]; then \
+			end_line=$${total_lines}; \
+		fi; \
+		echo "Processing batch $${batch_num} of $${batch_count} (GSMs $${start_line} to $${end_line})"; \
+		# Clean up any left over files from a previously interrupted batch \
+		rm -f $(SRA_DIR)/fastq_temp/*.fastq $(SRA_DIR)/batch_$${batch_num}.txt $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt $(SRA_DIR)/*.fastq; \
 		# Extract current batch of GSM-SRR mappings \
-		sed -n "$$start_line,$$end_line p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$${batch_num}.txt; \
+		sed -n "$${start_line},$${end_line} p" $(SRA_DIR)/accession_list.txt > $(SRA_DIR)/batch_$${batch_num}.txt; \
 		# Create list of all SRRs in this batch \
-		rm -f $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
 		cat $(SRA_DIR)/batch_$${batch_num}.txt | cut -d '|' -f 2 | tr ' ' '\n' | grep -v '^$$' > $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
 		# Count SRRs in current batch and adjust thread allocation dynamically \
 		srr_count=$$(wc -l < $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt); \
@@ -124,32 +138,32 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		# Calculate threads per process, with minimum of 1 \
 		threads_per_process=$$(( $(THREADS) / $${srr_count} )); \
 		if [ $${threads_per_process} -lt 1 ]; then \
-		    threads_per_process=1; \
+			threads_per_process=1; \
 		fi; \
 		echo "Allocating $${threads_per_process} threads per download process"; \
 		# Download all SRRs in parallel \
 		while read -r srr; do \
-		    echo "Starting download of $${srr}..."; \
-		    if [ "$(ENDTYPE)" = "single" ]; then \
-		        fasterq-dump $${srr} --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
-		    else \
-		        fasterq-dump $${srr} --split-files --skip-technical --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
-		    fi; \
+			echo "Starting download of $${srr}..."; \
+			if [ "$(ENDTYPE)" = "single" ]; then \
+				fasterq-dump $${srr} --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
+			else \
+				fasterq-dump $${srr} --split-files --skip-technical --threads $${threads_per_process} -O $(SRA_DIR)/fastq_temp -t $(SRA_DIR_TEMP) && echo "$${srr} download complete" & \
+			fi; \
 		done < $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt; \
 		echo "Starting download monitoring..."; \
 		start_time=$$(date +%s); \
 		while jobs %% > /dev/null 2>&1; do \
-		    current=$$(date +%s); \
-		    elapsed=$$(( current - start_time )); \
-		    running=$$(jobs -p | wc -l); \
-		    echo "[$$elapsed sec] Still waiting for $$running fasterq-dump processes to complete..."; \
-		    sleep 30; \
+			current=$$(date +%s); \
+			elapsed=$$(( $${current} - $${start_time} )); \
+			running=$$(jobs -p | wc -l); \
+			echo "[$${elapsed} sec] Still waiting for $${running} fasterq-dump processes to complete..."; \
+			sleep 30; \
 		done; \
 		echo "All downloads complete."; \
-		echo "Concatenating files and quantifying for batch $$batch_num..."; \
+		echo "Concatenating files and quantifying for batch $${batch_num}..."; \
 		# Process each GSM mapping \
-		while IFS=' | ' read -r gsm srr_list || [ -n "$$gsm" ]; do \
-			echo "Processing GSM: $$gsm"; \
+		while IFS=' | ' read -r gsm srr_list || [ -n "$${gsm}" ]; do \
+			echo "Processing GSM: $${gsm}"; \
 			# Convert space-separated SRRs to array \
 			srr_array=($${srr_list}); \
 			# Determine if paired-end or single-end based on first SRR \
@@ -162,56 +176,78 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 					if [ -f "$(SRA_DIR)/fastq_temp/$${srr}_1.fastq" ] && [ -f "$(SRA_DIR)/fastq_temp/$${srr}_2.fastq" ]; then \
 						cat $(SRA_DIR)/fastq_temp/$${srr}_1.fastq >> $(SRA_DIR)/$${gsm}_1.fastq; \
 						cat $(SRA_DIR)/fastq_temp/$${srr}_2.fastq >> $(SRA_DIR)/$${gsm}_2.fastq; \
-					elif [ -f "$(SRA_DIR)/fastq_temp/$$srr.fastq" ]; then \
-						echo "Warning: SRR $$srr is single-end but expected paired-end"; \
+					elif [ -f "$(SRA_DIR)/fastq_temp/$${srr}.fastq" ]; then \
+						echo "Warning: SRR $${srr} is single-end but expected paired-end"; \
 					fi; \
 				done; \
 			else \
 				# Initialize concatenated file for single-end \
-				rm -f $(SRA_DIR)/$$gsm.fastq; \
+				rm -f $(SRA_DIR)/$${gsm}.fastq; \
 				for srr in $${srr_array[@]}; do \
-					if [ -f "$(SRA_DIR)/fastq_temp/$$srr.fastq" ]; then \
-						cat $(SRA_DIR)/fastq_temp/$$srr.fastq >> $(SRA_DIR)/$$gsm.fastq; \
+					if [ -f "$(SRA_DIR)/fastq_temp/$${srr}.fastq" ]; then \
+						cat $(SRA_DIR)/fastq_temp/$${srr}.fastq >> $(SRA_DIR)/$${gsm}.fastq; \
 					fi; \
 				done; \
 			fi; \
 			# Run Salmon quantification on concatenated files \
-			if $$is_paired; then \
-				echo "Quantifying paired-end reads for $$gsm"; \
+			if $${is_paired}; then \
+				echo "Quantifying paired-end reads for $${gsm}"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
 					--geneMap $(GTF) --validateMappings --gcBias -l A \
 					-1 $(SRA_DIR)/$${gsm}_1.fastq -2 $(SRA_DIR)/$${gsm}_2.fastq \
-					-o $(COUNTS_DIR)/$$gsm; \
+					-o $(COUNTS_DIR)/$${gsm}; \
 			else \
-				echo "Quantifying single-end reads for $$gsm"; \
+				echo "Quantifying single-end reads for $${gsm}"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
 					--geneMap $(GTF) --validateMappings --gcBias -l A \
-					-r $(SRA_DIR)/$$gsm.fastq \
-					-o $(COUNTS_DIR)/$$gsm; \
+					-r $(SRA_DIR)/$${gsm}.fastq \
+					-o $(COUNTS_DIR)/$${gsm}; \
 			fi; \
-		done < $(SRA_DIR)/batch_$$batch_num.txt; \
+		done < $(SRA_DIR)/batch_$${batch_num}.txt; \
 		# Clean up batch files \
-		echo "Cleaning up batch $$batch_num files..."; \
+		echo "Cleaning up batch $${batch_num} files..."; \
 		rm -f $(SRA_DIR)/fastq_temp/*.fastq $(SRA_DIR)/batch_$${batch_num}.txt $(SRA_DIR)/mapping/batch_$${batch_num}_srrs.txt $(SRA_DIR)/*.fastq; \
+		# Mark this batch as completed \
+		touch $(SRA_DIR)/checkpoints/batch_$${batch_num}.done; \
+		echo "Batch $${batch_num} completed successfully"; \
 	done
-	@echo "Aggregating gene counts..."
-	@# Extract all GSM accessions for the count table header
-	@cut -d '|' -f 1 $(SRA_DIR)/accession_list.txt | tr -d ' ' > $(SRA_DIR)/gsm_list.txt
-	@# Create genes.txt from first sample
-	@first_sample=$$(head -n 1 $(SRA_DIR)/gsm_list.txt); \
-	tail -n +2 $(COUNTS_DIR)/$$first_sample/quant.genes.sf | cut -f 1 > $(COUNTS_DIR)/genes.txt
-	@# Create count files for each sample
-	@while read -r gsm; do \
-		if [ -d "$(COUNTS_DIR)/$$gsm" ]; then \
-			tail -n +2 $(COUNTS_DIR)/$$gsm/quant.genes.sf | cut -f 4 > $(COUNTS_DIR)/$$gsm.count; \
+	@# Check if aggregation has been completed
+	@if [ -f "$(SRA_DIR)/checkpoints/aggregation.done" ]; then \
+		echo "Aggregation already completed. Using existing count matrix."; \
+		if [ ! -f "$@" ]; then \
+			echo "ERROR: Checkpoint indicates aggregation is complete but output file is missing."; \
+			rm $(SRA_DIR)/checkpoints/aggregation.done; \
+			echo "Removed invalid checkpoint. Please rerun the pipeline."; \
+			exit 1; \
 		fi; \
-	done < $(SRA_DIR)/gsm_list.txt
-	@paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@
-	@sed -i "1i gene\t$$(cat $(SRA_DIR)/gsm_list.txt | tr '\n' '\t')" $@
-	@# Clean up scratch project directory
-	@echo "Cleaning up scratch directory..."
-	@rm -rf $(PROJECT_DIR)
-	@echo "Quantification complete. Results available in $(FINISHED_DIR)/all_counts_$(PROJECT).txt"
+	else \
+		echo "Aggregating gene counts..."; \
+		cut -d '|' -f 1 $(SRA_DIR)/accession_list.txt | tr -d ' ' > $(SRA_DIR)/gsm_list.txt; \
+		first_sample=$$(head -n 1 $(SRA_DIR)/gsm_list.txt); \
+		tail -n +2 $(COUNTS_DIR)/$${first_sample}/quant.genes.sf | cut -f 1 > $(COUNTS_DIR)/genes.txt; \
+		while read -r gsm; do \
+			if [ -d "$(COUNTS_DIR)/$${gsm}" ]; then \
+				tail -n +2 $(COUNTS_DIR)/$${gsm}/quant.genes.sf | cut -f 4 > $(COUNTS_DIR)/$${gsm}.count; \
+			fi; \
+		done < $(SRA_DIR)/gsm_list.txt; \
+		paste $(COUNTS_DIR)/genes.txt $(COUNTS_DIR)/*.count > $@; \
+		sed -i "1i gene\t$$(cat $(SRA_DIR)/gsm_list.txt | tr '\n' '\t')" $@; \
+		touch $(SRA_DIR)/checkpoints/aggregation.done; \
+	fi
+	@# Clean up only if aggregation is complete
+	@if [ -f "$(SRA_DIR)/checkpoints/aggregation.done" ]; then \
+		echo "Cleaning up scratch directory..."; \
+		rm -rf $(PROJECT_DIR); \
+		echo "Quantification complete. Results available in $(FINISHED_DIR)/all_counts_$(PROJECT).txt"; \
+	else \
+		echo "WARNING: Processing incomplete. Temporary files retained for next run."; \
+	fi
+
+# Add a new target to force reset checkpoints
+reset_checkpoints:
+	@echo "Resetting all checkpoints for project $(PROJECT)..."
+	@rm -rf $(SCRATCH_DIR)/$(PROJECT)/sra_out/checkpoints
+	@echo "Checkpoints reset. Next run will start from the beginning."
 
 # Clean up
 clean_salmon:

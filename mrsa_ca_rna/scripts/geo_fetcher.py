@@ -259,8 +259,7 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False, output_dir=
         A list of dictionaries containing details for each dataset.
     """
     results = []
-    retry_delay = 1
-
+    retry_delay = 0.5
     for accession in accessions:
         time.sleep(retry_delay)
         print(f"Processing accession: {accession}")
@@ -892,7 +891,7 @@ def main():
     parser.add_argument(
         "--output-dir", 
         type=str,
-        default="data",
+        default="mrsa_ca_rna/data",
         help="Directory for output files (default: data)"
     )
     args = parser.parse_args()

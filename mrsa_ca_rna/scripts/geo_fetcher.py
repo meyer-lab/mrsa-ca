@@ -338,7 +338,7 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
     Returns
     -------
     dict
-        Dictionary with keys 'srx_accessions' and 'srr_accessions'
+        Dictionary with keys 'srx_accessions', 'srr_accessions', and 'library_layout'
     """
     time.sleep(retry_delay)  # Respect rate limits
     
@@ -347,7 +347,7 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
     
     response = make_api_request(search_url, retry_delay)
     if not response:
-        return {"srx_accessions": [], "srr_accessions": []}
+        return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
     
     try:
         root = ET.fromstring(response.content)
@@ -355,13 +355,13 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
         
         if count == 0:
             print(f"No SRA entries found for {gsm_accession}")
-            return {"srx_accessions": [], "srr_accessions": []}
+            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
         
         # Get the SRA UIDs
         sra_uids = [id_elem.text for id_elem in root.findall(".//Id")]
         
         if not sra_uids:
-            return {"srx_accessions": [], "srr_accessions": []}
+            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
         
         # Use efetch with runinfo format
         time.sleep(retry_delay)
@@ -369,7 +369,7 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
         
         fetch_response = make_api_request(fetch_url, retry_delay)
         if not fetch_response:
-            return {"srx_accessions": [], "srr_accessions": []}
+            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
         
         # Parse the XML response
         try:
@@ -394,9 +394,15 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
             print(f"Found {len(srx_list)} SRX accessions for {gsm_accession}: {srx_list}")
             print(f"Found {len(srr_accessions)} SRR accessions for {gsm_accession}")
             
+            # Get library layout by fetching experiment details for the first SRX
+            library_layout = "unknown"
+            if srx_list:
+                library_layout = get_library_layout_for_srx(srx_list[0], retry_delay)
+            
             return {
                 "srx_accessions": srx_list,
-                "srr_accessions": srr_accessions
+                "srr_accessions": srr_accessions,
+                "library_layout": library_layout
             }
             
         except ET.ParseError as e:
@@ -404,12 +410,12 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
             print(f"XML parsing failed, trying CSV format: {e}")
             lines = fetch_response.text.strip().split("\n")
             if len(lines) < 2:  # Need at least header + 1 data row
-                return {"srx_accessions": [], "srr_accessions": []}
+                return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
             
             # Parse CSV for both Run and Experiment columns
             header = lines[0].split(",")
             try:
-                results = {"srx_accessions": set(), "srr_accessions": []}
+                results = {"srx_accessions": set(), "srr_accessions": [], "library_layout": "unknown"}
                 
                 if "Run" in header:
                     run_index = header.index("Run")
@@ -429,18 +435,86 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
                 # Convert set to list for srx_accessions
                 results["srx_accessions"] = list(results["srx_accessions"])
                 
+                # Try to get library layout from first SRX if available
+                if results["srx_accessions"]:
+                    results["library_layout"] = get_library_layout_for_srx(results["srx_accessions"][0], retry_delay)
+                
                 print(f"Found {len(results['srx_accessions'])} SRX accessions for {gsm_accession}")
                 print(f"Found {len(results['srr_accessions'])} SRR accessions for {gsm_accession}")
+                print(f"Library layout: {results['library_layout']}")
                 
                 return results
                 
             except (ValueError, IndexError):
                 print(f"Could not parse runinfo format for {gsm_accession}")
-                return {"srx_accessions": [], "srr_accessions": []}
+                return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
                 
     except Exception as e:
         print(f"Error processing SRA data for {gsm_accession}: {str(e)}")
-        return {"srx_accessions": [], "srr_accessions": []}
+        return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
+
+
+def get_library_layout_for_srx(srx_accession, retry_delay=1):
+    """Get library layout (PAIRED or SINGLE) for an SRX accession.
+    
+    Parameters
+    ----------
+    srx_accession : str
+        The SRX accession number
+    retry_delay : float, optional
+        Delay between API requests in seconds, by default 1
+        
+    Returns
+    -------
+    str
+        'paired', 'single', or 'unknown'
+    """
+    time.sleep(retry_delay)  # Respect rate limits
+    
+    # First, search for the experiment to get its UID
+    search_url = f"{base_url}esearch.fcgi?db=sra&term={srx_accession}[Accession]&api_key={ncbi_api_key}"
+    
+    response = make_api_request(search_url, retry_delay)
+    if not response:
+        return "unknown"
+    
+    try:
+        root = ET.fromstring(response.content)
+        id_elems = root.findall(".//Id")
+        
+        if not id_elems:
+            return "unknown"
+        
+        exp_uid = id_elems[0].text
+        
+        # Now fetch the experiment details with esummary
+        time.sleep(retry_delay)
+        summary_url = f"{base_url}esummary.fcgi?db=sra&id={exp_uid}&api_key={ncbi_api_key}"
+        
+        summary_response = make_api_request(summary_url, retry_delay)
+        if not summary_response:
+            return "unknown"
+        
+        # Parse the summary response to find library layout
+        summary_root = ET.fromstring(summary_response.content)
+        
+        # The ExpXml field contains all the experiment details including library layout
+        exp_xml_item = summary_root.find(".//Item[@Name='ExpXml']")
+        
+        if exp_xml_item is not None:
+            exp_xml_text = exp_xml_item.text
+            
+            # Check for PAIRED or SINGLE layout tags
+            if "<PAIRED/>" in exp_xml_text or "<PAIRED>" in exp_xml_text:
+                return "paired"
+            elif "<SINGLE/>" in exp_xml_text or "<SINGLE>" in exp_xml_text:
+                return "single"
+        
+        return "unknown"
+        
+    except Exception as e:
+        print(f"Error getting library layout for {srx_accession}: {str(e)}")
+        return "unknown"
 
 
 #############################################
@@ -639,6 +713,7 @@ def process_samples(gse_accession, samples):
             "title": sample["title"],
             "srx_accessions": ",".join(sra_data.get("srx_accessions", [])),
             "srr_accessions": ",".join(sra_data.get("srr_accessions", [])),
+            "library_layout": sra_data.get("library_layout", "unknown"),
             "platform": metadata.get("platform", ""),
             "instrument": metadata.get("instrument", ""),
             "library_strategy": metadata.get("library_strategy", ""),

@@ -4,10 +4,10 @@ rank, L1 strength, and data size for the model."""
 from datetime import datetime
 
 import numpy as np
-import wandb as wb
 from sklearn.preprocessing import StandardScaler
 from tlviz.factor_tools import factor_match_score
 
+import wandb as wb
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.utils import check_sparsity, concat_datasets, resample_adata
 

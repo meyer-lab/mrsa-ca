@@ -41,7 +41,7 @@ ncbi_api_key = "7f7ac246396cc1bd1f47c090de5ddebeb709"
 
 def make_api_request(url, retry_delay=1, max_retries=3):
     """Make an API request with retry logic for handling rate limits.
-    
+
     Parameters
     ----------
     url : str
@@ -76,7 +76,7 @@ def make_api_request(url, retry_delay=1, max_retries=3):
 
 def search_geo_datasets(query, retmax=20):
     """Perform an esearch for GEO datasets using the NCBI E-utilities API.
-    
+
     Parameters
     ----------
     query : str
@@ -128,9 +128,11 @@ def search_geo_datasets(query, retmax=20):
         return [], None, None
 
 
-def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, output_dir="data"):
+def fetch_dataset_details(
+    query_key, web_env, generate_sample_lists=False, output_dir="data"
+):
     """Fetch dataset details using the history feature.
-    
+
     Parameters
     ----------
     query_key : str
@@ -141,7 +143,7 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, outpu
         Whether to generate sample lists, by default False
     output_dir : str, optional
         Directory for output files, by default "data"
-        
+
     Returns
     -------
     list[dict]
@@ -150,8 +152,11 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, outpu
     results = []
 
     # Prepare fetch URL
-    fetch_url = f"{base_url}esummary.fcgi?db=gds&query_key={query_key}&WebEnv={web_env}&api_key={ncbi_api_key}"
-    
+    fetch_url = (
+        f"{base_url}esummary.fcgi?db=gds&query_key={query_key}"
+        f"&WebEnv={web_env}&api_key={ncbi_api_key}"
+    )
+
     response = make_api_request(fetch_url)
     if not response:
         return results
@@ -169,9 +174,13 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, outpu
                     samples = extract_sample_accessions(doc, dataset["accession"])
                     if samples:
                         # Get detailed metadata and SRA accessions
-                        enhanced_samples = process_samples(dataset["accession"], samples)
+                        enhanced_samples = process_samples(
+                            dataset["accession"], samples
+                        )
                         dataset["samples"] = enhanced_samples
-                        save_sample_metadata_to_csv(dataset["accession"], enhanced_samples, output_dir)
+                        save_sample_metadata_to_csv(
+                            dataset["accession"], enhanced_samples, output_dir
+                        )
 
                 results.append(dataset)
 
@@ -182,9 +191,11 @@ def fetch_dataset_details(query_key, web_env, generate_sample_lists=False, outpu
         return results
 
 
-def fetch_dataset_details_individually(id_list, generate_sample_lists=False, output_dir="data"):
+def fetch_dataset_details_individually(
+    id_list, generate_sample_lists=False, output_dir="data"
+):
     """Fetch each dataset individually if batch history method fails.
-    
+
     Parameters
     ----------
     id_list : list[str]
@@ -208,7 +219,8 @@ def fetch_dataset_details_individually(id_list, generate_sample_lists=False, out
 
         # Prepare fetch URL for this specific dataset
         fetch_url = (
-            f"{base_url}esummary.fcgi?db=gds&id={dataset_id}&api_key={ncbi_api_key}"
+            f"{base_url}esummary.fcgi?db=gds&id={dataset_id}"
+            f"&api_key={ncbi_api_key}"
         )
 
         response = make_api_request(fetch_url, retry_delay)
@@ -229,9 +241,13 @@ def fetch_dataset_details_individually(id_list, generate_sample_lists=False, out
                         samples = extract_sample_accessions(doc, dataset["accession"])
                         if samples:
                             # Use the enhanced processing like other functions
-                            enhanced_samples = process_samples(dataset["accession"], samples)
+                            enhanced_samples = process_samples(
+                                dataset["accession"], samples
+                            )
                             dataset["samples"] = enhanced_samples
-                            save_sample_metadata_to_csv(dataset["accession"], enhanced_samples, output_dir)
+                            save_sample_metadata_to_csv(
+                                dataset["accession"], enhanced_samples, output_dir
+                            )
 
                     results.append(dataset)
 
@@ -243,7 +259,7 @@ def fetch_dataset_details_individually(id_list, generate_sample_lists=False, out
 
 def fetch_geo_by_accessions(accessions, generate_sample_lists=False, output_dir="data"):
     """Fetch GEO datasets by their GSE accessions using a two-step process.
-    
+
     Parameters
     ----------
     accessions : list[str]
@@ -311,7 +327,9 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False, output_dir=
                             # Use the same enhanced processing as the search mode
                             enhanced_samples = process_samples(accession, samples)
                             dataset["samples"] = enhanced_samples
-                            save_sample_metadata_to_csv(accession, enhanced_samples, output_dir)
+                            save_sample_metadata_to_csv(
+                                accession, enhanced_samples, output_dir
+                            )
 
                     results.append(dataset)
             else:
@@ -323,132 +341,170 @@ def fetch_geo_by_accessions(accessions, generate_sample_lists=False, output_dir=
     return results
 
 
-def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
+def gsm_to_sra(gsm_accession, retry_delay=1):
     """Convert a GSM accession to SRA accessions for use with sra-tools.
-    
+
     Parameters
     ----------
     gsm_accession : str
         The GSM accession number
     retry_delay : float, optional
         Delay between API requests in seconds, by default 1
-    get_experiment_ids : bool, optional
-        Whether to return SRX (experiment) IDs rather than SRR (run) IDs, by default True
-        
+
     Returns
     -------
     dict
         Dictionary with keys 'srx_accessions', 'srr_accessions', and 'library_layout'
     """
     time.sleep(retry_delay)  # Respect rate limits
-    
+
     # Search for the SRA entry linked to this GSM
-    search_url = f"{base_url}esearch.fcgi?db=sra&term={gsm_accession}&api_key={ncbi_api_key}"
-    
+    search_url = (
+        f"{base_url}esearch.fcgi?db=sra&term={gsm_accession}"
+        f"&api_key={ncbi_api_key}"
+    )
+
     response = make_api_request(search_url, retry_delay)
     if not response:
         return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-    
+
     try:
         root = ET.fromstring(response.content)
         count = int(root.find("Count").text) if root.find("Count") is not None else 0
-        
+
         if count == 0:
             print(f"No SRA entries found for {gsm_accession}")
-            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-        
+            return {
+                "srx_accessions": [],
+                "srr_accessions": [],
+                "library_layout": "unknown",
+            }
+
         # Get the SRA UIDs
         sra_uids = [id_elem.text for id_elem in root.findall(".//Id")]
-        
+
         if not sra_uids:
-            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-        
+            return {
+                "srx_accessions": [],
+                "srr_accessions": [],
+                "library_layout": "unknown",
+            }
+
         # Use efetch with runinfo format
         time.sleep(retry_delay)
-        fetch_url = f"{base_url}efetch.fcgi?db=sra&id={','.join(sra_uids)}&rettype=runinfo&api_key={ncbi_api_key}"
-        
+        fetch_url = (
+            f"{base_url}efetch.fcgi?db=sra&id={','.join(sra_uids)}"
+            f"&rettype=runinfo&api_key={ncbi_api_key}"
+        )
+
         fetch_response = make_api_request(fetch_url, retry_delay)
         if not fetch_response:
-            return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-        
+            return {
+                "srx_accessions": [],
+                "srr_accessions": [],
+                "library_layout": "unknown",
+            }
+
         # Parse the XML response
         try:
             runinfo_root = ET.fromstring(fetch_response.text)
-            
+
             # Extract SRR and SRX accessions
             srr_accessions = []
             srx_accessions = set()  # Use a set to avoid duplicates
-            
+
             for row in runinfo_root.findall(".//Row"):
                 run_elem = row.find("Run")
                 exp_elem = row.find("Experiment")
-                
+
                 if run_elem is not None and run_elem.text:
                     srr_accessions.append(run_elem.text)
-                    
+
                 if exp_elem is not None and exp_elem.text:
                     srx_accessions.add(exp_elem.text)
-            
+
             srx_list = list(srx_accessions)
-            
-            print(f"Found {len(srx_list)} SRX accessions for {gsm_accession}: {srx_list}")
+
+            print(
+                f"Found {len(srx_list)} SRX accessions for {gsm_accession}: {srx_list}"
+            )
             print(f"Found {len(srr_accessions)} SRR accessions for {gsm_accession}")
-            
+
             # Get library layout by fetching experiment details for the first SRX
             library_layout = "unknown"
             if srx_list:
                 library_layout = get_library_layout_for_srx(srx_list[0], retry_delay)
-            
+
             return {
                 "srx_accessions": srx_list,
                 "srr_accessions": srr_accessions,
-                "library_layout": library_layout
+                "library_layout": library_layout,
             }
-            
+
         except ET.ParseError as e:
             # Fall back to CSV parsing
             print(f"XML parsing failed, trying CSV format: {e}")
             lines = fetch_response.text.strip().split("\n")
             if len(lines) < 2:  # Need at least header + 1 data row
-                return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-            
+                return {
+                    "srx_accessions": [],
+                    "srr_accessions": [],
+                    "library_layout": "unknown",
+                }
+
             # Parse CSV for both Run and Experiment columns
             header = lines[0].split(",")
             try:
-                results = {"srx_accessions": set(), "srr_accessions": [], "library_layout": "unknown"}
-                
+                results = {
+                    "srx_accessions": set(),
+                    "srr_accessions": [],
+                    "library_layout": "unknown",
+                }
+
                 if "Run" in header:
                     run_index = header.index("Run")
                     results["srr_accessions"] = [
-                        line.split(",")[run_index] 
-                        for line in lines[1:] 
+                        line.split(",")[run_index]
+                        for line in lines[1:]
                         if len(line.split(",")) > run_index
                     ]
-                
+
                 if "Experiment" in header:
                     exp_index = header.index("Experiment")
                     for line in lines[1:]:
                         parts = line.split(",")
                         if len(parts) > exp_index:
                             results["srx_accessions"].add(parts[exp_index])
-                
+
                 # Convert set to list for srx_accessions
                 results["srx_accessions"] = list(results["srx_accessions"])
-                
+
                 # Try to get library layout from first SRX if available
                 if results["srx_accessions"]:
-                    results["library_layout"] = get_library_layout_for_srx(results["srx_accessions"][0], retry_delay)
-                
-                print(f"Found {len(results['srx_accessions'])} SRX accessions for {gsm_accession}")
-                print(f"Found {len(results['srr_accessions'])} SRR accessions for {gsm_accession}")
+                    results["library_layout"] = get_library_layout_for_srx(
+                        results["srx_accessions"][0], retry_delay
+                    )
+
+                print(
+                    f"Found {len(results['srx_accessions'])} "
+                    f"SRX accessions for {gsm_accession}"
+                )
+                print(
+                    f"Found {len(results['srr_accessions'])} "
+                    f"SRR accessions for {gsm_accession}"
+                )
                 print(f"Library layout: {results['library_layout']}")
-                
+
                 return results
-                
+
             except (ValueError, IndexError):
                 print(f"Could not parse runinfo format for {gsm_accession}")
-                return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
-                
+                return {
+                    "srx_accessions": [],
+                    "srr_accessions": [],
+                    "library_layout": "unknown",
+                }
+
     except Exception as e:
         print(f"Error processing SRA data for {gsm_accession}: {str(e)}")
         return {"srx_accessions": [], "srr_accessions": [], "library_layout": "unknown"}
@@ -456,62 +512,68 @@ def gsm_to_sra(gsm_accession, retry_delay=1, get_experiment_ids=True):
 
 def get_library_layout_for_srx(srx_accession, retry_delay=1):
     """Get library layout (PAIRED or SINGLE) for an SRX accession.
-    
+
     Parameters
     ----------
     srx_accession : str
         The SRX accession number
     retry_delay : float, optional
         Delay between API requests in seconds, by default 1
-        
+
     Returns
     -------
     str
         'paired', 'single', or 'unknown'
     """
     time.sleep(retry_delay)  # Respect rate limits
-    
+
     # First, search for the experiment to get its UID
-    search_url = f"{base_url}esearch.fcgi?db=sra&term={srx_accession}[Accession]&api_key={ncbi_api_key}"
-    
+    search_url = (
+        f"{base_url}esearch.fcgi?db=sra&term={srx_accession}[Accession]"
+        f"&api_key={ncbi_api_key}"
+    )
+
     response = make_api_request(search_url, retry_delay)
     if not response:
         return "unknown"
-    
+
     try:
         root = ET.fromstring(response.content)
         id_elems = root.findall(".//Id")
-        
+
         if not id_elems:
             return "unknown"
-        
+
         exp_uid = id_elems[0].text
-        
+
         # Now fetch the experiment details with esummary
         time.sleep(retry_delay)
-        summary_url = f"{base_url}esummary.fcgi?db=sra&id={exp_uid}&api_key={ncbi_api_key}"
-        
+        summary_url = (
+            f"{base_url}esummary.fcgi?db=sra&id={exp_uid}"
+            f"&api_key={ncbi_api_key}"
+        )
+
         summary_response = make_api_request(summary_url, retry_delay)
         if not summary_response:
             return "unknown"
-        
+
         # Parse the summary response to find library layout
         summary_root = ET.fromstring(summary_response.content)
-        
+
         # The ExpXml field contains all the experiment details including library layout
         exp_xml_item = summary_root.find(".//Item[@Name='ExpXml']")
-        
+
         if exp_xml_item is not None:
             exp_xml_text = exp_xml_item.text
-            
+
             # Check for PAIRED or SINGLE layout tags
             if "<PAIRED/>" in exp_xml_text or "<PAIRED>" in exp_xml_text:
                 return "paired"
             elif "<SINGLE/>" in exp_xml_text or "<SINGLE>" in exp_xml_text:
                 return "single"
-        
+
         return "unknown"
-        
+
     except Exception as e:
         print(f"Error getting library layout for {srx_accession}: {str(e)}")
         return "unknown"
@@ -524,7 +586,7 @@ def get_library_layout_for_srx(srx_accession, retry_delay=1):
 
 def parse_geo_docsum(doc):
     """Parse the DocSum XML element to extract dataset metadata.
-    
+
     Parameters
     ----------
     doc : Element
@@ -566,7 +628,8 @@ def parse_geo_docsum(doc):
     if "accession" in dataset:
         # Construct GEO link
         dataset["link"] = (
-            f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={dataset['accession']}"
+            f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?"
+            f"acc={dataset['accession']}"
         )
 
         # Extract sample type
@@ -579,100 +642,103 @@ def parse_geo_docsum(doc):
 
 def extract_sample_accessions(doc, series_accession):
     """Extract basic GSM sample accessions from a GSE series document.
-    
+
     Parameters
     ----------
     doc : Element
         DocSum XML element for the GSE series
     series_accession : str
         The GSE accession number
-        
+
     Returns
     -------
     list[dict]
         List of dictionaries with basic sample information
     """
     samples = []
-    
+
     # Find the Samples list item
     samples_item = doc.find("./Item[@Name='Samples']")
     if samples_item is None:
         print(f"No samples found for {series_accession}")
         return samples
-        
+
     # Extract each sample accession
     for sample in samples_item.findall("./Item[@Name='Sample']"):
         accession_item = sample.find("./Item[@Name='Accession']")
         title_item = sample.find("./Item[@Name='Title']")
-        
+
         if accession_item is not None:
             gsm_accession = accession_item.text
             sample_info = {
                 "gsm_accession": gsm_accession,
-                "title": title_item.text if title_item is not None else "Unknown"
+                "title": title_item.text if title_item is not None else "Unknown",
             }
             samples.append(sample_info)
-            
+
     print(f"Found {len(samples)} GSM accessions for {series_accession}")
     return samples
 
 
-def fetch_gsm_metadata(gsm_accession, retry_delay=1):
+def fetch_gsm_metadata(gsm_accession):
     """Fetch detailed metadata for a GSM sample using GEOparse library.
-    
+
     Parameters
     ----------
     gsm_accession : str
         The GSM accession number
     retry_delay : float, optional
         Delay between API requests, by default 1
-        
+
     Returns
     -------
     dict
         Dictionary containing sample metadata including characteristics
     """
     print(f"Fetching metadata for {gsm_accession} with GEOparse...")
-    
+
     try:
         # Create a temporary directory for GEOparse files
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmp_dir:
             # GEOparse will download the GSM data to the temp directory
             gsm = GEOparse.get_GEO(geo=gsm_accession, silent=True, destdir=tmp_dir)
-            
+
             metadata = {
                 "characteristics": {},
                 "platform": gsm.metadata.get("platform_id", [""])[0],
                 "instrument": gsm.metadata.get("instrument_model", [""])[0],
                 "library_strategy": gsm.metadata.get("library_strategy", [""])[0],
                 "submission_date": gsm.metadata.get("submission_date", [""])[0],
-                "channel_count": gsm.metadata.get("channel_count", [""])[0]
+                "channel_count": gsm.metadata.get("channel_count", [""])[0],
             }
-            
+
             # Extract characteristics into a flat dictionary
             if "characteristics_ch1" in gsm.metadata:
                 for char_entry in gsm.metadata["characteristics_ch1"]:
                     # Format is typically "key: value"
                     if ":" in char_entry:
                         key, value = char_entry.split(":", 1)
-                        safe_key = key.strip().replace(" ", "_").replace("-", "_").lower()
+                        safe_key = (
+                            key.strip().replace(" ", "_").replace("-", "_").lower()
+                        )
                         metadata["characteristics"][safe_key] = value.strip()
-            
+
             # DEBUG CODE - Uncomment for troubleshooting
             # if not hasattr(fetch_gsm_metadata, "debug_done"):
             #     import json
             #     with open("gsm_metadata_example.json", "w") as f:
-            #         # Convert metadata keys to strings since some might be complex objects
+            #         # Convert metadata keys to strings
             #         simple_metadata = {k: str(v) for k, v in gsm.metadata.items()}
             #         json.dump(simple_metadata, f, indent=2)
             #     print("Saved example GSM metadata to gsm_metadata_example.json")
             #     fetch_gsm_metadata.debug_done = True
-                
+
             # When this block ends, the temporary directory and its contents are deleted
-            
+
         return metadata
-        
+
     except Exception as e:
         print(f"Error fetching metadata for {gsm_accession} with GEOparse: {str(e)}")
         # Fall back to empty characteristics if GEOparse fails
@@ -681,14 +747,14 @@ def fetch_gsm_metadata(gsm_accession, retry_delay=1):
 
 def process_samples(gse_accession, samples):
     """Process a list of samples to get full metadata and SRA accessions.
-    
+
     Parameters
     ----------
     gse_accession : str
         The GSE accession number
     samples : list[dict]
         List of dictionaries with basic sample information
-        
+
     Returns
     -------
     list[dict]
@@ -696,17 +762,19 @@ def process_samples(gse_accession, samples):
     """
     print(f"Processing {len(samples)} samples for {gse_accession}")
     enhanced_samples = []
-    
+
     for i, sample in enumerate(samples, 1):
         gsm_accession = sample["gsm_accession"]
-        print(f"Processing sample {i}/{len(samples)}: {gsm_accession}")
-        
+        print(
+            f"Processing sample {i}/{len(samples)}: {gsm_accession}"
+        )
+
         # Get detailed metadata using GEOparse
         metadata = fetch_gsm_metadata(gsm_accession)
-        
+
         # Get SRA accessions
         sra_data = gsm_to_sra(gsm_accession)
-        
+
         # Combine all information
         enhanced_sample = {
             "gsm_accession": gsm_accession,
@@ -717,23 +785,23 @@ def process_samples(gse_accession, samples):
             "platform": metadata.get("platform", ""),
             "instrument": metadata.get("instrument", ""),
             "library_strategy": metadata.get("library_strategy", ""),
-            "submission_date": metadata.get("submission_date", "")
+            "submission_date": metadata.get("submission_date", ""),
         }
-        
+
         # Add characteristics
         for key, value in metadata.get("characteristics", {}).items():
             # Create safe column name
             safe_key = key.replace(" ", "_").replace("-", "_").lower()
             enhanced_sample[f"char_{safe_key}"] = value
-        
+
         enhanced_samples.append(enhanced_sample)
-        
+
     return enhanced_samples
 
 
 def determine_sample_type(dataset):
     """Determine sample type from dataset metadata by looking for key terms.
-    
+
     Parameters
     ----------
     dataset : dict
@@ -778,12 +846,12 @@ def determine_sample_type(dataset):
 
 def extract_geo_accession(url):
     """Extract GEO accession number from a URL.
-    
+
     Parameters
     ----------
     url : str
         URL potentially containing a GEO accession
-        
+
     Returns
     -------
     str or None
@@ -797,7 +865,7 @@ def extract_geo_accession(url):
 
 def read_geo_links_file(filepath):
     """Read a text file containing GEO links and extract accession numbers.
-    
+
     Parameters
     ----------
     filepath : str
@@ -829,7 +897,7 @@ def read_geo_links_file(filepath):
 
 def save_sample_metadata_to_csv(gse_accession, samples, output_dir="data"):
     """Save sample metadata to a CSV file in the specified output directory.
-    
+
     Parameters
     ----------
     gse_accession : str
@@ -842,29 +910,31 @@ def save_sample_metadata_to_csv(gse_accession, samples, output_dir="data"):
     if not samples:
         print(f"No samples to save for {gse_accession}")
         return
-    
+
     # Create output directories if they don't exist
     metadata_dir = os.path.join(output_dir, "metadata")
     accessions_dir = os.path.join(output_dir, "accessions")
     os.makedirs(metadata_dir, exist_ok=True)
     os.makedirs(accessions_dir, exist_ok=True)
-    
+
     # Path for CSV file
     csv_path = os.path.join(metadata_dir, f"{gse_accession}_samples.csv")
-    
+
     # Convert to DataFrame
     df = pd.DataFrame(samples)
-    
+
     # Reorder columns to put key fields first
     cols = df.columns.tolist()
     key_cols = ["gsm_accession", "title", "srx_accessions", "srr_accessions"]
-    reordered_cols = [col for col in key_cols if col in cols] + [col for col in cols if col not in key_cols]
+    reordered_cols = [col for col in key_cols if col in cols] + [
+        col for col in cols if col not in key_cols
+    ]
     df = df[reordered_cols]
-    
+
     # Save to CSV
     df.to_csv(csv_path, index=False)
     print(f"Saved {len(samples)} samples with metadata to {csv_path}")
-    
+
     # Create SRR accessions file with GSM associations
     srr_path = os.path.join(accessions_dir, f"{gse_accession}_srr_accessions.txt")
     with open(srr_path, "w") as f:
@@ -872,16 +942,16 @@ def save_sample_metadata_to_csv(gse_accession, samples, output_dir="data"):
             gsm_accession = sample.get("gsm_accession", "")
             srr_list = sample.get("srr_accessions", "").split(",")
             srr_accessions = [srr.strip() for srr in srr_list if srr.strip()]
-            
+
             if srr_accessions:  # Only write if there are SRR accessions
                 f.write(f"{gsm_accession} | {' '.join(srr_accessions)}\n")
-    
+
     print(f"Saved GSM-SRR mappings to {srr_path}")
 
 
 def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):
     """Export datasets to a CSV file for manual review.
-    
+
     Parameters
     ----------
     datasets : list[dict]
@@ -909,7 +979,9 @@ def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):
     }
 
     # Keep only the columns that exist in the DataFrame
-    available_columns = {k: v for k, v in columns_to_include.items() if k in df.columns}
+    available_columns = {
+        k: v for k, v in columns_to_include.items() if k in df.columns
+    }
 
     # Select and rename columns
     if available_columns:
@@ -936,7 +1008,7 @@ def export_datasets_to_csv(datasets, filename="geo_datasets.csv"):
 
 def main():
     """Main function to execute the GEO fetcher workflow.
-    
+
     Parses command line arguments and performs the appropriate workflow based on
     whether the user specified a search query or a file with GEO links.
     """
@@ -964,17 +1036,17 @@ def main():
         help="Output CSV filename (default: geo_datasets.csv)",
     )
     parser.add_argument(
-        "--output-dir", 
+        "--output-dir",
         type=str,
         default="mrsa_ca_rna/data",
-        help="Directory for output files (default: data)"
+        help="Directory for output files (default: data)",
     )
     args = parser.parse_args()
 
     datasets = []
 
     # Process based on input mode
-    if args.search:
+    if (args.search):
         # Search mode
         search_query = args.search
         print(f"Searching GEO for: {search_query}")
@@ -991,14 +1063,19 @@ def main():
         # Fetch dataset details
         try:
             datasets = fetch_dataset_details(
-                query_key, web_env, generate_sample_lists=args.samples, output_dir=args.output_dir
+                query_key,
+                web_env,
+                generate_sample_lists=args.samples,
+                output_dir=args.output_dir,
             )
 
             # If batch fetch returns no results, try individual fetches
             if not datasets:
                 print("Batch fetch returned no results. Trying individual fetches...")
                 datasets = fetch_dataset_details_individually(
-                    id_list, generate_sample_lists=args.samples, output_dir=args.output_dir
+                    id_list,
+                    generate_sample_lists=args.samples,
+                    output_dir=args.output_dir,
                 )
         except Exception as e:
             print(f"Error during batch fetch: {e}")

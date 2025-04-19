@@ -134,11 +134,11 @@ $(SRA_DIR)/accession_list.txt: $(ACCESSIONS_DIR)/accession_list_$(PROJECT).txt |
 $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COUNTS_DIR) $(FINISHED_DIR) $(SRA_DIR_TEMP)
 	@echo "Processing GSM-SRR mapped accessions in batches of $(BATCH_SIZE)..."
 	@echo "Using scratch directory: $(SCRATCH_DIR)"
-	@# Create temporary directories
+	# Create temporary directories
 	@mkdir -p $(SRA_DIR)/fastq_temp
 	@mkdir -p $(SRA_DIR)/mapping
 	@mkdir -p $(SRA_DIR)/checkpoints
-	@# Calculate total number of GSM samples and batches
+	# Calculate total number of GSM samples and batches
 	@total_lines=$$(wc -l < $(SRA_DIR)/accession_list.txt); \
 	batch_count=$$(( ($${total_lines} + $(BATCH_SIZE) - 1) / $(BATCH_SIZE) )); \
 	# Determine the starting batch number based on checkpoints \
@@ -171,7 +171,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		echo "Downloading $${srr_count} SRR files for batch $${batch_num}..."; \
 		# Calculate threads per process, with minimum of 1 \
 		threads_per_process=$$(( $(THREADS) / $${srr_count} )); \
-		if [ $${threads_per_process} -lt 1]; then \
+		if [ $${threads_per_process} -lt 1 ]; then \
 			threads_per_process=1; \
 		fi; \
 		echo "Allocating $${threads_per_process} threads per download process"; \
@@ -223,7 +223,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 					fi; \
 				done; \
 			fi; \
-			# Run Salmon quantification on concatenated files
+			# Run Salmon quantification on concatenated files\
 			if $${is_paired}; then \
 				echo "Quantifying paired-end reads for $${gsm}"; \
 				salmon quant -p $(THREADS) -i $(SALMON_INDEX) \
@@ -245,7 +245,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 		touch $(SRA_DIR)/checkpoints/batch_$${batch_num}.done; \
 		echo "Batch $${batch_num} completed successfully"; \
 	done
-	@# Check if aggregation has been completed
+	# Check if aggregation has been completed
 	@if [ -f "$(SRA_DIR)/checkpoints/aggregation.done" ]; then \
 		echo "Aggregation already completed. Using existing count matrix."; \
 		if [ ! -f "$@" ]; then \
@@ -264,7 +264,7 @@ $(FINISHED_DIR)/all_counts_$(PROJECT).txt: $(SRA_DIR)/accession_list.txt | $(COU
 			$(PROJECT); \
 		touch $(SRA_DIR)/checkpoints/aggregation.done; \
 	fi
-	@# Clean up only if aggregation is complete
+	# Clean up only if aggregation is complete
 	@if [ -f "$(SRA_DIR)/checkpoints/aggregation.done" ]; then \
 		echo "Cleaning up scratch directory..."; \
 		rm -rf $(PROJECT_DIR); \
@@ -314,24 +314,7 @@ help:
 setup_r_deps:
 	@echo "Checking R library paths..."
 	@mkdir -p ~/R/hoffman2_libraries
-	@Rscript -e '\
-       lib_path <- "~/R/hoffman2_libraries"; \
-       .libPaths(c(lib_path, .libPaths())); \
-       cat("Using library paths:", paste(.libPaths(), collapse=", "), "\n"); \
-       missing_pkgs <- character(0); \
-       for(pkg in c("tximport", "readr", "GenomicFeatures", "AnnotationDbi", "jsonlite")) { \
-         if(!require(pkg, character.only=TRUE, quietly=TRUE)) { \
-           cat(pkg, "not found - please install manually\n"); \
-           missing_pkgs <- c(missing_pkgs, pkg); \
-         } else { \
-           cat(pkg, "found at", find.package(pkg), "\n"); \
-         } \
-       }; \
-       if(length(missing_pkgs) > 0) { \
-         cat("ERROR: Required R packages missing:", paste(missing_pkgs, collapse=", "), "\n"); \
-         cat("Please run install_r_packages.sh first\n"); \
-         quit(status=1); \
-       }'
+	@Rscript -e 'lib_path <- "~/R/hoffman2_libraries"; .libPaths(c(lib_path, .libPaths())); cat("Using library paths:", paste(.libPaths(), collapse=", "), "\n"); missing_pkgs <- character(0); for(pkg in c("tximport", "readr", "GenomicFeatures", "AnnotationDbi", "jsonlite")) { if(!require(pkg, character.only=TRUE, quietly=TRUE)) { cat(pkg, "not found - please install manually\n"); missing_pkgs <- c(missing_pkgs, pkg); } else { cat(pkg, "found at", find.package(pkg), "\n"); } }; if(length(missing_pkgs) > 0) { cat("ERROR: Required R packages missing:", paste(missing_pkgs, collapse=", "), "\n"); cat("Please run install_r_packages.sh first\n"); quit(status=1); }'
 
 # Create scripts directory if it doesn't exist
 $(SCRIPTS_DIR):

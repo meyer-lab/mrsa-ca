@@ -312,10 +312,26 @@ help:
 
 # Add a step to ensure R packages are installed
 setup_r_deps:
-	@echo "Checking R dependencies..."
-	@Rscript -e 'missing <- setdiff(c("$(R_DEPS)"), installed.packages()[,"Package"]); if(length(missing) > 0) { install.packages(missing, repos="https://cloud.r-project.org") }'
-	@Rscript -e 'if(!"tximport" %in% installed.packages()[,"Package"]) { if(!"BiocManager" %in% installed.packages()[,"Package"]) { install.packages("BiocManager", repos="https://cloud.r-project.org") }; BiocManager::install("tximport") }'
-	@echo "R dependencies check complete."
+	@echo "Checking R library paths..."
+	@mkdir -p ~/R/hoffman2_libraries
+	@Rscript -e '\
+       lib_path <- "~/R/hoffman2_libraries"; \
+       .libPaths(c(lib_path, .libPaths())); \
+       cat("Using library paths:", paste(.libPaths(), collapse=", "), "\n"); \
+       missing_pkgs <- character(0); \
+       for(pkg in c("tximport", "readr", "GenomicFeatures", "AnnotationDbi", "jsonlite")) { \
+         if(!require(pkg, character.only=TRUE, quietly=TRUE)) { \
+           cat(pkg, "not found - please install manually\n"); \
+           missing_pkgs <- c(missing_pkgs, pkg); \
+         } else { \
+           cat(pkg, "found at", find.package(pkg), "\n"); \
+         } \
+       }; \
+       if(length(missing_pkgs) > 0) { \
+         cat("ERROR: Required R packages missing:", paste(missing_pkgs, collapse=", "), "\n"); \
+         cat("Please run install_r_packages.sh first\n"); \
+         quit(status=1); \
+       }'
 
 # Create scripts directory if it doesn't exist
 $(SCRIPTS_DIR):
@@ -327,6 +343,9 @@ $(SCRIPTS_DIR)/salmon_to_counts.R: | $(SCRIPTS_DIR)
     	echo "Creating tximport R script..."; \
     	echo '#!/usr/bin/env Rscript' > $@; \
     	echo '' >> $@; \
+		echo '# Set Library paths' >> $@; \
+		echo '.libPaths(c("~/R/hoffman2_libraries", .libPaths()))' >> $@; \
+        echo '' >> $@; \
     	echo '# Load required libraries' >> $@; \
         echo 'suppressPackageStartupMessages({' >> $@; \
         echo '  library(tximport)' >> $@; \

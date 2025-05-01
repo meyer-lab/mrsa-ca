@@ -3,12 +3,17 @@ Import data from the mrsa_ca_rna project for analysis.
 Each dataset is imported along with its metadata.
 """
 
+import contextlib
 import json
+import multiprocessing
 from os.path import abspath, dirname, join
 
 import anndata as ad
 import archs4py as a4
 import pandas as pd
+
+with contextlib.suppress(RuntimeError):
+    multiprocessing.set_start_method("spawn") # loss of speed but avoids fork() issues
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -110,11 +115,11 @@ def import_mrsa():
     metadata_mrsa = metadata_mrsa.loc[common_idx]
 
     mrsa_adata = ad.AnnData(
-        X=counts_mrsa,
+        X=counts_mrsa_tmm,
         obs=metadata_mrsa,
         var=pd.DataFrame(index=counts_mrsa.columns),
     )
-    mrsa_adata.layers["tmm"] = counts_mrsa_tmm
+    mrsa_adata.layers["raw"] = counts_mrsa
 
     return mrsa_adata
 
@@ -162,18 +167,18 @@ def import_ca():
     ]
     metadata_ca = metadata_ca.rename(
         columns={
-            "daysreltofirsttimepoin": "days_rel_to_first_timepoint",
+            "daysreltofirsttimepoin": "time",
             "phenotype": "disease",
         }
     )
     metadata_ca["status"] = "Unknown"
 
     ca_adata = ad.AnnData(
-        X=counts_ca,
+        X=counts_ca_tmm,
         obs=metadata_ca,
         var=pd.DataFrame(index=counts_ca.columns),
     )
-    ca_adata.layers["tmm"] = counts_ca_tmm
+    ca_adata.layers["raw"] = counts_ca
 
     return ca_adata
 
@@ -185,11 +190,11 @@ def import_bc():
     metadata = metadata.rename(columns={"response": "status"})
 
     bc_adata = ad.AnnData(
-        X=counts,
+        X=counts_tmm,
         obs=metadata,
         var=pd.DataFrame(index=counts.columns),
     )
-    bc_adata.layers["tmm"] = counts_tmm
+    bc_adata.layers["raw"] = counts
 
     return bc_adata
 
@@ -214,11 +219,11 @@ def import_uc():
     metadata["status"] = "NaN"
 
     uc_adata = ad.AnnData(
-        X=counts,
+        X=counts_tmm,
         obs=metadata,
         var=pd.DataFrame(index=counts.columns),
     )
-    uc_adata.layers["tmm"] = counts_tmm
+    uc_adata.layers["raw"] = counts
 
     return uc_adata
 
@@ -275,11 +280,11 @@ def import_tb():
     metadata["disease"] = metadata["disease"].str.replace("Healthy Controls", "Healthy")
 
     tb_adata = ad.AnnData(
-        X=counts,
+        X=counts_tmm,
         obs=metadata,
         var=pd.DataFrame(index=counts.columns),
     )
-    tb_adata.layers["tmm"] = counts_tmm
+    tb_adata.layers["raw"] = counts
 
     return tb_adata
 
@@ -310,10 +315,10 @@ def import_t1dm():
     metadata = metadata.drop(columns=["rate of c-peptide change"])
 
     t1dm_adata = ad.AnnData(
-        X=counts,
+        X=counts_tmm,
         obs=metadata,
         var=pd.DataFrame(index=counts.columns),
     )
-    t1dm_adata.layers["tmm"] = counts_tmm
+    t1dm_adata.layers["raw"] = counts
 
     return t1dm_adata

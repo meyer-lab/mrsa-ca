@@ -2,7 +2,6 @@
 These functions will be used throughout the project to perform various common tasks."""
 
 from copy import deepcopy
-from typing import cast
 
 import anndata as ad
 import numpy as np
@@ -10,57 +9,13 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.import_data import (
-    concat_ca,
-    import_breast_cancer,
-    import_covid,
-    import_healthy,
-    import_human_annot,
-    import_mrsa_rna,
+    import_bc,
+    import_ca,
+    import_mrsa,
+    import_t1dm,
+    import_tb,
+    import_uc,
 )
-
-
-def gene_converter(
-    data, old_id: str, new_id: str, method: str = "values"
-) -> pd.DataFrame | ad.AnnData:
-    """Converts gene ids from one type to another in a dataframe
-
-    Parameters:
-        dataframe (pd.DataFrame): dataframe containing gene ids to convert
-        old_id (str): column name of the current gene id
-            Options: "Symbol", "EnsemblGeneID"
-        new_id (str): column name of the desired gene id
-            Options: "Symbol", "EnsemblGeneID"
-        method (str): method to use for conversion
-            Options: "values", "index", "columns" | Default = "values"
-
-    Returns:
-        dataframe (pd.DataFrame) or adata (ad.AnnData): data with gene ids converted"""
-
-    human_annot = import_human_annot()
-    gene_conversion = dict(zip(human_annot[old_id], human_annot[new_id], strict=False))
-
-    # first check if the data is a pd.DataFrame or an ad.AnnData,
-    # then convert the gene ids based on the method
-    if isinstance(data, pd.DataFrame):
-        dataframe: pd.DataFrame = data.copy()
-        if method == "values":
-            dataframe = dataframe.replace(gene_conversion)
-        elif method == "index":
-            dataframe.index = dataframe.index.map(gene_conversion)
-        elif method == "columns":
-            dataframe.columns = dataframe.columns.map(gene_conversion)
-        return dataframe
-    # if the data is an AnnData object, convert the gene ids based on the method
-    elif isinstance(data, ad.AnnData):
-        adata: ad.AnnData = data.copy()
-        assert method != "values", "Cannot convert values in AnnData object"
-        if method == "index":
-            adata.obs.index = adata.obs.index.map(gene_conversion)
-        elif method == "columns":
-            adata.var.index = adata.var.index.map(gene_conversion)
-        return adata
-    else:
-        raise ValueError("Data must be a pandas DataFrame or an AnnData object")
 
 
 # gene activity function to pair down gene matrices to important genes
@@ -155,67 +110,65 @@ def concat_datasets(
     filter_method: str = "mean",
     shrink: bool = True,
     scale: bool = True,
-    tpm: bool = True,
 ) -> ad.AnnData:
     """
     Concatenate any group of AnnData objects together along the genes axis.
     Truncates to shared genes and optionally expands obs to include all observations,
-    fillig in missing values with NaN.
+    filling in missing values with NaN.
 
     Parameters:
-        ad_list (list of strings): datasets to concatenate | Default = ["mrsa", "ca"].
-            Options: "mrsa", "ca", "bc", "covid", "healthy"
-        trim (tuple): threshold and method for gene filtering.
-            Options: (threshold, method) | Default = (0, "mean")
+        ad_list (list of strings or "all"): datasets to concatenate | Default = "all".
+            Options: "mrsa", "ca", "bc", "tb", "uc", "t1dm" or any new datasets added
+        filter_threshold (float): threshold for gene filtering
+        filter_method (str): method for gene filtering. Options: "mean", "any", "total"
         shrink (bool): whether to shrink the resulting obs to only the shared obs
         scale (bool): whether to scale the data
-        tpm (bool): whether to normalize the data to TPM
 
     Returns:
         ad (AnnData): concatenated AnnData object
     """
 
-    # if no list is provided, default to MRSA and CA
-    if ad_list is None:
-        ad_list = ["mrsa", "ca"]
-
-    # create a dictionary of the possible data import functions
+    # Create a dictionary of all available import functions
     data_dict = {
-        "mrsa": import_mrsa_rna,
-        "ca": concat_ca,
-        "bc": import_breast_cancer,
-        "covid": import_covid,
-        "healthy": import_healthy,
+        "mrsa": import_mrsa,
+        "ca": import_ca,
+        "bc": import_bc,
+        "tb": import_tb,
+        "uc": import_uc,
+        "t1dm": import_t1dm,
     }
 
-    # call the data import functions and store the resulting AnnData objects
-    ad_list = [data_dict[ad]() for ad in ad_list]
+    # If no list is provided or "all" is specified, use all available datasets
+    if ad_list is None or ad_list == "all":
+        ad_list = list(data_dict.keys())
 
-    # collect the obs data from each AnnData object
-    obs_list = [ad.obs for ad in ad_list]
+    # Ensure ad_list is a list
+    if isinstance(ad_list, str) and ad_list != "all":
+        ad_list = [ad_list]
 
-    # concat all anndata objects together keeping only the vars and obs in common
-    whole_ad = ad.concat(ad_list, join="inner")
+    # Call the data import functions and store the resulting AnnData objects
+    adata_list = []
+    for ad_key in ad_list:
+        if ad_key in data_dict:
+            adata_list.append(data_dict[ad_key]())
+        else:
+            print(f"Warning: Dataset '{ad_key}' not found in available datasets.")
 
-    # if shrink is False,
+    if not adata_list:
+        raise ValueError("No valid datasets provided or found")
+
+    # Collect the obs data from each AnnData object
+    obs_list = [ad.obs for ad in adata_list]
+
+    # Concat all anndata objects together keeping only the vars and obs in common
+    whole_ad = ad.concat(adata_list, join="inner")
+
+    # If shrink is False,
     # replace the resulting obs with a pd.concat of all obs data in obs_list
     if not shrink:
         whole_ad.obs = pd.concat(obs_list, axis=0, join="outer")
 
-    if tpm:
-        desired_value = 1000000
-        # I know whole_ad.X is an ndarray, but pyright doesn't
-        # replace this with proper type gating to avoid the cast
-        X = cast(np.ndarray, whole_ad.X)
-        row_sums = X.sum(axis=1)
-
-        scaling_factors = desired_value / row_sums
-
-        X_normalized = X * scaling_factors[:, np.newaxis]
-
-        whole_ad.X = X_normalized
-
-    # if trim is True, filter out genes with low expression
+    # If filter_threshold is provided, filter out genes with low expression
     if filter_threshold:
         whole_ad = gene_filter(
             whole_ad, threshold=filter_threshold, method=filter_method

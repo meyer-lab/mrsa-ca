@@ -6,6 +6,7 @@ Each dataset is imported along with its metadata.
 import json
 from os.path import abspath, dirname, join
 
+import anndata as ad
 import archs4py as a4
 import pandas as pd
 
@@ -49,14 +50,16 @@ def load_archs4(geo_accession):
         raise ValueError(
             f"Could not find GEO accession {geo_accession} in the file {file_path}"
         )
+    counts = a4.utils.aggregate_duplicate_genes(counts)
+    counts_tmm = a4.utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
 
     # Extract the metadata from the ARCHS4 file after success with counts
     metadata = a4.meta.series(file_path, geo_accession)
 
     # Parse the metadata to extract the clinical variables
-    metadata = parse_metdata(metadata)
+    clinical_variables = parse_metdata(metadata)
 
-    return counts, metadata
+    return counts.T, counts_tmm.T, clinical_variables
 
 
 def import_mrsa():
@@ -66,19 +69,43 @@ def import_mrsa():
         index_col=0,
         delimiter=",",
     )
+    counts_mrsa = a4.utils.aggregate_duplicate_genes(counts_mrsa)
+    counts_mrsa_tmm = a4.utils.normalize(
+        counts=counts_mrsa, method="tmm", tmm_outlier=0.05
+    )
+    counts_mrsa = counts_mrsa.T
+    counts_mrsa_tmm = counts_mrsa_tmm.T
 
     # Grab mrsa metadata from SRA database since it is not on GEO
     metadata_mrsa = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv.gz"),
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
         index_col=0,
         delimiter=",",
     )
 
     # Pair down metadata to only the columns we need
-    metadata_mrsa = metadata_mrsa.loc[:, ["Run", "phenotype", "sex"]]
-    metadata_mrsa.set_index("Run", inplace=True)
+    metadata_mrsa = metadata_mrsa.loc[:, ["phenotype", "sex"]]
+    metadata_mrsa.index.name = None
+    metadata_mrsa = metadata_mrsa.rename(
+        columns={
+            "phenotype": "status",
+        }
+    )
 
-    return counts_mrsa, metadata_mrsa
+    # Order the indices of the counts and metadata to match for AnnData
+    common_idx = counts_mrsa.index.intersection(metadata_mrsa.index)
+    counts_mrsa = counts_mrsa.loc[common_idx]
+    counts_mrsa_tmm = counts_mrsa_tmm.loc[common_idx]
+    metadata_mrsa = metadata_mrsa.loc[common_idx]
+
+    mrsa_adata = ad.AnnData(
+        X=counts_mrsa,
+        obs=metadata_mrsa,
+        var=pd.DataFrame(index=counts_mrsa.columns),
+    )
+    mrsa_adata.layers["tmm"] = counts_mrsa_tmm
+
+    return mrsa_adata
 
 
 def import_ca():
@@ -88,6 +115,10 @@ def import_ca():
         index_col=0,
         delimiter="\t",
     )
+    counts_ca = a4.utils.aggregate_duplicate_genes(counts_ca)
+    counts_ca_tmm = a4.utils.normalize(counts=counts_ca, method="tmm", tmm_outlier=0.05)
+    counts_ca = counts_ca.T
+    counts_ca_tmm = counts_ca_tmm.T
 
     # Archs4 web database reports metadata with jsons of dictionaries
     with open(join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_ca_archs4.json")) as f:
@@ -104,10 +135,29 @@ def import_ca():
         index=metadata_ca.keys(),
         columns=["characteristics_ch1"],
     )
-    metadata_ca = parse_metdata(metadata_ca)
+    metadata_ca = parse_metdata(metadata_ca)  # includes qc failures
 
-    # TODO: Pair down metadata to only the columns we need
-    # Not yet clear what we need from the metadata
-    # Metadata indicates some samples did not pass qc
+    ca_adata = ad.AnnData(
+        X=counts_ca,
+        obs=metadata_ca,
+        var=pd.DataFrame(index=counts_ca.columns),
+    )
+    ca_adata.layers["tmm"] = counts_ca_tmm
 
-    return counts_ca, metadata_ca
+    return ca_adata
+
+
+def import_bc():
+    counts, counts_tmm, metadata = load_archs4("GSE201085")
+
+    metadata["disease"] = "Breast Cancer"
+    metadata = metadata.rename(columns={"response": "status"})
+
+    bc_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    bc_adata.layers["tmm"] = counts_tmm
+
+    return bc_adata

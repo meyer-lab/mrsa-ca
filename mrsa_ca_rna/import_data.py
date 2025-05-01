@@ -83,7 +83,7 @@ def import_mrsa():
         delimiter=",",
     )
 
-    # Pair down metadata to only the columns we need
+    # Pair down metadata and ensure "disease" and "status" columns are present
     metadata_mrsa = metadata_mrsa.loc[:, ["phenotype", "sex"]]
     metadata_mrsa.index.name = None
     metadata_mrsa = metadata_mrsa.rename(
@@ -91,6 +91,7 @@ def import_mrsa():
             "phenotype": "status",
         }
     )
+    metadata_mrsa["disease"] = "MRSA"
 
     # Order the indices of the counts and metadata to match for AnnData
     common_idx = counts_mrsa.index.intersection(metadata_mrsa.index)
@@ -136,6 +137,26 @@ def import_ca():
         columns=["characteristics_ch1"],
     )
     metadata_ca = parse_metdata(metadata_ca)  # includes qc failures
+
+    # Pair down metadata and ensure "disease" and "status" columns are present
+    metadata_ca = metadata_ca.loc[
+        :,
+        [
+            "subject_id",
+            "passed sample qc",
+            "daysreltofirsttimepoin",
+            "phenotype",
+            "gender",
+            "age",
+        ],
+    ]
+    metadata_ca = metadata_ca.rename(
+        columns={
+            "daysreltofirsttimepoin": "days_rel_to_first_timepoint",
+            "phenotype": "disease",
+        }
+    )
+    metadata_ca["status"] = "Unknown"
 
     ca_adata = ad.AnnData(
         X=counts_ca,

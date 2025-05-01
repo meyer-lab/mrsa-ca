@@ -3,7 +3,13 @@ import os
 import numpy as np
 import pytest
 
-from mrsa_ca_rna.import_data import BASE_DIR, import_bc, import_ca, import_mrsa
+from mrsa_ca_rna.import_data import (
+    BASE_DIR,
+    import_bc,
+    import_ca,
+    import_mrsa,
+    import_tb,
+)
 
 # Path to gene list file
 GENE_LIST_PATH = os.path.join(BASE_DIR, "mrsa_ca_rna", "data", "gene_list.txt")
@@ -17,7 +23,7 @@ def gene_list():
     return genes
 
 
-@pytest.mark.parametrize("import_func", [import_mrsa, import_ca, import_bc])
+@pytest.mark.parametrize("import_func", [import_mrsa, import_ca, import_bc, import_tb])
 def test_import_functions(import_func, gene_list):
     """Test import functions for all datasets."""
     # Import the data
@@ -63,6 +69,7 @@ def test_all_datasets_gene_compatibility():
     mrsa_adata = import_mrsa()
     ca_adata = import_ca()
     bc_adata = import_bc()
+    tb_adata = import_tb()
 
     assert np.array_equal(
         mrsa_adata.var.index, ca_adata.var.index
@@ -70,3 +77,6 @@ def test_all_datasets_gene_compatibility():
     assert np.array_equal(
         mrsa_adata.var.index, bc_adata.var.index
     ), "MRSA and BC datasets have different genes"
+    assert np.array_equal(
+        mrsa_adata.var.index, tb_adata.var.index
+    ), "MRSA and TB datasets have different genes"

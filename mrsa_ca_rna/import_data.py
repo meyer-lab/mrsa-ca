@@ -182,3 +182,78 @@ def import_bc():
     bc_adata.layers["tmm"] = counts_tmm
 
     return bc_adata
+
+
+## ISSUE: GSE177044 does not have regularly formatted metadata
+# def import_uc():
+#     counts, counts_tmm, metadata = load_archs4("GSE177044")
+
+
+#     uc_adata = ad.AnnData(
+#         X=counts,
+#         obs=metadata,
+#         var=pd.DataFrame(index=counts.columns),
+#     )
+#     uc_adata.layers["tmm"] = counts_tmm
+
+#     return uc_adata
+
+
+def import_tb():
+    counts, counts_tmm, metadata = load_archs4("GSE89403")
+
+    metadata = metadata.loc[
+        :, ["subject", "disease state", "treatmentresult", "time", "timetonegativity"]
+    ]
+    metadata["time"] = metadata["time"].str.replace("DX", "week_0")
+
+    # Remove unknown samples.
+    # Paper does not describe what these are but they are present in the counts
+    # "NA", "Lung Dx Controls", "MTP Controls"
+    valid_samples = metadata["disease state"].str.contains(
+        "TB Subjects|Healthy Controls"
+    )
+    metadata = metadata.loc[valid_samples, :]
+
+    """Optional sample filtering processes. Not sure if these are necessary yet."""
+    # # Remove technical replicates
+    # metadata = metadata[~metadata.duplicated(keep="first")]
+
+    # # Relabel disease state based on time to negativity, removing unevaluable samples
+    # metadata = metadata[~metadata["treatmentresult"].str.contains("unevaluable")]
+    # metadata["timetonegativity"] = metadata["timetonegativity"].str.replace(
+    #     "NA", "Week999"
+    # )
+    # metadata["time"] = metadata["time"].str.replace("day_7", "week_1")
+    # sample_time = metadata["time"].str.split("_", expand=True)[1].astype(int)
+    # negative_time = (
+    #     metadata["timetonegativity"].str.split("k", expand=True)[1].astype(int)
+    # )
+    # metadata.loc[sample_time >= negative_time, "disease state"] = "TB Cured"
+    # metadata.loc[sample_time < negative_time, "disease state"] = "Tuberculosis"
+
+    # # Keep only first longitudinal measurement for each subject
+    # metadata = metadata.loc[metadata["time"].str.contains("week_0"), :]
+
+    # Line up the metadata with the counts to account for any filtering
+    common_idx = counts.index.intersection(metadata.index)
+    counts = counts.loc[common_idx]
+    counts_tmm = counts_tmm.loc[common_idx]
+    metadata = metadata.loc[common_idx]
+
+    metadata = metadata.rename(
+        columns={
+            "subject": "subject_id",
+            "disease state": "disease",
+            "treatmentresult": "status",
+        }
+    )
+
+    tb_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    tb_adata.layers["tmm"] = counts_tmm
+
+    return tb_adata

@@ -16,29 +16,39 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 def parse_metdata(metadata: pd.DataFrame) -> pd.DataFrame:
     # GEO metadata in SOFT format stores clinical data in the characteristics_ch1 column
     metadata_char_ch1 = metadata.loc[:, "characteristics_ch1"].copy()
-    metadata_char_ch1 = metadata_char_ch1.str.split(",", expand=True)
 
-    # We're going to rename the columns based on SOFT format (clinical variable: value)
-    column_names = {}
+    # First, collect all unique column names from all rows
+    all_keys = set()
+    for value in metadata_char_ch1:
+        if isinstance(value, str):
+            items = value.split(",")
+            for item in items:
+                if ": " in item:
+                    key = item.split(": ")[0].strip()
+                    all_keys.add(key)
 
-    for col in metadata_char_ch1.columns:
-        sample = metadata_char_ch1.iloc[0, col]
+    # Create a DataFrame with these keys as columns
+    result_df = pd.DataFrame(index=metadata_char_ch1.index, columns=sorted(all_keys))
 
-        # Collect the clinical variables to rename the columns
-        col_name = sample.split(": ")[0]
-        column_names[col] = col_name
+    # Fill in the data for each row
+    for idx, value in enumerate(metadata_char_ch1):
+        if isinstance(value, str):
+            items = value.split(",")
+            for item in items:
+                if ": " in item:
+                    try:
+                        key, val = item.split(": ", 1)
+                        key = key.strip()
+                        val = val.strip()
+                        result_df.loc[metadata_char_ch1.index[idx], key] = val
+                    except ValueError:
+                        continue
 
-        # Remove the clinical variable name from the value for each element
-        metadata_char_ch1[col] = metadata_char_ch1[col].apply(
-            lambda x: x.split(": ")[1].strip()
-            if isinstance(x, str) and ": " in x
-            else x
-        )
+    """I do not know if this is necessary yet"""
+    # # Fill NaN values with "Unknown" to indicate we filled in the data
+    # result_df = result_df.fillna("Unkown")
 
-        # Rename the columns with the extracted clinical variables
-        metadata_h = metadata_char_ch1.rename(columns=column_names)
-
-    return metadata_h
+    return result_df
 
 
 def load_archs4(geo_accession):
@@ -184,19 +194,33 @@ def import_bc():
     return bc_adata
 
 
-## ISSUE: GSE177044 does not have regularly formatted metadata
-# def import_uc():
-#     counts, counts_tmm, metadata = load_archs4("GSE177044")
+def import_uc():
+    counts, counts_tmm, metadata = load_archs4("GSE177044")
 
+    metadata = metadata.loc[:, ["Sex", "age", "disease"]]
+    metadata["disease"] = metadata["disease"].str.replace(
+        r"\bControl\b", "Healthy", regex=True
+    )
+    metadata["disease"] = metadata["disease"].str.replace(
+        r"\bUC\b", "Ulcerative Colitis", regex=True
+    )
+    metadata["disease"] = metadata["disease"].str.replace(
+        r"\bPSC\b", "Primary Sclerosing Cholangitis", regex=True
+    )
+    metadata["disease"] = metadata["disease"].str.replace(
+        r"\bPSCUC\b", "PSC/UC", regex=True
+    )
 
-#     uc_adata = ad.AnnData(
-#         X=counts,
-#         obs=metadata,
-#         var=pd.DataFrame(index=counts.columns),
-#     )
-#     uc_adata.layers["tmm"] = counts_tmm
+    metadata["status"] = "NaN"
 
-#     return uc_adata
+    uc_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    uc_adata.layers["tmm"] = counts_tmm
+
+    return uc_adata
 
 
 def import_tb():
@@ -248,6 +272,7 @@ def import_tb():
             "treatmentresult": "status",
         }
     )
+    metadata["disease"] = metadata["disease"].str.replace("Healthy Controls", "Healthy")
 
     tb_adata = ad.AnnData(
         X=counts,
@@ -257,3 +282,38 @@ def import_tb():
     tb_adata.layers["tmm"] = counts_tmm
 
     return tb_adata
+
+
+def import_t1dm():
+    counts, counts_tmm, metadata = load_archs4("GSE124400")
+
+    metadata = metadata.loc[
+        :, ["subject", "age at enrollment", "visit day", "rate of c-peptide change"]
+    ]
+    metadata = metadata.rename(
+        columns={
+            "subject": "subject_id",
+            "age at enrollment": "age",
+            "visit day": "time",
+        }
+    )
+    metadata["disease"] = "T1DM"
+    metadata["status"] = "Unknown"
+
+    # Use rate of c-peptide change to determine responder status (conservative)
+    metadata.loc[metadata["rate of c-peptide change"].astype(float) < 0, "status"] = (
+        "non-responder"
+    )
+    metadata.loc[metadata["rate of c-peptide change"].astype(float) >= 0, "status"] = (
+        "responder"
+    )
+    metadata = metadata.drop(columns=["rate of c-peptide change"])
+
+    t1dm_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    t1dm_adata.layers["tmm"] = counts_tmm
+
+    return t1dm_adata

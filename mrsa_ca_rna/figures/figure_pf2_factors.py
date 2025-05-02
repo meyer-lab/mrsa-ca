@@ -15,13 +15,13 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    # parameters from wandb experiments
-    threshold = 4
+
     rank = 20
 
+    datasets = "all"
+
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid"],
-        filter_threshold=threshold,
+        datasets,
         scale=True,
     )
 

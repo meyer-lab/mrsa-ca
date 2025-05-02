@@ -17,11 +17,13 @@ def figure_setup():
 
     # list the datasets we want to compare and define total components
     datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
     components = 70
 
     # grab the combined dataset
     combined_data = concat_datasets(
         datasets,
+        diseases,
         scale=False,
     )
 

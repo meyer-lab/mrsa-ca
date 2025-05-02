@@ -20,8 +20,10 @@ def figure_setup():
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
     whole_data = concat_datasets(
         datasets,
+        diseases,
         scale=False,
     )
 

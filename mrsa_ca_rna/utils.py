@@ -177,8 +177,6 @@ def concat_datasets(
             diseases = [diseases]
         disease_mask = whole_ad.obs["disease"].isin(diseases)
         whole_ad = whole_ad[disease_mask]
-    elif "healthy" not in ad_list:
-        whole_ad = whole_ad[~whole_ad.obs["disease"].str.contains("healthy", na=False)]
 
     # If filter_threshold is provided, filter out genes with low expression
     if filter_threshold:

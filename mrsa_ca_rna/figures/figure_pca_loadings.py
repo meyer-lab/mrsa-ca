@@ -15,10 +15,12 @@ from mrsa_ca_rna.utils import concat_datasets, gene_filter
 
 
 def figure_setup():
-    disease_list = ["mrsa", "ca"]
+    datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
 
     adata = concat_datasets(
-        disease_list,
+        datasets,
+        diseases,
         scale=False,
     )
     df = adata.to_df()

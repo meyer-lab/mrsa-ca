@@ -74,10 +74,9 @@ def bootstrap_fms(X, rank, target_trials=30):
 
 
 def figure_setup():
-    disease_list = ["mrsa", "ca", "bc", "covid"]
+    disease_list = "all"
     disease_data = concat_datasets(
         disease_list,
-        filter_threshold=0,
         scale=False,
     )
 

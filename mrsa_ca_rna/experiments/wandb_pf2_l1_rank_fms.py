@@ -16,9 +16,9 @@ def objective(config):
     rank = config.rank
     thresh = config.thresh
 
-    disease_list = ["mrsa", "ca", "bc", "covid"]
+    datasets = "all"
     disease_data = concat_datasets(
-        disease_list,
+        datasets,
         filter_threshold=thresh,
         scale=False,
     )

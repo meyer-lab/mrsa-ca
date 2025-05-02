@@ -36,8 +36,10 @@ def figure_setup():
 
     # get the data
     datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
     combined_ad = concat_datasets(
         datasets,
+        diseases,
         scale=False,
     )
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"]

@@ -27,8 +27,11 @@ skf = StratifiedKFold(n_splits=10)
 def make_roc_curve(X, y):
     """Function trains model on given data and returns the ROC curve"""
     # Import and scale mrsa and ca data together
+    datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
     mrsa_ca = concat_datasets(
-        ["mrsa", "ca"],
+        datasets,
+        diseases,
         scale=True,
     )
     # Trim to mrsa data and extract y_true
@@ -51,7 +54,11 @@ def figure_setup():
     and using random data. The statuses are either shuffled or not for each case"""
 
     # Get MRSA data
+    datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
     orig_data = concat_datasets(
+        datasets,
+        diseases,
         scale=False,
     )
     mrsa_data = orig_data[orig_data.obs["disease"] == "MRSA"].copy()

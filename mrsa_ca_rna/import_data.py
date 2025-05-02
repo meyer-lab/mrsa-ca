@@ -158,16 +158,14 @@ def import_ca():
     # Pair down metadata and ensure "disease" and "status" columns are present
     metadata_ca = metadata_ca.loc[
         :,
-        pd.Index(
-            [
-                "subject_id",
-                "passed sample qc",
-                "daysreltofirsttimepoin",
-                "phenotype",
-                "gender",
-                "age",
-            ]
-        ),
+        [
+            "subject_id",
+            "passed sample qc",
+            "daysreltofirsttimepoin",
+            "phenotype",
+            "gender",
+            "age",
+        ],
     ]
     metadata_ca = metadata_ca.rename(
         columns={

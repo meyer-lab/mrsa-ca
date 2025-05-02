@@ -92,10 +92,10 @@ def gene_filter(
     if top_n:
         # make sure data filtered is a dataframe so that we can nlargest
         assert isinstance(data_filtered, pd.DataFrame)
-    
+
         # keep only the top_n genes
         meaned_expression = pd.Series(data_filtered.abs().mean())
-        
+
         top_genes = meaned_expression.nlargest(top_n).index
         data_filtered = data_filtered.loc[:, top_genes]
 
@@ -120,7 +120,7 @@ def concat_datasets(
     Parameters:
         ad_list (list of strings or "all"): datasets to concatenate | Default = "all".
             Options: "mrsa", "ca", "bc", "tb", "uc", "t1dm" or any new datasets added
-        diseases (list of strings or None): specific diseases to include | 
+        diseases (list of strings or None): specific diseases to include |
             Default = None (all diseases)
         filter_threshold (float): threshold for gene filtering
         filter_method (str): method for gene filtering. Options: "mean", "any", "total"
@@ -176,7 +176,7 @@ def concat_datasets(
         if isinstance(diseases, str):
             diseases = [diseases]
         disease_mask = whole_ad.obs["disease"].isin(diseases)
-        whole_ad = whole_ad[disease_mask]
+        whole_ad = whole_ad[disease_mask.to_numpy()]
 
     # If filter_threshold is provided, filter out genes with low expression
     if filter_threshold:

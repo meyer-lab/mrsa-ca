@@ -8,7 +8,6 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
-    gene_converter,
     gene_filter,
 )
 
@@ -18,14 +17,12 @@ def figure_setup():
 
     # parameters from wandb experiments
     threshold = 4
-    l1 = 1.0e-4
     rank = 20
 
     disease_data = concat_datasets(
-        ["mrsa", "ca", "bc", "covid", "healthy"],
+        ["mrsa", "ca", "bc", "covid"],
         filter_threshold=threshold,
         scale=True,
-        tpm=True,
     )
 
     def callback(iteration, err, factors, _):
@@ -38,11 +35,10 @@ def figure_setup():
         disease_data,
         condition_name="disease",
         rank=rank,
-        l1=l1,
         callback=callback,
     )
 
-    return factors, r2x, disease_data, l1
+    return factors, r2x, disease_data
 
 
 def genFig():
@@ -52,7 +48,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    disease_factors, r2x, disease_data, l1 = figure_setup()
+    disease_factors, r2x, disease_data = figure_setup()
 
     disease_ranks = range(1, disease_factors[0].shape[1] + 1)
     disease_ranks_labels = [str(x) for x in disease_ranks]
@@ -65,12 +61,6 @@ def genFig():
         disease_factors[2],
         index=disease_data.var.index,
         columns=pd.Index(disease_ranks_labels),
-    )
-    genes_df = gene_converter(
-        genes_df,
-        old_id="EnsemblGeneID",
-        new_id="Symbol",
-        method="index",  # type: ignore
     )
 
     genes_df.to_csv("output/pf2_genes.csv")
@@ -139,7 +129,7 @@ def genFig():
     c.set_title(
         f"Gene Factor Matrix\n"
         f"R2X: {r2x:.2f} | Top {top_n} genes\n"
-        f"Sparsity: {sparsity:.2f} @ L1: {l1:.2e}"
+        f"Sparsity: {sparsity:.2f}"
     )
     c.set_xlabel(x_ax_label)
     c.set_ylabel(d_ax_labels[2])

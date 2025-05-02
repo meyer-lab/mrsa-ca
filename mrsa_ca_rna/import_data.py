@@ -13,7 +13,7 @@ import archs4py as a4
 import pandas as pd
 
 with contextlib.suppress(RuntimeError):
-    multiprocessing.set_start_method("spawn") # loss of speed but avoids fork() issues
+    multiprocessing.set_start_method("spawn")  # loss of speed but avoids fork() issues
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -33,7 +33,9 @@ def parse_metdata(metadata: pd.DataFrame) -> pd.DataFrame:
                     all_keys.add(key)
 
     # Create a DataFrame with these keys as columns
-    result_df = pd.DataFrame(index=metadata_char_ch1.index, columns=sorted(all_keys))
+    result_df = pd.DataFrame(
+        index=metadata_char_ch1.index, columns=pd.Index(sorted(all_keys))
+    )
 
     # Fill in the data for each row
     for idx, value in enumerate(metadata_char_ch1):
@@ -148,22 +150,24 @@ def import_ca():
 
     metadata_ca = pd.DataFrame(
         data=metadata_ca.values(),
-        index=metadata_ca.keys(),
-        columns=["characteristics_ch1"],
+        index=pd.Index(list(metadata_ca.keys())),
+        columns=pd.Index(["characteristics_ch1"]),
     )
     metadata_ca = parse_metdata(metadata_ca)  # includes qc failures
 
     # Pair down metadata and ensure "disease" and "status" columns are present
     metadata_ca = metadata_ca.loc[
         :,
-        [
-            "subject_id",
-            "passed sample qc",
-            "daysreltofirsttimepoin",
-            "phenotype",
-            "gender",
-            "age",
-        ],
+        pd.Index(
+            [
+                "subject_id",
+                "passed sample qc",
+                "daysreltofirsttimepoin",
+                "phenotype",
+                "gender",
+                "age",
+            ]
+        ),
     ]
     metadata_ca = metadata_ca.rename(
         columns={
@@ -322,3 +326,31 @@ def import_t1dm():
     t1dm_adata.layers["raw"] = counts
 
     return t1dm_adata
+
+
+def import_covid():
+    counts, counts_tmm, metadata = load_archs4("GSE161731")
+
+    metadata = metadata.loc[
+        :, ["subject_id", "age", "gender", "cohort", "time", "hospitalized"]
+    ]
+    metadata = metadata.rename(
+        columns={
+            "cohort": "disease",
+            "hospitalized": "status",
+        }
+    )
+    metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
+
+    covid_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    covid_adata.layers["raw"] = counts
+
+    return covid_adata
+
+
+if __name__ == "__main__":
+    import_covid()

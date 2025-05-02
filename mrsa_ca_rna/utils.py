@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.import_data import (
     import_bc,
     import_ca,
+    import_covid,
     import_mrsa,
     import_t1dm,
     import_tb,
@@ -136,6 +137,7 @@ def concat_datasets(
         "tb": import_tb,
         "uc": import_uc,
         "t1dm": import_t1dm,
+        "covid": import_covid,
     }
 
     # If no list is provided or "all" is specified, use all available datasets

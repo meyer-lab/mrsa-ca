@@ -444,7 +444,9 @@ def process_srrs_pipeline(
                         if hasattr(result, "name") and result.name is not None
                         else "unknown"
                     )
-                    normalized_results.append(pd.DataFrame(result, columns=[srr_id]))
+                    normalized_results.append(
+                        pd.DataFrame(result, columns=pd.Index([srr_id]))
+                    )
                 elif isinstance(result, pd.DataFrame):
                     normalized_results.append(result)
                 else:

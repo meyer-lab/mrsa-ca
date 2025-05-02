@@ -20,7 +20,10 @@ def figure_setup():
     components = 70
 
     # grab the combined dataset
-    combined_data = concat_datasets(datasets, scale=False, tpm=True)
+    combined_data = concat_datasets(
+        datasets,
+        scale=False,
+    )
 
     # split it into the datasets we want to compare
     mrsa_data = combined_data[combined_data.obs["disease"] == "MRSA"].copy()

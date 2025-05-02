@@ -15,7 +15,9 @@ def figure08a_setup():
     """Organize data for plotting"""
 
     # bring in whole dataset then split into MRSA (X, y) and CA (Y) sets
-    whole_data = concat_datasets(scale=False, tpm=True)
+    whole_data = concat_datasets(
+        scale=False,
+    )
 
     mrsa_X = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     mrsa_y = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]

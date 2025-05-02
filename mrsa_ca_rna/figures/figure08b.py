@@ -15,7 +15,7 @@ from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.regression import perform_LR, perform_PLSR
-from mrsa_ca_rna.utils import concat_datasets, gene_converter
+from mrsa_ca_rna.utils import concat_datasets
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -24,7 +24,9 @@ def figure08b_setup():
     """Organize data for plotting"""
 
     # bring in whole dataset then split into MRSA (X, y) and CA (Y) sets
-    whole_data = concat_datasets(scale=False, tpm=True)
+    whole_data = concat_datasets(
+        scale=False,
+    )
 
     mrsa_X = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     mrsa_y = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
@@ -68,14 +70,6 @@ def figure08b_setup():
             {"Gene": genes_series.index, "Weight": genes_series.values}
         )
 
-        # convert EnsemblGeneID to Symbol, then print to csv
-        top_genes[comp] = gene_converter(top_genes[comp], "EnsemblGeneID", "Symbol")
-        # top_genes[comp].loc[:, "Gene"].to_csv(
-        #     f"mrsa_ca_rna/figures/figure08b_top_genes_{comp}.csv",
-        #     index=False,
-        #     header=False,
-        # )
-
     return y_proba, weighted_components, top_genes
 
 
@@ -84,7 +78,9 @@ def genFig():
     layout = {"ncols": 2, "nrows": 3}
     ax, f, _ = setupBase(fig_size, layout)
 
-    whole_data = concat_datasets(scale=False, tpm=True)
+    whole_data = concat_datasets(
+        scale=False,
+    )
     mrsa_status = whole_data[whole_data.obs["disease"] == "MRSA"].obs["status"]
     lb = LabelBinarizer()
     y_true = lb.fit_transform(mrsa_status)

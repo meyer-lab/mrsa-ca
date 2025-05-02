@@ -20,7 +20,10 @@ def figure_setup():
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]
-    whole_data = concat_datasets(datasets, scale=False, tpm=True)
+    whole_data = concat_datasets(
+        datasets,
+        scale=False,
+    )
 
     # split the data into the datasets we want to compare
     mrsa_split = whole_data[whole_data.obs["disease"] == "MRSA"].copy()

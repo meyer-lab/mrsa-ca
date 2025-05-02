@@ -51,7 +51,6 @@ def perform_parafac2(
     X: ad.AnnData,
     condition_name: str = "disease",
     rank: int = 10,
-    l1: float = 0.0,
     rnd_seed: int | None = None,
     callback=None,
 ):
@@ -66,8 +65,6 @@ def perform_parafac2(
         The condition by which to slice the data, by default "disease"
     rank : int, optional
         The rank of the resulting decomposition, by default 10
-    l1 : float, optional
-        the l1 strength to apply to the A and C matrices, by default 0.0
     gpu_id : int, options: 0 or 1
         the GPU target to run the factorization on, by default 1
     rnd_seed : int, optional
@@ -89,7 +86,6 @@ def perform_parafac2(
         rank=rank,
         n_iter_max=100,
         tol=1e-12,
-        l1=l1,
         random_state=rnd_seed,
         callback=callback,
     )

@@ -29,7 +29,10 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
     # bring in the rna anndata objects and push them to dataframes for perform_pca()
     disease_list = ["mrsa", "ca"]
 
-    adata = concat_datasets(disease_list, scale=False, tpm=True)
+    adata = concat_datasets(
+        disease_list,
+        scale=False,
+    )
 
     df = adata.to_df()
 

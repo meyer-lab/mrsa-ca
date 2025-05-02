@@ -12,7 +12,9 @@ from mrsa_ca_rna.utils import concat_datasets
 
 def figure07_setup():
     # do I want to not scale the data prior to splitting it and performing PLSR?
-    whole_data = concat_datasets(scale=False, tpm=True)
+    whole_data = concat_datasets(
+        scale=False,
+    )
 
     mrsa_df = whole_data[whole_data.obs["disease"] == "MRSA"].to_df()
     ca_df = whole_data[whole_data.obs["disease"] == "Candidemia"].to_df()

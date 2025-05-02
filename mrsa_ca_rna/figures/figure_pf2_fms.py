@@ -16,18 +16,18 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import concat_datasets, resample_adata
 
 
-def factorize(X_in: ad.AnnData, rank: int, l1: float, random_state=None):
+def factorize(X_in: ad.AnnData, rank: int, random_state=None):
     X_in.X = StandardScaler().fit_transform(X_in.X)
 
     weights, factors, _, R2X = perform_parafac2(
-        X_in, condition_name="disease", rank=rank, l1=l1, rnd_seed=random_state
+        X_in, condition_name="disease", rank=rank, rnd_seed=random_state
     )
     factors = (weights, factors)
 
     return factors, R2X
 
 
-def bootstrap_fms(X, rank, l1, target_trials=30):
+def bootstrap_fms(X, rank, target_trials=30):
     fms_list = []
     R2X_diff_list = []
 
@@ -45,9 +45,9 @@ def bootstrap_fms(X, rank, l1, target_trials=30):
             seed = seeds[successful_trials + failed_trials]
 
             # factorize the original and resampled data
-            factors_true, R2X_true = factorize(X, rank, l1, random_state=seed)
+            factors_true, R2X_true = factorize(X, rank, random_state=seed)
             factors_resampled, R2X_resampled = factorize(
-                resample_adata(X), rank, l1, random_state=seed
+                resample_adata(X), rank, random_state=seed
             )
 
             # calculate the factor match score
@@ -74,19 +74,20 @@ def bootstrap_fms(X, rank, l1, target_trials=30):
 
 
 def figure_setup():
-    disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
+    disease_list = ["mrsa", "ca", "bc", "covid"]
     disease_data = concat_datasets(
-        disease_list, filter_threshold=0, scale=False, tpm=True
+        disease_list,
+        filter_threshold=0,
+        scale=False,
     )
 
-    l1 = 1.0e-4
     ranks = [10, 20]
 
     fms_0, R2X_0, s_0, f_0 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[0], l1=l1, target_trials=30
+        disease_data.copy(), rank=ranks[0], target_trials=30
     )
     fms_1, R2X_1, s_1, f_1 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[1], l1=l1, target_trials=30
+        disease_data.copy(), rank=ranks[1], target_trials=30
     )
 
     # combined the matrics from the 20 and 30 rank trials
@@ -101,7 +102,7 @@ def figure_setup():
         metrics, index=range(len(fms_list)), columns=pd.Index(list(metrics.keys()))
     )
 
-    return metrics, l1, s_trials, f_trials
+    return metrics, s_trials, f_trials
 
 
 def genFig():
@@ -109,7 +110,7 @@ def genFig():
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    data, l1, successes, failures = figure_setup()
+    data, successes, failures = figure_setup()
 
     a = sns.scatterplot(data=data, x="fms", y="R2X_diff", hue="rank", ax=ax[0])
     a.set_xlabel("Factor Match Score")
@@ -117,7 +118,7 @@ def genFig():
     a.set_title(
         "FMS and R2X percent difference of PF2 factor matrices\n"
         f"Successes: {successes}, Failures: {failures}\n"
-        f"Rank: {data["rank"].unique()}, L1: {l1}\n"
+        f"Rank: {data["rank"].unique()}"
     )
 
     a = sns.kdeplot(data=data, x="fms", hue="rank", clip=(0, 1), ax=ax[1])

@@ -14,12 +14,13 @@ from mrsa_ca_rna.utils import check_sparsity, concat_datasets, resample_adata
 
 def objective(config):
     rank = config.rank
-    l1 = config.l1
     thresh = config.thresh
 
-    disease_list = ["mrsa", "ca", "bc", "covid", "healthy"]
+    disease_list = ["mrsa", "ca", "bc", "covid"]
     disease_data = concat_datasets(
-        disease_list, filter_threshold=thresh, scale=False, tpm=True
+        disease_list,
+        filter_threshold=thresh,
+        scale=False,
     )
     data_size = disease_data.shape[1] / 16315
     wb.log({"data_size": data_size})
@@ -45,7 +46,6 @@ def objective(config):
         X,
         condition_name="disease",
         rank=rank,
-        l1=l1,
         rnd_seed=random_state,
         callback=callback,
     )
@@ -54,7 +54,6 @@ def objective(config):
         X_resampled,
         condition_name="disease",
         rank=rank,
-        l1=l1,
         rnd_seed=random_state,
     )
 
@@ -79,7 +78,6 @@ def perform_experiment():
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     ranks = [x for x in range(10, 21)]
-    l1_values = [0, 8e-5, 1e-4, 1.2e-4, 1.4e-4]
     thresh_values = [0, 4.0, 8.1]
 
     sweep_config = {
@@ -88,7 +86,6 @@ def perform_experiment():
         "metric": {"name": "fms", "goal": "maximize"},
         "parameters": {
             "rank": {"values": ranks},
-            "l1": {"values": l1_values},
             "thresh": {"values": thresh_values},
         },
     }

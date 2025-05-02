@@ -115,6 +115,8 @@ def import_mrsa():
             "phenotype": "status",
         }
     )
+    metadata_mrsa["status"] = metadata_mrsa["status"].str.replace("Resolvers", "0")
+    metadata_mrsa["status"] = metadata_mrsa["status"].str.replace("Persisters", "1")
     metadata_mrsa["disease"] = "MRSA"
     metadata_mrsa["dataset_id"] = "SRP414349"
 

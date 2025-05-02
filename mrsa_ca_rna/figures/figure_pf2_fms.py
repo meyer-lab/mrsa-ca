@@ -34,7 +34,6 @@ def bootstrap_fms(X, rank, target_trials=30):
     # Track successful and failed trials
     successful_trials = 0
     failed_trials = 0
-    target_trials = 50
 
     seeds = np.random.randint(0, 1000, size=(target_trials * 2,))
 
@@ -83,10 +82,10 @@ def figure_setup():
     ranks = [10, 20]
 
     fms_0, R2X_0, s_0, f_0 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[0], target_trials=30
+        disease_data.copy(), rank=ranks[0], target_trials=10
     )
     fms_1, R2X_1, s_1, f_1 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[1], target_trials=30
+        disease_data.copy(), rank=ranks[1], target_trials=10
     )
 
     # combined the matrics from the 20 and 30 rank trials

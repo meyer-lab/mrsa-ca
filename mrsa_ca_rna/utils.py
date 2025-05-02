@@ -92,12 +92,12 @@ def gene_filter(
     if top_n:
         # make sure data filtered is a dataframe so that we can nlargest
         assert isinstance(data_filtered, pd.DataFrame)
-
+    
         # keep only the top_n genes
         meaned_expression = pd.Series(data_filtered.abs().mean())
-        data_filtered: pd.DataFrame = data_filtered.loc[
-            :, meaned_expression.nlargest(top_n)
-        ]
+        
+        top_genes = meaned_expression.nlargest(top_n).index
+        data_filtered = data_filtered.loc[:, top_genes]
 
     if isinstance(data, ad.AnnData):
         return data[:, data.var.index.isin(data_filtered.columns)].copy()

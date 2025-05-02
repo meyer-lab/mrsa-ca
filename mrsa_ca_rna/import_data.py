@@ -350,7 +350,3 @@ def import_covid():
     covid_adata.layers["raw"] = counts
 
     return covid_adata
-
-
-if __name__ == "__main__":
-    import_covid()

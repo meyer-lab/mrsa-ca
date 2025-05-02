@@ -120,7 +120,8 @@ def concat_datasets(
     Parameters:
         ad_list (list of strings or "all"): datasets to concatenate | Default = "all".
             Options: "mrsa", "ca", "bc", "tb", "uc", "t1dm" or any new datasets added
-        diseases (list of strings or None): specific diseases to include | Default = None (all diseases)
+        diseases (list of strings or None): specific diseases to include | 
+            Default = None (all diseases)
         filter_threshold (float): threshold for gene filtering
         filter_method (str): method for gene filtering. Options: "mean", "any", "total"
         shrink (bool): whether to shrink the resulting obs to only the shared obs
@@ -181,7 +182,9 @@ def concat_datasets(
 
     # If filter_threshold is provided, filter out genes with low expression
     if filter_threshold:
-        whole_ad = gene_filter(whole_ad, threshold=filter_threshold, method=filter_method)
+        whole_ad = gene_filter(
+            whole_ad, threshold=filter_threshold, method=filter_method
+        )
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     if scale:

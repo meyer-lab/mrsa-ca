@@ -7,6 +7,8 @@ from mrsa_ca_rna.import_data import (
     BASE_DIR,
     import_bc,
     import_ca,
+    import_covid,
+    import_lupus,
     import_mrsa,
     import_t1dm,
     import_tb,
@@ -27,7 +29,16 @@ def gene_list():
 
 @pytest.mark.parametrize(
     "import_func",
-    [import_mrsa, import_ca, import_bc, import_tb, import_uc, import_t1dm],
+    [
+        import_mrsa,
+        import_ca,
+        import_bc,
+        import_tb,
+        import_uc,
+        import_t1dm,
+        import_covid,
+        import_lupus,
+    ],
 )
 def test_import_functions(import_func, gene_list):
     """Test import functions for all datasets."""
@@ -77,6 +88,8 @@ def test_all_datasets_gene_compatibility():
     tb_adata = import_tb()
     uc_adata = import_uc()
     t1dm_adata = import_t1dm()
+    covid_adata = import_covid()
+    lupus_adata = import_lupus()
 
     assert np.array_equal(
         mrsa_adata.var.index, ca_adata.var.index
@@ -93,3 +106,9 @@ def test_all_datasets_gene_compatibility():
     assert np.array_equal(
         mrsa_adata.var.index, t1dm_adata.var.index
     ), "MRSA and T1DM datasets have different genes"
+    assert np.array_equal(
+        mrsa_adata.var.index, covid_adata.var.index
+    ), "MRSA and COVID datasets have different genes"
+    assert np.array_equal(
+        mrsa_adata.var.index, lupus_adata.var.index
+    ), "MRSA and LUPUS datasets have different genes"

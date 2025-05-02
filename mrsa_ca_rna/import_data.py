@@ -293,7 +293,6 @@ def import_tb():
     metadata["disease"] = metadata["disease"].str.replace("Healthy Controls", "Healthy")
     metadata["dataset_id"] = "GSE89403"
 
-
     tb_adata = ad.AnnData(
         X=counts_tmm,
         obs=metadata,
@@ -350,7 +349,7 @@ def import_covid():
         columns={
             "cohort": "disease",
             "hospitalized": "status",
-            "time_since_onset": "time"
+            "time_since_onset": "time",
         }
     )
     metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
@@ -365,13 +364,50 @@ def import_covid():
 
     return covid_adata
 
+
+def import_lupus():
+    counts, counts_tmm, metadata = load_archs4("GSE116006")
+
+    metadata = metadata.loc[
+        :,
+        [
+            "drug dose",
+            "drug exposure",
+            "ifn status",
+            "subject age",
+            "subject sex",
+            "timepoint",
+        ],
+    ]
+    metadata = metadata.rename(
+        columns={
+            "drug dose": "dose",
+            "drug exposure": "status",
+            "subject age": "age",
+            "subject sex": "sex",
+            "timepoint": "time",
+        }
+    )
+    metadata["disease"] = "Lupus"
+    metadata["dataset_id"] = "GSE116006"
+
+    lupus_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    lupus_adata.layers["raw"] = counts
+
+    return lupus_adata
+
+
 def build_disease_registry(save_path=None):
     """
     Build a registry mapping diseases to their source datasets.
-    
+
     Parameters:
         save_path (str, optional): If provided, saves the registry as JSON
-        
+
     Returns:
         dict: Dictionary mapping disease names to lists of dataset identifiers
     """
@@ -383,11 +419,12 @@ def build_disease_registry(save_path=None):
         "uc": import_uc,
         "t1dm": import_t1dm,
         "covid": import_covid,
+        "lupus": import_lupus,
     }
-    
+
     registry = {}
     print("Building disease registry...")
-    
+
     for dataset_id, import_func in import_functions.items():
         try:
             print(f"Processing dataset: {dataset_id}")
@@ -399,10 +436,10 @@ def build_disease_registry(save_path=None):
                     registry[disease].append(dataset_id)
         except Exception as e:
             print(f"Error processing {dataset_id}: {e}")
-    
+
     if save_path:
         with open(save_path, "w") as f:
             json.dump(registry, f, indent=2)
         print(f"Registry saved to {save_path}")
-    
+
     return registry

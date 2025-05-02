@@ -96,7 +96,7 @@ def gene_filter(
         # keep only the top_n genes
         meaned_expression = pd.Series(data_filtered.abs().mean())
         data_filtered: pd.DataFrame = data_filtered.loc[
-            :, meaned_expression.nlargest(top_n).index
+            :, meaned_expression.nlargest(top_n)
         ]
 
     if isinstance(data, ad.AnnData):
@@ -107,6 +107,7 @@ def gene_filter(
 
 def concat_datasets(
     ad_list=None,
+    diseases=None,
     filter_threshold: float = 0,
     filter_method: str = "mean",
     shrink: bool = True,
@@ -114,12 +115,12 @@ def concat_datasets(
 ) -> ad.AnnData:
     """
     Concatenate any group of AnnData objects together along the genes axis.
-    Truncates to shared genes and optionally expands obs to include all observations,
-    filling in missing values with NaN.
+    Truncates to shared genes and optionally filters to specific diseases.
 
     Parameters:
         ad_list (list of strings or "all"): datasets to concatenate | Default = "all".
             Options: "mrsa", "ca", "bc", "tb", "uc", "t1dm" or any new datasets added
+        diseases (list of strings or None): specific diseases to include | Default = None (all diseases)
         filter_threshold (float): threshold for gene filtering
         filter_method (str): method for gene filtering. Options: "mean", "any", "total"
         shrink (bool): whether to shrink the resulting obs to only the shared obs
@@ -128,7 +129,6 @@ def concat_datasets(
     Returns:
         ad (AnnData): concatenated AnnData object
     """
-
     # Create a dictionary of all available import functions
     data_dict = {
         "mrsa": import_mrsa,
@@ -170,11 +170,18 @@ def concat_datasets(
     if not shrink:
         whole_ad.obs = pd.concat(obs_list, axis=0, join="outer")
 
+    # Filter by specified diseases if provided
+    if diseases:
+        if isinstance(diseases, str):
+            diseases = [diseases]
+        disease_mask = whole_ad.obs["disease"].isin(diseases)
+        whole_ad = whole_ad[disease_mask]
+    elif "healthy" not in ad_list:
+        whole_ad = whole_ad[~whole_ad.obs["disease"].str.contains("healthy", na=False)]
+
     # If filter_threshold is provided, filter out genes with low expression
     if filter_threshold:
-        whole_ad = gene_filter(
-            whole_ad, threshold=filter_threshold, method=filter_method
-        )
+        whole_ad = gene_filter(whole_ad, threshold=filter_threshold, method=filter_method)
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     if scale:

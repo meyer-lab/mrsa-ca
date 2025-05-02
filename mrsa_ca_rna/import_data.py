@@ -1,6 +1,13 @@
 """
-Import data from the mrsa_ca_rna project for analysis.
-Each dataset is imported along with its metadata.
+Import data from various sources, compiled by ARCHS4 and format them
+into AnnData objects.
+
+For now, we keep track of the study numbers and the primary diseases represented.
+We use the primary disease to label the dataset for the time being using
+a disease registry. This is primarily to help a human reader associate imports.
+
+In the future, we might create a more comprehensive disease registry to
+better keep track of all diseases represented across all datasets.
 """
 
 import contextlib
@@ -109,6 +116,7 @@ def import_mrsa():
         }
     )
     metadata_mrsa["disease"] = "MRSA"
+    metadata_mrsa["dataset_id"] = "SRP414349"
 
     # Order the indices of the counts and metadata to match for AnnData
     common_idx = counts_mrsa.index.intersection(metadata_mrsa.index)
@@ -174,6 +182,7 @@ def import_ca():
         }
     )
     metadata_ca["status"] = "Unknown"
+    metadata_ca["dataset_id"] = "GSE176262"
 
     ca_adata = ad.AnnData(
         X=counts_ca_tmm,
@@ -190,6 +199,7 @@ def import_bc():
 
     metadata["disease"] = "Breast Cancer"
     metadata = metadata.rename(columns={"response": "status"})
+    metadata["dataset_id"] = "GSE201085"
 
     bc_adata = ad.AnnData(
         X=counts_tmm,
@@ -219,6 +229,7 @@ def import_uc():
     )
 
     metadata["status"] = "NaN"
+    metadata["dataset_id"] = "GSE177044"
 
     uc_adata = ad.AnnData(
         X=counts_tmm,
@@ -280,6 +291,8 @@ def import_tb():
         }
     )
     metadata["disease"] = metadata["disease"].str.replace("Healthy Controls", "Healthy")
+    metadata["dataset_id"] = "GSE89403"
+
 
     tb_adata = ad.AnnData(
         X=counts_tmm,
@@ -306,6 +319,7 @@ def import_t1dm():
     )
     metadata["disease"] = "T1DM"
     metadata["status"] = "Unknown"
+    metadata["dataset_id"] = "GSE124400"
 
     # Use rate of c-peptide change to determine responder status (conservative)
     metadata.loc[metadata["rate of c-peptide change"].astype(float) < 0, "status"] = (
@@ -330,15 +344,17 @@ def import_covid():
     counts, counts_tmm, metadata = load_archs4("GSE161731")
 
     metadata = metadata.loc[
-        :, ["subject_id", "age", "gender", "cohort", "time", "hospitalized"]
+        :, ["subject_id", "age", "gender", "cohort", "time_since_onset", "hospitalized"]
     ]
     metadata = metadata.rename(
         columns={
             "cohort": "disease",
             "hospitalized": "status",
+            "time_since_onset": "time"
         }
     )
     metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
+    metadata["dataset_id"] = "GSE161731"
 
     covid_adata = ad.AnnData(
         X=counts_tmm,
@@ -348,3 +364,45 @@ def import_covid():
     covid_adata.layers["raw"] = counts
 
     return covid_adata
+
+def build_disease_registry(save_path=None):
+    """
+    Build a registry mapping diseases to their source datasets.
+    
+    Parameters:
+        save_path (str, optional): If provided, saves the registry as JSON
+        
+    Returns:
+        dict: Dictionary mapping disease names to lists of dataset identifiers
+    """
+    import_functions = {
+        "mrsa": import_mrsa,
+        "ca": import_ca,
+        "bc": import_bc,
+        "tb": import_tb,
+        "uc": import_uc,
+        "t1dm": import_t1dm,
+        "covid": import_covid,
+    }
+    
+    registry = {}
+    print("Building disease registry...")
+    
+    for dataset_id, import_func in import_functions.items():
+        try:
+            print(f"Processing dataset: {dataset_id}")
+            adata = import_func()
+            for disease in adata.obs["disease"].unique():
+                if disease not in registry:
+                    registry[disease] = []
+                if dataset_id not in registry[disease]:
+                    registry[disease].append(dataset_id)
+        except Exception as e:
+            print(f"Error processing {dataset_id}: {e}")
+    
+    if save_path:
+        with open(save_path, "w") as f:
+            json.dump(registry, f, indent=2)
+        print(f"Registry saved to {save_path}")
+    
+    return registry

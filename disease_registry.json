@@ -1,0 +1,57 @@
+{
+  "MRSA": [
+    "mrsa"
+  ],
+  "Candidemia": [
+    "ca"
+  ],
+  "Healthy": [
+    "ca",
+    "tb",
+    "uc",
+    "covid"
+  ],
+  "Viral": [
+    "ca"
+  ],
+  "Bacterial": [
+    "ca",
+    "covid"
+  ],
+  "Mixed Candida/bacterial": [
+    "ca"
+  ],
+  "Missing": [
+    "ca"
+  ],
+  "SIRS": [
+    "ca"
+  ],
+  "Breast Cancer": [
+    "bc"
+  ],
+  "TB Subjects": [
+    "tb"
+  ],
+  "Ulcerative Colitis": [
+    "uc"
+  ],
+  "PSC/UC": [
+    "uc"
+  ],
+  "Primary Sclerosing Cholangitis": [
+    "uc"
+  ],
+  "T1DM": [
+    "t1dm"
+  ],
+  "Influenza": [
+    "covid"
+  ],
+  "CoV other": [
+    "covid"
+  ],
+  "COVID-19": [
+    "covid"
+  ]
+}

@@ -17,6 +17,7 @@ import shutil
 import time
 
 import archs4py as a4
+import archs4py.align as a4_align
 import certifi
 import pandas as pd
 
@@ -113,7 +114,7 @@ def download_srr(srr, input_dir, max_retries=3):
                 start_time = time.time()
                 max_download_time = 7200  # 2 hours
 
-                a4.align.load([srr], input_dir)
+                a4_align.load([srr], input_dir)
 
                 # Check if download took too long
                 if time.time() - start_time > max_download_time:
@@ -192,7 +193,7 @@ def align_srr(
         try:
             # Align the fastq
             logger.info(f"Aligning {srr} (attempt {retry+1}/{max_retries})...")
-            result = a4.align.fastq(
+            result = a4_align.fastq(
                 genome, fastq_path, return_type=return_type, identifier=identifier
             )
 

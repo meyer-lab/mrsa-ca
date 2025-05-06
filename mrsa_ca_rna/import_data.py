@@ -16,7 +16,9 @@ import multiprocessing
 from os.path import abspath, dirname, join
 
 import anndata as ad
-import archs4py as a4
+import archs4py.data as a4_data
+import archs4py.meta as a4_meta
+import archs4py.utils as a4_utils
 import pandas as pd
 
 with contextlib.suppress(RuntimeError):
@@ -69,16 +71,16 @@ def load_archs4(geo_accession):
     file_path = join(BASE_DIR, "mrsa_ca_rna", "data", "human_gene_v2.6.h5")
 
     # Extract the count data from the ARCHS4 file, fail if not found
-    counts = a4.data.series(file_path, geo_accession)
+    counts = a4_data.series(file_path, geo_accession)
     if not isinstance(counts, pd.DataFrame):
         raise ValueError(
             f"Could not find GEO accession {geo_accession} in the file {file_path}"
         )
-    counts = a4.utils.aggregate_duplicate_genes(counts)
-    counts_tmm = a4.utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
+    counts = a4_utils.aggregate_duplicate_genes(counts)
+    counts_tmm = a4_utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
 
     # Extract the metadata from the ARCHS4 file after success with counts
-    metadata = a4.meta.series(file_path, geo_accession)
+    metadata = a4_meta.series(file_path, geo_accession)
 
     # Parse the metadata to extract the clinical variables
     clinical_variables = parse_metdata(metadata)
@@ -93,8 +95,8 @@ def import_mrsa():
         index_col=0,
         delimiter=",",
     )
-    counts_mrsa = a4.utils.aggregate_duplicate_genes(counts_mrsa)
-    counts_mrsa_tmm = a4.utils.normalize(
+    counts_mrsa = a4_utils.aggregate_duplicate_genes(counts_mrsa)
+    counts_mrsa_tmm = a4_utils.normalize(
         counts=counts_mrsa, method="tmm", tmm_outlier=0.05
     )
     counts_mrsa = counts_mrsa.T
@@ -143,8 +145,8 @@ def import_ca():
         index_col=0,
         delimiter="\t",
     )
-    counts_ca = a4.utils.aggregate_duplicate_genes(counts_ca)
-    counts_ca_tmm = a4.utils.normalize(counts=counts_ca, method="tmm", tmm_outlier=0.05)
+    counts_ca = a4_utils.aggregate_duplicate_genes(counts_ca)
+    counts_ca_tmm = a4_utils.normalize(counts=counts_ca, method="tmm", tmm_outlier=0.05)
     counts_ca = counts_ca.T
     counts_ca_tmm = counts_ca_tmm.T
 

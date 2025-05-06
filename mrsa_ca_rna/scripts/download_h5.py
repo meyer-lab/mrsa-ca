@@ -1,8 +1,8 @@
-import archs4py as a4
+import archs4py.download as a4_download
 
 
 def main():
-    a4.download.counts("human", path=".", version="latest")
+    a4_download.counts("human", path=".", version="latest")
 
 
 if __name__ == "__main__":

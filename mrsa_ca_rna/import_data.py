@@ -110,40 +110,23 @@ def import_mrsa():
     )
 
     # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata_ncbi = metadata_ncbi.loc[:, ["isolate", "phenotype", "sex"]]
+    metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
     metadata_ncbi.index.name = None
 
-    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
-        "Resolvers", "0"
-    )
-    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
-        "Persisters", "1"
-    )
     metadata_ncbi["disease"] = "MRSA"
     metadata_ncbi["dataset_id"] = "SRP414349"
     metadata_ncbi = metadata_ncbi.reset_index(
         drop=False, names=["accession"]
     ).set_index("isolate")
 
-    """Cannot reconcile the NCBI uploaded metadata with the TFAC-MRSA metadata.
-    Until we get more informationa on the NCBI metadata, we will use
-    the TFAC-MRSA metadata, which agrees with Dr. Joshua Thaden's data."""
-    metadata_tfac = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
+    sex_matched = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_joshua.csv"),
         index_col=0,
         delimiter=",",
     )
-    metadata_aux = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_tfac_validation.txt"),
-        index_col=0,
-        delimiter=",",
-    )
-    val_idx = metadata_aux.index
-    metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
-    metadata = pd.concat([metadata_ncbi, metadata_tfac], axis=1, join="inner")
-    metadata = metadata.loc[
-        :, ["status", "gender", "age", "disease", "dataset_id", "accession", "cohort"]
-    ]
+
+    # Combine and make the SRR IDs the index to match the counts
+    metadata = pd.concat([metadata_ncbi, sex_matched], axis=1, join="inner")
     metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
         "accession"
     )
@@ -162,6 +145,53 @@ def import_mrsa():
     mrsa_adata.layers["raw"] = counts_mrsa
 
     return mrsa_adata
+
+
+def import_tfac():
+    tfac_raw = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "tfac_counts.txt.zip"),
+        index_col=0,
+        delimiter=",",
+        compression="zip",
+    )
+    sex_matched = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_joshua.csv"),
+        index_col=0,
+        delimiter=",",
+    )
+
+    tfac_tmm = a4_utils.normalize(counts=tfac_raw.T, method="tmm", tmm_outlier=0.05)
+    tfac_tmm = tfac_tmm.T
+
+    # Make a regression classes for multinomial regression
+    sex_matched["class"] = "Unknown"
+    sex_matched.loc[
+        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 0), "class"
+    ] = "male_resolver"
+    sex_matched.loc[
+        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 0), "class"
+    ] = "female_resolver"
+    sex_matched.loc[
+        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 1), "class"
+    ] = "male_persistent"
+    sex_matched.loc[
+        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 1), "class"
+    ] = "female_persistent"
+
+    # Match the metadata to the counts
+    common_idx = tfac_raw.index.intersection(sex_matched.index)
+    tfac_raw = tfac_raw.loc[common_idx]
+    tfac_tmm = tfac_tmm.loc[common_idx]
+    sex_matched = sex_matched.loc[common_idx]
+
+    tfac_adata = ad.AnnData(
+        X=tfac_tmm,
+        obs=sex_matched,
+        var=pd.DataFrame(index=tfac_raw.columns),
+    )
+    tfac_adata.layers["raw"] = tfac_raw
+
+    return tfac_adata
 
 
 def import_ca():

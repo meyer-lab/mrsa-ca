@@ -42,7 +42,9 @@ def figure_setup():
         diseases,
         scale=False,
     )
-    y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"]
+    y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
+        int
+    )
 
     # perform PCA on the combined data
     combined_df = combined_ad.to_df()
@@ -105,3 +107,7 @@ def genFig():
         a.set_title(f"Top 5 genes for Component component {i+1}")
 
     return f
+
+
+if __name__ == "__main__":
+    genFig()

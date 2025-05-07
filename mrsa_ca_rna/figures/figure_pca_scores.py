@@ -42,7 +42,7 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
 
     # subset the scores to just MRSA
     scores_mrsa = scores.loc[adata.obs["disease"] == "MRSA"].copy()
-    y_mrsa = adata.obs.loc[adata.obs["disease"] == "MRSA", "status"].copy()
+    y_mrsa = adata.obs.loc[adata.obs["disease"] == "MRSA", "status"].copy().astype(int)
 
     accuracy, _, model = perform_LR(scores_mrsa, y_mrsa)
     betas = model.coef_

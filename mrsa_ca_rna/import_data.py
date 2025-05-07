@@ -110,15 +110,9 @@ def import_mrsa():
     )
 
     # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata_ncbi = metadata_ncbi.loc[:, ["isolate", "phenotype", "sex"]]
+    metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
     metadata_ncbi.index.name = None
 
-    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
-        "Resolvers", "0"
-    )
-    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
-        "Persisters", "1"
-    )
     metadata_ncbi["disease"] = "MRSA"
     metadata_ncbi["dataset_id"] = "SRP414349"
     metadata_ncbi = metadata_ncbi.reset_index(
@@ -128,6 +122,8 @@ def import_mrsa():
     """Cannot reconcile the NCBI uploaded metadata with the TFAC-MRSA metadata.
     Until we get more informationa on the NCBI metadata, we will use
     the TFAC-MRSA metadata, which agrees with Dr. Joshua Thaden's data."""
+
+    # Combine the two parts of the tfac metadata for complete status
     metadata_tfac = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
         index_col=0,
@@ -140,9 +136,12 @@ def import_mrsa():
     )
     val_idx = metadata_aux.index
     metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
+
+    # Combine the tfac metadata with the NCBI metadata to map the isolate numbers
+    # to the SRA accessions
     metadata = pd.concat([metadata_ncbi, metadata_tfac], axis=1, join="inner")
     metadata = metadata.loc[
-        :, ["status", "gender", "age", "disease", "dataset_id", "accession", "cohort"]
+        :, ["accession", "dataset_id", "disease", "status", "cohort", "age", "gender"]
     ]
     metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
         "accession"

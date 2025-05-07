@@ -153,6 +153,7 @@ def concat_datasets(
     adata_list = []
     for ad_key in ad_list:
         if ad_key in data_dict:
+            print(f"Importing {ad_key} dataset...")
             adata_list.append(data_dict[ad_key]())
         else:
             print(f"Warning: Dataset '{ad_key}' not found in available datasets.")
@@ -186,6 +187,7 @@ def concat_datasets(
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     if scale:
+        whole_ad = whole_ad.copy()
         whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
 
     return whole_ad

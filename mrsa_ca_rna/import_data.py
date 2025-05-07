@@ -68,7 +68,7 @@ def parse_metdata(metadata: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_archs4(geo_accession):
-    file_path = join(BASE_DIR, "mrsa_ca_rna", "data", "human_gene_v2.6.h5")
+    file_path = "/opt/extra-storage/jpopoli/human_gene_v2.6.h5"
 
     # Extract the count data from the ARCHS4 file, fail if not found
     counts = a4_data.series(file_path, geo_accession)
@@ -103,34 +103,60 @@ def import_mrsa():
     counts_mrsa_tmm = counts_mrsa_tmm.T
 
     # Grab mrsa metadata from SRA database since it is not on GEO
-    metadata_mrsa = pd.read_csv(
+    metadata_ncbi = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
         index_col=0,
         delimiter=",",
     )
 
     # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata_mrsa = metadata_mrsa.loc[:, ["phenotype", "sex"]]
-    metadata_mrsa.index.name = None
-    metadata_mrsa = metadata_mrsa.rename(
-        columns={
-            "phenotype": "status",
-        }
+    metadata_ncbi = metadata_ncbi.loc[:, ["isolate", "phenotype", "sex"]]
+    metadata_ncbi.index.name = None
+
+    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
+        "Resolvers", "0"
     )
-    metadata_mrsa["status"] = metadata_mrsa["status"].str.replace("Resolvers", "0")
-    metadata_mrsa["status"] = metadata_mrsa["status"].str.replace("Persisters", "1")
-    metadata_mrsa["disease"] = "MRSA"
-    metadata_mrsa["dataset_id"] = "SRP414349"
+    metadata_ncbi["phenotype"] = metadata_ncbi["phenotype"].str.replace(
+        "Persisters", "1"
+    )
+    metadata_ncbi["disease"] = "MRSA"
+    metadata_ncbi["dataset_id"] = "SRP414349"
+    metadata_ncbi = metadata_ncbi.reset_index(
+        drop=False, names=["accession"]
+    ).set_index("isolate")
+
+    """Cannot reconcile the NCBI uploaded metadata with the TFAC-MRSA metadata.
+    Until we get more informationa on the NCBI metadata, we will use
+    the TFAC-MRSA metadata, which agrees with Dr. Joshua Thaden's data."""
+    metadata_tfac = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    metadata_aux = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_tfac_validation.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    val_idx = metadata_aux.index
+    metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
+    metadata = pd.concat([metadata_ncbi, metadata_tfac], axis=1, join="inner")
+    metadata = metadata.loc[
+        :, ["status", "gender", "age", "disease", "dataset_id", "accession", "cohort"]
+    ]
+    metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
+        "accession"
+    )
 
     # Order the indices of the counts and metadata to match for AnnData
-    common_idx = counts_mrsa.index.intersection(metadata_mrsa.index)
+    common_idx = counts_mrsa.index.intersection(metadata.index)
     counts_mrsa = counts_mrsa.loc[common_idx]
     counts_mrsa_tmm = counts_mrsa_tmm.loc[common_idx]
-    metadata_mrsa = metadata_mrsa.loc[common_idx]
+    metadata = metadata.loc[common_idx]
 
     mrsa_adata = ad.AnnData(
         X=counts_mrsa_tmm,
-        obs=metadata_mrsa,
+        obs=metadata,
         var=pd.DataFrame(index=counts_mrsa.columns),
     )
     mrsa_adata.layers["raw"] = counts_mrsa

@@ -61,6 +61,9 @@ def test_import_functions(import_func, gene_list):
     # Test obs contains disease column
     assert "disease" in adata.obs.columns, "obs does not contain 'disease' column"
 
+    # Test obs contains dataset_id column
+    assert "dataset_id" in adata.obs.columns, "obs does not contain 'dataset_id' column"
+
     # Test raw layer exists
     assert "raw" in adata.layers, "adata.layers['raw'] does not exist"
 

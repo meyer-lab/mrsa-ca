@@ -131,6 +131,21 @@ def import_mrsa():
         "accession"
     )
 
+    # Make a regression classes for multinomial regression
+    metadata["status"] = "Unknown"
+    metadata.loc[
+        (metadata["gender"] == 0) & (metadata["Persistent"] == 0), "status"
+    ] = "male_resolver"
+    metadata.loc[
+        (metadata["gender"] == 1) & (metadata["Persistent"] == 0), "status"
+    ] = "female_resolver"
+    metadata.loc[
+        (metadata["gender"] == 0) & (metadata["Persistent"] == 1), "status"
+    ] = "male_persistent"
+    metadata.loc[
+        (metadata["gender"] == 1) & (metadata["Persistent"] == 1), "status"
+    ] = "female_persistent"
+
     # Order the indices of the counts and metadata to match for AnnData
     common_idx = counts_mrsa.index.intersection(metadata.index)
     counts_mrsa = counts_mrsa.loc[common_idx]
@@ -164,18 +179,18 @@ def import_tfac():
     tfac_tmm = tfac_tmm.T
 
     # Make a regression classes for multinomial regression
-    sex_matched["class"] = "Unknown"
+    sex_matched["status"] = "Unknown"
     sex_matched.loc[
-        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 0), "class"
+        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 0), "status"
     ] = "male_resolver"
     sex_matched.loc[
-        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 0), "class"
+        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 0), "status"
     ] = "female_resolver"
     sex_matched.loc[
-        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 1), "class"
+        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 1), "status"
     ] = "male_persistent"
     sex_matched.loc[
-        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 1), "class"
+        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 1), "status"
     ] = "female_persistent"
 
     # Match the metadata to the counts
@@ -183,6 +198,9 @@ def import_tfac():
     tfac_raw = tfac_raw.loc[common_idx]
     tfac_tmm = tfac_tmm.loc[common_idx]
     sex_matched = sex_matched.loc[common_idx]
+
+    sex_matched["disease"] = "MRSA"
+    sex_matched["dataset_id"] = "SRP414349"
 
     tfac_adata = ad.AnnData(
         X=tfac_tmm,

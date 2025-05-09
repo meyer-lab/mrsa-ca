@@ -27,24 +27,22 @@ def perform_LR(
     y_data: pd.DataFrame,
     splits: int = 10,
 ) -> tuple[float, np.ndarray, LogisticRegressionCV]:
-    """
-    Agnostically performs LogisticRegression
-    with nested cross validation to passed data.
+    """Performs logistic regression with nested cross-validation
 
+    Parameters
+    ----------
+    X_data : pd.DataFrame
+        X matrix for analysis
+    y_data : pd.DataFrame
+        y target vector
+    splits : int, optional
+        number of startified kfold splits, by default 10
 
-    Parameters:
-        X_data (pd.DataFrame): X data for regularization
-                                and subsequent nested cross validation
-        y_data (pd.DataFrame): y data for regularization
-                                and subsequent nested cross validation
-        splits (int): number of splits for nested cross validation.
-                        Default = 10
-
-    Returns:
-        nested_score (float): nested cross validation score of the final model
-        nested_proba (np.ndarray): nested cross validation predicted probabilities
-                                    of the final model
-        clf_cv (LogisticRegressionCV): classifier object fit to the data
+    Returns
+    -------
+    tuple[float, np.ndarray, LogisticRegressionCV]
+        tuple containing the nested score, the predicted probabilities,
+        and the fitted LogisticRegressionCV object
     """
 
     assert (

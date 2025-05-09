@@ -220,6 +220,9 @@ def import_ca():
     )
     ca_adata.layers["raw"] = counts_ca
 
+    # Remove all non-Candidemia samples
+    ca_adata = ca_adata[ca_adata.obs["disease"] == "Candidemia"].copy()
+
     return ca_adata
 
 
@@ -266,6 +269,9 @@ def import_uc():
         var=pd.DataFrame(index=counts.columns),
     )
     uc_adata.layers["raw"] = counts
+
+    # Remove all non-UC samples
+    uc_adata = uc_adata[uc_adata.obs["disease"] == "Ulcerative Colitis"].copy()
 
     return uc_adata
 
@@ -391,6 +397,9 @@ def import_covid():
     )
     covid_adata.layers["raw"] = counts
 
+    # Remove all non-COVID samples
+    covid_adata = covid_adata[covid_adata.obs["disease"] == "COVID-19"].copy()
+
     return covid_adata
 
 
@@ -430,6 +439,189 @@ def import_lupus():
     return lupus_adata
 
 
+def import_hiv():
+    counts, counts_tmm, metadata = load_archs4("GSE162914")
+
+    # Pair down metadata and ensure "disease" and "status" columns are present
+    metadata = metadata.loc[
+        :,
+        [
+            "patient id",
+            "age",
+            "baseline cd4+",
+            "baseline hiv_rna",
+            "outcome",
+            "timing",
+            "treatment-outcome code",
+        ],
+    ]
+    metadata = metadata.rename(
+        columns={
+            "patient id": "subject_id",
+            "baseline cd4+": "baseline_cd4+",
+            "baseline hiv_rna": "baseline_hiv_rna",
+            "outcome": "status",
+            "timing": "time",
+            "treatment-outcome code": "treatment_outcome_code",
+        }
+    )
+    metadata["disease"] = "HIV_CM"
+    metadata["dataset_id"] = "GSE162914"
+
+    hiv_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    hiv_adata.layers["raw"] = counts
+
+    return hiv_adata
+
+
+def import_em():
+    counts, counts_tmm, metadata = load_archs4("GSE133378")
+
+    metadata = metadata.loc[:, ["infected with/healthy control"]]
+    metadata["dataset_id"] = "GSE133378"
+    metadata["status"] = "Unknown"
+
+    metadata = metadata.rename(columns={"infected with/healthy control": "disease"})
+    metadata["disease"] = metadata["disease"].str.replace("Control", "Healthy")
+
+    em_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    em_adata.layers["raw"] = counts
+
+    # Take only the Enterovirus and Healthy samples
+    em_adata = em_adata[
+        em_adata.obs["disease"].str.contains("Enterovirus|Healthy"), :
+    ].copy()
+
+    return em_adata
+
+
+def import_zika():
+    counts, counts_tmm, metadata = load_archs4("GSE129882")
+
+    metadata = metadata.loc[
+        :,
+        [
+            "Sex",
+            "age",
+            "exposure",
+            "patient",
+            "time",
+        ],
+    ]
+    metadata = metadata.rename(
+        columns={
+            "exposure": "status",
+            "patient": "subject_id",
+        }
+    )
+    metadata["disease"] = "Zika"
+    metadata["dataset_id"] = "GSE129882"
+
+    zika_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    zika_adata.layers["raw"] = counts
+
+    return zika_adata
+
+
+def import_heme():
+    counts, counts_tmm, metadata = load_archs4("GSE133758")
+
+    metadata = metadata.loc[:, ["globin-block applied", "identifier"]]
+    metadata = metadata.rename(
+        columns={
+            "globin-block applied": "status",
+            "identifier": "subject_id",
+        }
+    )
+    metadata["disease"] = "Healthy_heme"
+    metadata["dataset_id"] = "GSE133758"
+    heme_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    heme_adata.layers["raw"] = counts
+
+    return heme_adata
+
+
+def import_ra():
+    counts, counts_tmm, metadata = load_archs4("GSE120178")
+
+    metadata = metadata.rename(
+        columns={"disease state": "disease", "timepoint": "time"}
+    )
+    metadata["disease"] = metadata["disease"].str.replace("rheumatoid arthritis", "RA")
+    metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
+    metadata["status"] = "Unknown"
+    metadata["dataset_id"] = "GSE120178"
+
+    ra_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    ra_adata.layers["raw"] = counts
+
+    # Keep only the RA samples
+    ra_adata = ra_adata[ra_adata.obs["disease"] == "RA"].copy()
+
+    return ra_adata
+
+
+def import_hbv():
+    counts, counts_tmm, metadata = load_archs4("GSE173897")
+
+    metadata = metadata.loc[:, ["ethnicity", "gender", "hbv status"]]
+    metadata = metadata.rename(columns={"hbv status": "status"})
+    metadata["disease"] = "HBV"
+    metadata["dataset_id"] = "GSE173897"
+
+    hbv_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    hbv_adata.layers["raw"] = counts
+
+    return hbv_adata
+
+
+def import_kidney():
+    counts, counts_tmm, metadata = load_archs4("GSE112927")
+
+    metadata = metadata.loc[:, ["death censored graft loss", "follow up days"]]
+    metadata = metadata.rename(
+        columns={
+            "death censored graft loss": "status",
+            "follow up days": "time",
+        }
+    )
+    metadata["disease"] = "Kidney Transplant"
+    metadata["dataset_id"] = "GSE112927"
+
+    kidney_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    kidney_adata.layers["raw"] = counts
+
+    return kidney_adata
+
+
 def build_disease_registry(save_path=None):
     """
     Build a registry mapping diseases to their source datasets.
@@ -449,6 +641,13 @@ def build_disease_registry(save_path=None):
         "t1dm": import_t1dm,
         "covid": import_covid,
         "lupus": import_lupus,
+        "hiv": import_hiv,
+        "em": import_em,
+        "zika": import_zika,
+        "heme": import_heme,
+        "ra": import_ra,
+        "hbv": import_hbv,
+        "kidney": import_kidney,
     }
 
     registry = {}

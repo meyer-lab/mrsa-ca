@@ -9,7 +9,7 @@ output/figure%.svg: mrsa_ca_rna/figures/figure%.py
 	rye run fbuild $*
 
 test: .venv
-	rye run pytest -s -v -x
+	rye run pytest -s -v
 
 wandb_%: .venv
 	@echo "Running wandb experiment: $*"

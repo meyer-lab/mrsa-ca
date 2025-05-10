@@ -27,9 +27,14 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
     """
 
     # bring in the rna anndata objects and push them to dataframes for perform_pca()
-    disease_list = ["mrsa", "ca"]
+    datasets = ["mrsa", "ca"]
+    diseases = ["MRSA", "Candidemia"]
 
-    adata = concat_datasets(disease_list, scale=False, tpm=True)
+    adata = concat_datasets(
+        datasets,
+        diseases,
+        scale=False,
+    )
 
     df = adata.to_df()
 
@@ -37,7 +42,7 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
 
     # subset the scores to just MRSA
     scores_mrsa = scores.loc[adata.obs["disease"] == "MRSA"].copy()
-    y_mrsa = adata.obs.loc[adata.obs["disease"] == "MRSA", "status"].copy()
+    y_mrsa = adata.obs.loc[adata.obs["disease"] == "MRSA", "status"].copy().astype(int)
 
     accuracy, _, model = perform_LR(scores_mrsa, y_mrsa)
     betas = model.coef_

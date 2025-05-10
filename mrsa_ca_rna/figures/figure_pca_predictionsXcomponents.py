@@ -20,7 +20,12 @@ def figure_setup():
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]
-    whole_data = concat_datasets(datasets, scale=False, tpm=True)
+    diseases = ["MRSA", "Candidemia"]
+    whole_data = concat_datasets(
+        datasets,
+        diseases,
+        scale=False,
+    )
 
     # split the data into the datasets we want to compare
     mrsa_split = whole_data[whole_data.obs["disease"] == "MRSA"].copy()
@@ -33,7 +38,9 @@ def figure_setup():
     combined_df = combined.to_df()
 
     # get the MRSA outcome data to regress against
-    y_true = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"]
+    y_true = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"].astype(
+        int
+    )
 
     """We only have MRSA outcome data, so we have to leave out the CA data
     and truncate the combined data to MRSA data before performing regression."""

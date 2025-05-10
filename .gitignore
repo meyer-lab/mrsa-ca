@@ -132,9 +132,6 @@ dmypy.json
 # vscode
 .vscode/
 
-# RNAseq analysis
-salmon_processing/
-
 # Pyre type checker
 .pyre/
 
@@ -146,5 +143,11 @@ salmon_processing/
 # output data
 *.svg
 output/*.csv
+
+# Large files
+*.h5
+*.tmp
+*.fastq
+*.fasta
 
 # Unsorted ('add to gitignore' dialogue)

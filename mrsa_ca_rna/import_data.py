@@ -160,6 +160,8 @@ def import_mrsa():
     )
     mrsa_adata.layers["raw"] = counts_mrsa
 
+    mrsa_adata.obs["status"] = mrsa_adata.obs["status"].astype(int)
+
     return mrsa_adata
 
 

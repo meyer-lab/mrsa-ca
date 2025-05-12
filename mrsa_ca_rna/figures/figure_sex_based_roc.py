@@ -146,6 +146,10 @@ def genFig():
     # Plot ROC curves for each tier
     tier_scores = {}
     for i, (tier_name, gene_list) in enumerate(tiers.items()):
+        # Replace Tier 4 with all genes for the last tier
+        if tier_name == "Tier 4":
+            gene_list = data.var.index.tolist()
+            
         score = plot_roc_for_tier(ax[i], data, gene_list, tier_name)
         tier_scores[tier_name] = score
 

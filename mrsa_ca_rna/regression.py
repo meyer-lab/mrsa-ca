@@ -55,9 +55,8 @@ def perform_LR(
     # perform logistic regression with nested cross validation
     # eventually settle on a single l1_ratio?
     clf_cv = LogisticRegressionCV(
-        l1_ratios=[0.2, 0.5, 0.8],
         solver="saga",
-        penalty="elasticnet",
+        penalty="l1",
         n_jobs=10,
         cv=skf,
         max_iter=100000,

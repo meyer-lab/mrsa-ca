@@ -38,7 +38,7 @@ def create_model(data, gene_list):
         f"Found {len(genes)} out of {len(gene_list)} genes in the dataset "
         f"({percent_found:.2f}%)"
     )
-    if missing_genes & len(missing_genes) < 100:
+    if (len(missing_genes) > 0) & (len(missing_genes) < 100):
         print(f"Missing genes: {', '.join(missing_genes)}")
 
     # Extract features and target
@@ -202,3 +202,6 @@ def genFig():
 
     # Return both figures as a tuple
     return (roc_f, coef_f)
+
+if __name__ == "__main__":
+    figures = genFig()

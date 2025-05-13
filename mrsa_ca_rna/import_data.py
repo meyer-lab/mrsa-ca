@@ -162,54 +162,35 @@ def import_mrsa():
     return mrsa_adata
 
 
-def import_tfac():
-    tfac_raw = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "tfac_counts.txt.zip"),
-        index_col=0,
-        delimiter=",",
-        compression="zip",
+def import_gene_tiers():
+    tier_1 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier1.csv"), header=None)
+        .squeeze()
+        .tolist()
     )
-    sex_matched = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_joshua.csv"),
-        index_col=0,
-        delimiter=",",
+    tier_2 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier2.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+    tier_3 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier3.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+    tier_4 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier4.csv"), header=None)
+        .squeeze()
+        .tolist()
     )
 
-    tfac_tmm = a4_utils.normalize(counts=tfac_raw.T, method="tmm", tmm_outlier=0.05)
-    tfac_tmm = tfac_tmm.T
-
-    # Make a regression classes for multinomial regression
-    sex_matched["status"] = "Unknown"
-    sex_matched.loc[
-        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 0), "status"
-    ] = "male_resolver"
-    sex_matched.loc[
-        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 0), "status"
-    ] = "female_resolver"
-    sex_matched.loc[
-        (sex_matched["gender"] == 0) & (sex_matched["Persistent"] == 1), "status"
-    ] = "male_persistent"
-    sex_matched.loc[
-        (sex_matched["gender"] == 1) & (sex_matched["Persistent"] == 1), "status"
-    ] = "female_persistent"
-
-    # Match the metadata to the counts
-    common_idx = tfac_raw.index.intersection(sex_matched.index)
-    tfac_raw = tfac_raw.loc[common_idx]
-    tfac_tmm = tfac_tmm.loc[common_idx]
-    sex_matched = sex_matched.loc[common_idx]
-
-    sex_matched["disease"] = "MRSA"
-    sex_matched["dataset_id"] = "SRP414349"
-
-    tfac_adata = ad.AnnData(
-        X=tfac_tmm,
-        obs=sex_matched,
-        var=pd.DataFrame(index=tfac_raw.columns),
-    )
-    tfac_adata.layers["raw"] = tfac_raw
-
-    return tfac_adata
+    gene_tiers = {
+        "Tier 1": tier_1,
+        "Tier 2": tier_2,
+        "Tier 3": tier_3,
+        "Tier 4": tier_4,
+    }
+    return gene_tiers
 
 
 def import_ca():

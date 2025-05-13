@@ -624,6 +624,86 @@ def import_kidney():
     return kidney_adata
 
 
+def import_covid_marine():
+    counts, counts_tmm, metadata = load_archs4("GSE198449")
+
+    metadata = metadata.loc[
+        :,
+        [
+            "Sex",
+            "age",
+            "race",
+            "participant id",
+            "pcr test for sars-cov-2",
+            "sample collection time point (days since t0)",
+            "symptom",
+        ],
+    ]
+    metadata = metadata.rename(
+        columns={
+            "participant id": "subject_id",
+            "sample collection time point (days since t0)": "time",
+            "pcr test for sars-cov-2": "disease",
+            "symptom": "status",
+        }
+    )
+
+    metadata["dataset_id"] = "GSE198449"
+
+    covid_m_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    covid_m_adata.layers["raw"] = counts
+
+    # Remove all non-COVID or problem samples
+    covid_m_adata = covid_m_adata[~covid_m_adata.obs["disease"].isna()]
+    covid_m_adata = covid_m_adata[
+        covid_m_adata.obs["disease"].str.contains("Not|Detected")
+    ].copy()
+
+    # Any recorded symptoms are considered symptomatic, otherwise asymptomatic
+    covid_m_adata.obs.loc[covid_m_adata.obs["status"].notna(), ["status"]] = (
+        "Symptomatic"
+    )
+    covid_m_adata.obs.loc[covid_m_adata.obs["status"].isna(), ["status"]] = (
+        "Asymptomatic"
+    )
+
+    """Not yet sure if we will distinguish between healthy and diseased within a dataset
+    of longitudinal samples. For now, we will just label all samples as diseased."""
+    covid_m_adata.obs["disease"] = "COVID_marine"
+    # # Disease is either "Not" or "Detected"
+    # covid_m_adata.obs[
+    # covid_m_adata.obs["disease"].str.contains("Not"), "disease"
+    # ] = "COVID_m_neg"
+    # covid_m_adata.obs[
+    # covid_m_adata.obs["disease"].str.contains("Detected"), "disease"
+    # ] = "COVID_m_pos"
+
+    return covid_m_adata
+
+
+def import_test():
+    counts, counts_tmm, metadata = load_archs4("GSE171730")
+
+    test_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    test_adata.layers["raw"] = counts
+    test_adata.obs["disease"] = "Test"
+    test_adata.obs["status"] = "Unknown"
+
+    return test_adata
+
+
+if __name__ == "__main__":
+    test_adata = import_test()
+
+
 def build_disease_registry(save_path=None):
     """
     Build a registry mapping diseases to their source datasets.
@@ -650,6 +730,7 @@ def build_disease_registry(save_path=None):
         "ra": import_ra,
         "hbv": import_hbv,
         "kidney": import_kidney,
+        "covid_marine": import_covid_marine,
     }
 
     registry = {}

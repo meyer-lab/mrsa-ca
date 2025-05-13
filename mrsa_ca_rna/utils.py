@@ -12,6 +12,7 @@ from mrsa_ca_rna.import_data import (
     import_bc,
     import_ca,
     import_covid,
+    import_covid_marine,
     import_em,
     import_hbv,
     import_heme,
@@ -153,6 +154,7 @@ def concat_datasets(
         "heme": import_heme,
         "ra": import_ra,
         "hbv": import_hbv,
+        "covid_marine": import_covid_marine,
     }
 
     # If no list is provided or "all" is specified, use all available datasets

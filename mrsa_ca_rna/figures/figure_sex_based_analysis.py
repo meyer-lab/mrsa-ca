@@ -86,10 +86,10 @@ def plot_roc_for_tier(ax, X, targets, score, proba, model):
     # Set plot labels and title
     ax.set_xlabel("False Positive Rate")
     ax.set_ylabel("True Positive Rate")
-    ax.set_title(
-        f"ROC Curves by Class ({len(X.columns)} genes)"
-        f"\nBalanced Accuracy: {score:.2f}"
-    )
+    # ax.set_title(
+    #     f"ROC Curves by Class ({len(X.columns)} genes)"
+    #     f"\nBalanced Accuracy: {score:.2f}"
+    # )
 
     # Adjust legend position
     ax.legend(loc="lower right", title="", fontsize="small")
@@ -140,10 +140,10 @@ def plot_coefficients_for_tier(ax, X, score, model, top_n=10):
     # Set plot labels and title
     ax.set_xlabel("Genes")
     ax.set_ylabel("Coefficient Value")
-    ax.set_title(
-        f"Top {top_n} Predictive Genes ({len(X.columns)} genes)"
-        f"\nBalanced Accuracy: {score:.2f}"
-    )
+    # ax.set_title(
+    #     f"Top {top_n} Predictive Genes in ({len(X.columns)} genes)"
+    #     f"\nBalanced Accuracy: {score:.2f}"
+    # )
 
     # Rotate x-axis labels for better readability
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
@@ -151,15 +151,39 @@ def plot_coefficients_for_tier(ax, X, score, model, top_n=10):
     # Choose consistent legend position
     ax.legend(title="Class", loc="upper right", fontsize="small")
 
+        # Add dividing lines between gene groups
+    # Get the x-tick positions
+    xticks = ax.get_xticks()
+    
+    # Add alternating background for each gene group
+    for i in range(len(xticks)):
+        # Calculate the boundaries for each gene group
+        if i < len(xticks) - 1:
+            left = (xticks[i] + xticks[i+1]) / 2
+            ax.axvline(x=left, color='gray', linestyle='--', alpha=0.5, linewidth=0.7)
+    
+    # Add light background shading for alternate gene groups
+    for i in range(len(xticks)):
+        if i % 2 == 0:  # For even-indexed genes
+            if i < len(xticks) - 1:
+                left = xticks[i] - 0.4
+                right = xticks[i] + 0.4
+                ax.axvspan(left, right, color='lightgray', alpha=0.2, zorder=0)
+
 
 def genFig():
     """Generate both ROC curve and coefficient plots for each gene tier"""
     # Get tiers data
     tiers = import_gene_tiers()
-    num_tiers = len(tiers)
 
     # Load data once
     data = setup_data()
+
+    # Add 5th tier for all genes represented in the dataset
+    all_genes = data.var.index.tolist()
+    tiers["Tier 5"] = all_genes
+
+    num_tiers = len(tiers)
 
     # Create first figure for ROC curves
     roc_fig_size = (4, num_tiers * 4)
@@ -182,6 +206,12 @@ def genFig():
         # Create model once
         X, targets, score, proba, model = create_model(data, gene_list)
 
+        # Plot ROC curves
+        plot_roc_for_tier(roc_ax[i], X, targets, score, proba, model)
+
+        # Plot coefficients
+        plot_coefficients_for_tier(coef_ax[i], X, score, model)
+
         # Add tier name to ROC title
         roc_ax[i].set_title(
             f"ROC Curves by Class - {tier_name} ({len(X.columns)} genes)"
@@ -194,14 +224,5 @@ def genFig():
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-        # Plot ROC curves
-        plot_roc_for_tier(roc_ax[i], X, targets, score, proba, model)
-
-        # Plot coefficients
-        plot_coefficients_for_tier(coef_ax[i], X, score, model)
-
     # Return both figures as a tuple
     return (roc_f, coef_f)
-
-if __name__ == "__main__":
-    figures = genFig()

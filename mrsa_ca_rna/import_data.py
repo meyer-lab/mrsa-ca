@@ -685,8 +685,50 @@ def import_covid_marine():
     return covid_m_adata
 
 
+def import_bc_tcr():
+    # Read in breast cancer tcr counts
+    counts = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_bc_archs4.tsv.gz"),
+        index_col=0,
+        delimiter="\t",
+    )
+    counts = a4_utils.aggregate_duplicate_genes(counts)
+    counts_tmm = a4_utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
+    counts = counts.T
+    counts_tmm = counts_tmm.T
+
+    # Read in breast cancer metadata
+    metadata = pd.read_json(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_bc_archs4.json")
+    )
+
+    # Transpose and rename the metadata to fit parser
+    metadata = metadata.T
+    metadata = metadata.rename(
+        columns={
+            "characteristics": "characteristics_ch1",
+        }
+    )
+    metadata = parse_metdata(metadata)
+    metadata = metadata.rename(
+        columns={
+            "tumor status": "status",
+        }
+    )
+    metadata["disease"] = "Breast Cancer TCR"
+    metadata["dataset_id"] = "GSE239933"
+
+    bc_tcr_adata = ad.AnnData(
+        X=counts_tmm,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+    bc_tcr_adata.layers["raw"] = counts
+    
+    return bc_tcr_adata
+
 def import_test():
-    counts, counts_tmm, metadata = load_archs4("GSE171730")
+    counts, counts_tmm, metadata = load_archs4("GSE239933")
 
     test_adata = ad.AnnData(
         X=counts_tmm,
@@ -699,9 +741,8 @@ def import_test():
 
     return test_adata
 
-
 if __name__ == "__main__":
-    test_adata = import_test()
+    test_adata = import_bc_tcr()
 
 
 def build_disease_registry(save_path=None):
@@ -731,6 +772,7 @@ def build_disease_registry(save_path=None):
         "hbv": import_hbv,
         "kidney": import_kidney,
         "covid_marine": import_covid_marine,
+        "bc_tcr": import_bc_tcr,
     }
 
     registry = {}

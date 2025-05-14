@@ -21,6 +21,7 @@ from mrsa_ca_rna.import_data import (
     import_tb,
     import_uc,
     import_zika,
+    import_bc_tcr,
 )
 
 # Path to gene list file
@@ -54,6 +55,7 @@ def gene_list():
         import_hbv,
         import_kidney,
         import_covid_marine,
+        import_bc_tcr,
     ],
 )
 def test_import_functions(import_func, gene_list):
@@ -117,6 +119,7 @@ def test_all_datasets_gene_compatibility():
     hbv_adata = import_hbv()
     kidney_adata = import_kidney()
     covid_marine_adata = import_covid_marine()
+    bc_tcr_adata = import_bc_tcr()
 
     assert np.array_equal(
         mrsa_adata.var.index, ca_adata.var.index
@@ -163,3 +166,6 @@ def test_all_datasets_gene_compatibility():
     assert np.array_equal(
         mrsa_adata.var.index, covid_marine_adata.var.index
     ), "MRSA and COVID MARINE datasets have different genes"
+    assert np.array_equal(
+        mrsa_adata.var.index, bc_tcr_adata.var.index
+    ), "MRSA and BC TCR datasets have different genes"

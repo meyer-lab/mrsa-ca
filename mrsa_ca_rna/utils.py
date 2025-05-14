@@ -24,6 +24,7 @@ from mrsa_ca_rna.import_data import (
     import_tb,
     import_uc,
     import_zika,
+    import_bc_tcr,
 )
 
 
@@ -155,6 +156,7 @@ def concat_datasets(
         "ra": import_ra,
         "hbv": import_hbv,
         "covid_marine": import_covid_marine,
+        "bc_tcr": import_bc_tcr,
     }
 
     # If no list is provided or "all" is specified, use all available datasets

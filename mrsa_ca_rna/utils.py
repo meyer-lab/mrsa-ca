@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.import_data import (
     import_bc,
+    import_bc_tcr,
     import_ca,
     import_covid,
     import_covid_marine,
@@ -24,7 +25,6 @@ from mrsa_ca_rna.import_data import (
     import_tb,
     import_uc,
     import_zika,
-    import_bc_tcr,
 )
 
 

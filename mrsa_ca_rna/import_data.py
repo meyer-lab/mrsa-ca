@@ -724,8 +724,9 @@ def import_bc_tcr():
         var=pd.DataFrame(index=counts.columns),
     )
     bc_tcr_adata.layers["raw"] = counts
-    
+
     return bc_tcr_adata
+
 
 def import_test():
     counts, counts_tmm, metadata = load_archs4("GSE239933")
@@ -738,11 +739,13 @@ def import_test():
     test_adata.layers["raw"] = counts
     test_adata.obs["disease"] = "Test"
     test_adata.obs["status"] = "Unknown"
+    test_adata.obs["dataset_id"] = "GSExxxxxxx"
 
     return test_adata
 
+
 if __name__ == "__main__":
-    test_adata = import_bc_tcr()
+    test_adata = import_test()
 
 
 def build_disease_registry(save_path=None):

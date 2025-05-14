@@ -6,6 +6,7 @@ import pytest
 from mrsa_ca_rna.import_data import (
     BASE_DIR,
     import_bc,
+    import_bc_tcr,
     import_ca,
     import_covid,
     import_covid_marine,
@@ -21,7 +22,6 @@ from mrsa_ca_rna.import_data import (
     import_tb,
     import_uc,
     import_zika,
-    import_bc_tcr,
 )
 
 # Path to gene list file

@@ -4,8 +4,9 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 """
 
 # imports
+from typing import TYPE_CHECKING
+
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
 
@@ -13,6 +14,9 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.utils import concat_datasets, gene_filter
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -64,7 +68,7 @@ def figure_setup():
 
     # get the beta coefficients from the model and associate them with the components
     weights: np.ndarray = model.coef_[0]
-    weights_dict = {f"PC{i+1}": weights[i] for i in range(len(weights))}
+    weights_dict = {f"PC{i + 1}": weights[i] for i in range(len(weights))}
 
     ## TODO: this move is too slick, refactor
     # transform into a series of dataframes with the top genes for each component
@@ -104,7 +108,7 @@ def genFig():
         a = sns.barplot(data=comp, ax=ax[i + 2])
         a.set_xlabel("Gene")
         a.set_ylabel("Weight")
-        a.set_title(f"Top 5 genes for Component component {i+1}")
+        a.set_title(f"Top 5 genes for Component component {i + 1}")
 
     return f
 

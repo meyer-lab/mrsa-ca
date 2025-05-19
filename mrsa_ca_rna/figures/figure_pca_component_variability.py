@@ -70,7 +70,7 @@ def figure_setup():
 
     # set up dataframes
     pc_index = pd.Index([f"{i}" for i in range(1, n_comp + 1)])
-    pc_columns = pd.Index([f"Resample {i+1}" for i in range(n_resamples)])
+    pc_columns = pd.Index([f"Resample {i + 1}" for i in range(n_resamples)])
 
     pca_singular_values = pd.DataFrame(
         np.zeros((n_comp, n_resamples)), columns=pc_columns, index=pc_index

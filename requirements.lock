@@ -56,7 +56,6 @@ comm==0.2.2
 contourpy==1.3.0
     # via matplotlib
 cupy-cuda12x==13.4.1
-    # via mrsa-ca-rna
     # via parafac2
 cycler==0.12.1
     # via matplotlib
@@ -117,9 +116,7 @@ llvmlite==0.44.0
     # via numba
 loess==2.1.2
     # via xalign
-lxml==5.3.0
-    # via svgutils
-matplotlib==3.9.2
+matplotlib==3.10.3
     # via ipympl
     # via loess
     # via mrsa-ca-rna
@@ -264,8 +261,6 @@ stack-data==0.6.3
 statsmodels==0.14.4
     # via tlviz
     # via xalign
-svgutils==0.3.4
-    # via mrsa-ca-rna
 tensorly==0.9.0
     # via mrsa-ca-rna
     # via parafac2

@@ -27,7 +27,9 @@ def factorize(X_in: ad.AnnData, rank: int, random_state=None):
     return factors, R2X
 
 
-def bootstrap_fms(X, rank, target_trials=30):
+def bootstrap_fms(X, rank, target_trials=30, random_state=None):
+    rng = np.random.default_rng(random_state)
+
     fms_list = []
     R2X_diff_list = []
 
@@ -35,7 +37,7 @@ def bootstrap_fms(X, rank, target_trials=30):
     successful_trials = 0
     failed_trials = 0
 
-    seeds = np.random.randint(0, 1000, size=(target_trials * 2,))
+    seeds = rng.integers(0, 1000, size=(target_trials * 2,))
 
     # continue until we have enough successful trials
     while successful_trials < target_trials:
@@ -116,7 +118,7 @@ def genFig():
     a.set_title(
         "FMS and R2X percent difference of PF2 factor matrices\n"
         f"Successes: {successes}, Failures: {failures}\n"
-        f"Rank: {data["rank"].unique()}"
+        f"Rank: {data['rank'].unique()}"
     )
 
     a = sns.kdeplot(data=data, x="fms", hue="rank", clip=(0, 1), ax=ax[1])

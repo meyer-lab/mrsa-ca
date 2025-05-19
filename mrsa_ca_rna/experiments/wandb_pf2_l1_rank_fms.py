@@ -40,7 +40,7 @@ def objective(config):
         wb.log({"iteration": it, "R2X": R2X, "sparsity": sparsity})
 
     # factorize the original and resampled data with the same random state
-    random_state = np.random.randint(0, 1000)
+    random_state = np.random.randint(0, 1000)  # noqa: NPY002
 
     _, factors_true, _, _ = perform_parafac2(
         X,

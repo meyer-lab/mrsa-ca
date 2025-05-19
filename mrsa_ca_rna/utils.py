@@ -209,7 +209,7 @@ def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
     return sparsity
 
 
-def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
+def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     """Resamples AnnData with unique observation indices, with replacement.
 
     Parameters
@@ -222,9 +222,10 @@ def resample_adata(X_in: ad.AnnData) -> ad.AnnData:
     ad.AnnData
         Resampled AnnData object with unique observation indices
     """
+    rng = np.random.default_rng(random_state)
 
     # make a random index with replacement for resampling
-    random_index = np.random.randint(0, X_in.shape[0], size=(X_in.shape[0],))
+    random_index = rng.integers(0, X_in.shape[0], size=(X_in.shape[0],))
 
     # independently subset the data and obs with the random indices
     assert isinstance(X_in.X, np.ndarray)

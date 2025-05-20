@@ -8,20 +8,8 @@ a disease registry. This is primarily to help a human reader associate imports.
 
 In the future, we might create a more comprehensive disease registry to
 better keep track of all diseases represented across all datasets.
-Import data from various sources, compiled by ARCHS4 and format them
-into AnnData objects.
-
-For now, we keep track of the study numbers and the primary diseases represented.
-We use the primary disease to label the dataset for the time being using
-a disease registry. This is primarily to help a human reader associate imports.
-
-In the future, we might create a more comprehensive disease registry to
-better keep track of all diseases represented across all datasets.
 """
 
-import contextlib
-import json
-import multiprocessing
 import contextlib
 import json
 import multiprocessing
@@ -31,13 +19,7 @@ import anndata as ad
 import archs4py.data as a4_data
 import archs4py.meta as a4_meta
 import archs4py.utils as a4_utils
-import archs4py.data as a4_data
-import archs4py.meta as a4_meta
-import archs4py.utils as a4_utils
 import pandas as pd
-
-with contextlib.suppress(RuntimeError):
-    multiprocessing.set_start_method("spawn")  # loss of speed but avoids fork() issues
 
 with contextlib.suppress(RuntimeError):
     multiprocessing.set_start_method("spawn")  # loss of speed but avoids fork() issues
@@ -45,43 +27,7 @@ with contextlib.suppress(RuntimeError):
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
 
-def parse_metdata(metadata: pd.DataFrame) -> pd.DataFrame:
-    # GEO metadata in SOFT format stores clinical data in the characteristics_ch1 column
-    metadata_char_ch1 = metadata.loc[:, "characteristics_ch1"].copy()
-
-    # First, collect all unique column names from all rows
-    all_keys = set()
-    for value in metadata_char_ch1:
-        if isinstance(value, str):
-            items = value.split(",")
-            for item in items:
-                if ": " in item:
-                    key = item.split(": ")[0].strip()
-                    all_keys.add(key)
-
-    # Create a DataFrame with these keys as columns
-    result_df = pd.DataFrame(
-        index=metadata_char_ch1.index, columns=pd.Index(sorted(all_keys))
-    )
-
-    # Fill in the data for each row
-    for idx, value in enumerate(metadata_char_ch1):
-        if isinstance(value, str):
-            items = value.split(",")
-            for item in items:
-                if ": " in item:
-                    try:
-                        key, val = item.split(": ", 1)
-                        key = key.strip()
-                        val = val.strip()
-                        result_df.loc[metadata_char_ch1.index[idx], key] = val
-                    except ValueError:
-                        continue
-
-    """I do not know if this is necessary yet"""
-    # # Fill NaN values with "Unknown" to indicate we filled in the data
-    # result_df = result_df.fillna("Unkown")
-def parse_metdata(metadata: pd.DataFrame) -> pd.DataFrame:
+def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
     # GEO metadata in SOFT format stores clinical data in the characteristics_ch1 column
     metadata_char_ch1 = metadata.loc[:, "characteristics_ch1"].copy()
 
@@ -137,7 +83,7 @@ def load_archs4(geo_accession):
     metadata = a4_meta.series(file_path, geo_accession)
 
     # Parse the metadata to extract the clinical variables
-    clinical_variables = parse_metdata(metadata)
+    clinical_variables = parse_metadata(metadata)
 
     return counts.T, counts_tmm.T, clinical_variables
 
@@ -246,7 +192,7 @@ def import_ca():
         index=pd.Index(list(metadata_ca.keys())),
         columns=pd.Index(["characteristics_ch1"]),
     )
-    metadata_ca = parse_metdata(metadata_ca)  # includes qc failures
+    metadata_ca = parse_metadata(metadata_ca)  # includes qc failures
 
     # Pair down metadata and ensure "disease" and "status" columns are present
     metadata_ca = metadata_ca.loc[
@@ -763,7 +709,7 @@ def import_bc_tcr():
             "characteristics": "characteristics_ch1",
         }
     )
-    metadata = parse_metdata(metadata)
+    metadata = parse_metadata(metadata)
     metadata = metadata.rename(
         columns={
             "tumor status": "status",
@@ -807,7 +753,6 @@ def build_disease_registry(save_path=None):
     Build a registry mapping diseases to their source datasets.
 
     Parameters:
-        save_path (str, optional): If provided, saves the registry as JSON
         save_path (str, optional): If provided, saves the registry as JSON
 
     Returns:

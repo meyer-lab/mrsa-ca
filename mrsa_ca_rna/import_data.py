@@ -80,74 +80,8 @@ def series_local(file, series_id):
 
     f.close()
     exp = pd.DataFrame(exp, index=genes, columns=gsm_ids, dtype=np.uint32)
-    return exp
 
-
-def normalize(counts, tmm_outlier=0.05):
-    """
-    Normalize the count matrix using a specified method.
-    "tmm": Perform trimmed mean normalization
-
-    Args:
-        counts (pd.DataFrame): A pandas DataFrame representing the count matrix.
-
-    Returns:
-        pd.DataFrame: A normalized count matrix as a pandas DataFrame with the same
-                      index and columns as the input.
-
-    Raises:
-        ValueError: If an unsupported normalization method is provided.
-    """
-    norm_exp = tmm_norm(counts, tmm_outlier)
-    norm_exp = pd.DataFrame(
-        norm_exp, index=counts.index, columns=counts.columns, dtype=np.float32
-    )
-    return norm_exp
-
-
-def tmm_norm(exp, percentage=0.05):
-    lexp = np.log2(1 + exp).astype(np.float32)
-    tmm = trimmed_mean(lexp, percentage)
-    nf = pd.DataFrame(
-        np.tile(tmm, (exp.shape[0], 1)), index=lexp.index, columns=lexp.columns
-    )
-    temp = lexp / nf
-    return temp
-
-
-def trimmed_mean(matrix, percentage):
-    matrix = np.array(matrix)
-    trimmed_means = []
-    for col in range(matrix.shape[1]):
-        data = matrix[:, col].copy()
-        data = data[data > 0]
-        n_trim = int(len(data) * percentage)
-        sorted_values = np.sort(data)
-        trimmed_values = sorted_values[n_trim:-n_trim]
-        trimmed_mean = np.mean(trimmed_values)
-        trimmed_means.append(trimmed_mean)
-    return trimmed_means
-
-
-def aggregate_duplicate_genes(exp):
-    return exp.groupby(exp.index).sum()
-
-
-def a4_series(
-    file,
-    series: str,
-):
-    """
-    Extracts metadata for specified series from an HDF5 file.
-
-    Args:
-        file (str): Path to the HDF5 file.
-        series: Series to extract metadata for.
-
-    Returns:
-        pandas.DataFrame: DataFrame containing the extracted metadata, with metadata
-                          fields as columns and samples as rows.
-    """
+    # Extract metadata from the file
     meta_fields = [
         "geo_accession",
         "series_id",
@@ -157,58 +91,58 @@ def a4_series(
         "title",
     ]
 
-    with h5.File(file, "r") as f:
-        dG = f["meta"]["samples"]
+    dG = f["meta"]["samples"]
 
-        meta_series = np.array(
-            [x.decode("UTF-8") for x in list(np.array(dG["series_id"]))]
-        )
-        idx = [i for i, x in enumerate(meta_series) if x == series]
+    meta_series = np.array(
+        [x.decode("UTF-8") for x in list(np.array(dG["series_id"]))]
+    )
+    idx = [i for i, x in enumerate(meta_series) if x == series]
 
-        meta = []
-        mfields = []
+    meta = []
+    mfields = []
 
-        for field in meta_fields:
-            meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])
-            mfields.append(field)
+    for field in meta_fields:
+        meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])
+        mfields.append(field)
 
-        meta = pd.DataFrame(
-            meta,
-            index=mfields,
-            columns=[
-                x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))
-            ],
-        )
-    return meta.T
+    meta = pd.DataFrame(
+        meta,
+        index=pd.Index(mfields),
+        columns=pd.Index([
+            x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))
+        ]),
+    )
+
+
+    return exp, meta.T
 
 
 def load_archs4(geo_accession: str) -> ad.AnnData:
     file_path = "/opt/extra-storage/jpopoli/human_gene_v2.6.h5"
 
     # Extract the count data from the ARCHS4 file, fail if not found
-    counts = series_local(file_path, geo_accession)
+    counts, metadata = series_local(file_path, geo_accession)
     if not isinstance(counts, pd.DataFrame):
         raise ValueError(
             f"Could not find GEO accession {geo_accession} in the file {file_path}"
         )
-    counts = aggregate_duplicate_genes(counts)
-    counts_tmm = normalize(counts=counts, tmm_outlier=0.05)
-
-    # Extract the metadata from the ARCHS4 file after success with counts
-    metadata = a4_series(file_path, geo_accession)
+    
+    # Aggregate duplicate genes due to Ensembl -> Symbol conversion
+    counts: pd.DataFrame = aggregate_duplicate_genes(counts)
 
     # Parse the metadata to extract the clinical variables
     clinical_variables = parse_metadata(metadata)
 
     adata = ad.AnnData(
-        X=counts_tmm.T,
+        X=counts,
         obs=clinical_variables,
         var=pd.DataFrame(index=counts.index),
     )
-    adata.layers["raw"] = counts.T
 
     return adata
 
+def aggregate_duplicate_genes(exp):
+    return exp.groupby(exp.index).sum()
 
 def import_mrsa():
     # Read in mrsa counts
@@ -217,10 +151,7 @@ def import_mrsa():
         index_col=0,
         delimiter=",",
     )
-    counts_mrsa = aggregate_duplicate_genes(counts_mrsa)
-    counts_mrsa_tmm = normalize(counts=counts_mrsa, tmm_outlier=0.05)
     counts_mrsa = counts_mrsa.T
-    counts_mrsa_tmm = counts_mrsa_tmm.T
 
     # Grab mrsa metadata from SRA database since it is not on GEO
     metadata_ncbi = pd.read_csv(
@@ -270,16 +201,13 @@ def import_mrsa():
     # Order the indices of the counts and metadata to match for AnnData
     common_idx = counts_mrsa.index.intersection(metadata.index)
     counts_mrsa = counts_mrsa.loc[common_idx]
-    counts_mrsa_tmm = counts_mrsa_tmm.loc[common_idx]
     metadata = metadata.loc[common_idx]
 
     mrsa_adata = ad.AnnData(
-        X=counts_mrsa_tmm,
+        X=counts_mrsa,
         obs=metadata,
         var=pd.DataFrame(index=counts_mrsa.columns),
     )
-    mrsa_adata.layers["raw"] = counts_mrsa
-
     mrsa_adata.obs["status"] = mrsa_adata.obs["status"].astype(int)
 
     return mrsa_adata
@@ -292,10 +220,7 @@ def import_ca():
         index_col=0,
         delimiter="\t",
     )
-    counts_ca = aggregate_duplicate_genes(counts_ca)
-    counts_ca_tmm = normalize(counts=counts_ca, tmm_outlier=0.05)
     counts_ca = counts_ca.T
-    counts_ca_tmm = counts_ca_tmm.T
 
     # Archs4 web database reports metadata with jsons of dictionaries
     with open(join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_ca_archs4.json")) as f:
@@ -336,11 +261,10 @@ def import_ca():
     metadata_ca["dataset_id"] = "GSE176262"
 
     ca_adata = ad.AnnData(
-        X=counts_ca_tmm,
+        X=counts_ca,
         obs=metadata_ca,
         var=pd.DataFrame(index=counts_ca.columns),
     )
-    ca_adata.layers["raw"] = counts_ca
 
     # Remove all non-Candidemia samples
     ca_adata = ca_adata[ca_adata.obs["disease"] == "Candidemia"].copy()
@@ -355,31 +279,25 @@ def import_bc():
 
 
 def import_uc():
-    counts, counts_tmm, metadata = load_archs4("GSE177044")
+    uc_adata = load_archs4("GSE177044")
 
-    metadata = metadata.loc[:, ["Sex", "age", "disease"]]
-    metadata["disease"] = metadata["disease"].str.replace(
+    uc_adata.obs = uc_adata.obs.loc[:, ["Sex", "age", "disease"]]
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
         r"\bControl\b", "Healthy", regex=True
     )
-    metadata["disease"] = metadata["disease"].str.replace(
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
         r"\bUC\b", "Ulcerative Colitis", regex=True
     )
-    metadata["disease"] = metadata["disease"].str.replace(
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
         r"\bPSC\b", "Primary Sclerosing Cholangitis", regex=True
     )
-    metadata["disease"] = metadata["disease"].str.replace(
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
         r"\bPSCUC\b", "PSC/UC", regex=True
     )
 
-    metadata["status"] = "NaN"
-    metadata["dataset_id"] = "GSE177044"
-
-    uc_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    uc_adata.layers["raw"] = counts
+    # Add standardized columns
+    uc_adata.obs["status"] = "Unknown"
+    uc_adata.obs["dataset_id"] = "GSE177044"
 
     # Remove all non-UC samples
     uc_adata = uc_adata[uc_adata.obs["disease"] == "Ulcerative Colitis"].copy()
@@ -388,63 +306,50 @@ def import_uc():
 
 
 def import_tb():
-    counts, counts_tmm, metadata = load_archs4("GSE89403")
+    tb_adata = load_archs4("GSE89403")
 
-    metadata = metadata.loc[
+    tb_adata.obs = tb_adata.obs.loc[
         :, ["subject", "disease state", "treatmentresult", "time", "timetonegativity"]
     ]
-    metadata["time"] = metadata["time"].str.replace("DX", "week_0")
+    tb_adata.obs["time"] = tb_adata.obs["time"].str.replace("DX", "week_0")
 
     # Remove unknown samples.
     # Paper does not describe what these are but they are present in the counts
     # "NA", "Lung Dx Controls", "MTP Controls"
-    valid_samples = metadata["disease state"].str.contains(
+    valid_samples = tb_adata.obs["disease state"].str.contains(
         "TB Subjects|Healthy Controls"
     )
-    metadata = metadata.loc[valid_samples, :]
+    tb_adata = tb_adata[valid_samples].copy()
 
     """Optional sample filtering processes. Not sure if these are necessary yet."""
     # # Remove technical replicates
-    # metadata = metadata[~metadata.duplicated(keep="first")]
+    # tb_adata.obs = tb_adata.obs[~tb_adata.obs.duplicated(keep="first")]
 
     # # Relabel disease state based on time to negativity, removing unevaluable samples
-    # metadata = metadata[~metadata["treatmentresult"].str.contains("unevaluable")]
-    # metadata["timetonegativity"] = metadata["timetonegativity"].str.replace(
+    # tb_adata.obs = tb_adata.obs[~tb_adata.obs["treatmentresult"].str.contains("unevaluable")]
+    # tb_adata.obs["timetonegativity"] = tb_adata.obs["timetonegativity"].str.replace(
     #     "NA", "Week999"
     # )
-    # metadata["time"] = metadata["time"].str.replace("day_7", "week_1")
-    # sample_time = metadata["time"].str.split("_", expand=True)[1].astype(int)
+    # tb_adata.obs["time"] = tb_adata.obs["time"].str.replace("day_7", "week_1")
+    # sample_time = tb_adata.obs["time"].str.split("_", expand=True)[1].astype(int)
     # negative_time = (
-    #     metadata["timetonegativity"].str.split("k", expand=True)[1].astype(int)
+    #     tb_adata.obs["timetonegativity"].str.split("k", expand=True)[1].astype(int)
     # )
-    # metadata.loc[sample_time >= negative_time, "disease state"] = "TB Cured"
-    # metadata.loc[sample_time < negative_time, "disease state"] = "Tuberculosis"
+    # tb_adata.obs.loc[sample_time >= negative_time, "disease state"] = "TB Cured"
+    # tb_adata.obs.loc[sample_time < negative_time, "disease state"] = "Tuberculosis"
 
     # # Keep only first longitudinal measurement for each subject
-    # metadata = metadata.loc[metadata["time"].str.contains("week_0"), :]
+    # tb_adata.obs = tb_adata.obs.loc[tb_adata.obs["time"].str.contains("week_0"), :]
 
-    # Line up the metadata with the counts to account for any filtering
-    common_idx = counts.index.intersection(metadata.index)
-    counts = counts.loc[common_idx]
-    counts_tmm = counts_tmm.loc[common_idx]
-    metadata = metadata.loc[common_idx]
-
-    metadata = metadata.rename(
+    tb_adata.obs = tb_adata.obs.rename(
         columns={
             "subject": "subject_id",
             "disease state": "disease",
             "treatmentresult": "status",
         }
     )
-    metadata["disease"] = metadata["disease"].str.replace("Healthy Controls", "Healthy")
-    metadata["dataset_id"] = "GSE89403"
-
-    tb_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    tb_adata.layers["raw"] = counts
+    tb_adata.obs["disease"] = tb_adata.obs["disease"].str.replace("Healthy Controls", "Healthy")
+    tb_adata.obs["dataset_id"] = "GSE89403"
 
     return tb_adata
 
@@ -452,35 +357,28 @@ def import_tb():
 def import_t1dm():
     t1dm_adata = load_archs4("GSE124400")
 
-    metadata = metadata.loc[
+    t1dm_adata.obs = t1dm_adata.obs.loc[
         :, ["subject", "age at enrollment", "visit day", "rate of c-peptide change"]
     ]
-    metadata = metadata.rename(
+    t1dm_adata.obs = t1dm_adata.obs.rename(
         columns={
             "subject": "subject_id",
             "age at enrollment": "age",
             "visit day": "time",
         }
     )
-    metadata["disease"] = "T1DM"
-    metadata["status"] = "Unknown"
-    metadata["dataset_id"] = "GSE124400"
+    t1dm_adata.obs["disease"] = "T1DM"
+    t1dm_adata.obs["status"] = "Unknown"
+    t1dm_adata.obs["dataset_id"] = "GSE124400"
 
     # Use rate of c-peptide change to determine responder status (conservative)
-    metadata.loc[metadata["rate of c-peptide change"].astype(float) < 0, "status"] = (
+    t1dm_adata.obs.loc[t1dm_adata.obs["rate of c-peptide change"].astype(float) < 0, "status"] = (
         "non-responder"
     )
-    metadata.loc[metadata["rate of c-peptide change"].astype(float) >= 0, "status"] = (
+    t1dm_adata.obs.loc[t1dm_adata.obs["rate of c-peptide change"].astype(float) >= 0, "status"] = (
         "responder"
     )
-    metadata = metadata.drop(columns=["rate of c-peptide change"])
-
-    t1dm_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    t1dm_adata.layers["raw"] = counts
+    t1dm_adata.obs = t1dm_adata.obs.drop(columns=["rate of c-peptide change"])
 
     return t1dm_adata
 
@@ -488,25 +386,18 @@ def import_t1dm():
 def import_covid():
     covid_adata = load_archs4("GSE161731")
 
-    metadata = metadata.loc[
+    covid_adata.obs = covid_adata.obs.loc[
         :, ["subject_id", "age", "gender", "cohort", "time_since_onset", "hospitalized"]
     ]
-    metadata = metadata.rename(
+    covid_adata.obs = covid_adata.obs.rename(
         columns={
             "cohort": "disease",
             "hospitalized": "status",
             "time_since_onset": "time",
         }
     )
-    metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
-    metadata["dataset_id"] = "GSE161731"
-
-    covid_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    covid_adata.layers["raw"] = counts
+    covid_adata.obs["disease"] = covid_adata.obs["disease"].str.replace("healthy", "Healthy")
+    covid_adata.obs["dataset_id"] = "GSE161731"
 
     # Remove all non-COVID samples
     covid_adata = covid_adata[covid_adata.obs["disease"] == "COVID-19"].copy()
@@ -517,7 +408,7 @@ def import_covid():
 def import_lupus():
     lupus_adata = load_archs4("GSE116006")
 
-    metadata = metadata.loc[
+    lupus_adata.obs = lupus_adata.obs.loc[
         :,
         [
             "drug dose",
@@ -528,7 +419,7 @@ def import_lupus():
             "timepoint",
         ],
     ]
-    metadata = metadata.rename(
+    lupus_adata.obs = lupus_adata.obs.rename(
         columns={
             "drug dose": "dose",
             "drug exposure": "status",
@@ -537,8 +428,8 @@ def import_lupus():
             "timepoint": "time",
         }
     )
-    metadata["disease"] = "Lupus"
-    metadata["dataset_id"] = "GSE116006"
+    lupus_adata.obs["disease"] = "Lupus"
+    lupus_adata.obs["dataset_id"] = "GSE116006"
 
     return lupus_adata
 
@@ -578,12 +469,12 @@ def import_hiv():
 def import_em():
     em_adata = load_archs4("GSE133378")
 
-    metadata = metadata.loc[:, ["infected with/healthy control"]]
-    metadata["dataset_id"] = "GSE133378"
-    metadata["status"] = "Unknown"
+    em_adata.obs = em_adata.obs.loc[:, ["infected with/healthy control"]]
+    em_adata.obs["dataset_id"] = "GSE133378"
+    em_adata.obs["status"] = "Unknown"
 
-    metadata = metadata.rename(columns={"infected with/healthy control": "disease"})
-    metadata["disease"] = metadata["disease"].str.replace("Control", "Healthy")
+    em_adata.obs = em_adata.obs.rename(columns={"infected with/healthy control": "disease"})
+    em_adata.obs["disease"] = em_adata.obs["disease"].str.replace("Control", "Healthy")
 
     # Take only the Enterovirus and Healthy samples
     em_adata = em_adata[
@@ -596,7 +487,7 @@ def import_em():
 def import_zika():
     zika_adata = load_archs4("GSE129882")
 
-    metadata = metadata.loc[
+    zika_adata.obs = zika_adata.obs.loc[
         :,
         [
             "Sex",
@@ -606,14 +497,14 @@ def import_zika():
             "time",
         ],
     ]
-    metadata = metadata.rename(
+    zika_adata.obs = zika_adata.obs.rename(
         columns={
             "exposure": "status",
             "patient": "subject_id",
         }
     )
-    metadata["disease"] = "Zika"
-    metadata["dataset_id"] = "GSE129882"
+    zika_adata.obs["disease"] = "Zika"
+    zika_adata.obs["dataset_id"] = "GSE129882"
 
     return zika_adata
 
@@ -621,15 +512,15 @@ def import_zika():
 def import_heme():
     heme_adata = load_archs4("GSE133758")
 
-    metadata = metadata.loc[:, ["globin-block applied", "identifier"]]
-    metadata = metadata.rename(
+    heme_adata.obs = heme_adata.obs.loc[:, ["globin-block applied", "identifier"]]
+    heme_adata.obs = heme_adata.obs.rename(
         columns={
             "globin-block applied": "status",
             "identifier": "subject_id",
         }
     )
-    metadata["disease"] = "Healthy_heme"
-    metadata["dataset_id"] = "GSE133758"
+    heme_adata.obs["disease"] = "Healthy_heme"
+    heme_adata.obs["dataset_id"] = "GSE133758"
 
     return heme_adata
 
@@ -637,13 +528,13 @@ def import_heme():
 def import_ra():
     ra_adata = load_archs4("GSE120178")
 
-    metadata = metadata.rename(
+    ra_adata.obs = ra_adata.obs.rename(
         columns={"disease state": "disease", "timepoint": "time"}
     )
-    metadata["disease"] = metadata["disease"].str.replace("rheumatoid arthritis", "RA")
-    metadata["disease"] = metadata["disease"].str.replace("healthy", "Healthy")
-    metadata["status"] = "Unknown"
-    metadata["dataset_id"] = "GSE120178"
+    ra_adata.obs["disease"] = ra_adata.obs["disease"].str.replace("rheumatoid arthritis", "RA")
+    ra_adata.obs["disease"] = ra_adata.obs["disease"].str.replace("healthy", "Healthy")
+    ra_adata.obs["status"] = "Unknown"
+    ra_adata.obs["dataset_id"] = "GSE120178"
 
     # Keep only the RA samples
     ra_adata = ra_adata[ra_adata.obs["disease"] == "RA"].copy()
@@ -654,10 +545,10 @@ def import_ra():
 def import_hbv():
     hbv_adata = load_archs4("GSE173897")
 
-    metadata = metadata.loc[:, ["ethnicity", "gender", "hbv status"]]
-    metadata = metadata.rename(columns={"hbv status": "status"})
-    metadata["disease"] = "HBV"
-    metadata["dataset_id"] = "GSE173897"
+    hbv_adata.obs = hbv_adata.obs.loc[:, ["ethnicity", "gender", "hbv status"]]
+    hbv_adata.obs = hbv_adata.obs.rename(columns={"hbv status": "status"})
+    hbv_adata.obs["disease"] = "HBV"
+    hbv_adata.obs["dataset_id"] = "GSE173897"
 
     return hbv_adata
 
@@ -665,23 +556,23 @@ def import_hbv():
 def import_kidney():
     kidney_adata = load_archs4("GSE112927")
 
-    metadata = metadata.loc[:, ["death censored graft loss", "follow up days"]]
-    metadata = metadata.rename(
+    kidney_adata.obs = kidney_adata.obs.loc[:, ["death censored graft loss", "follow up days"]]
+    kidney_adata.obs = kidney_adata.obs.rename(
         columns={
             "death censored graft loss": "status",
             "follow up days": "time",
         }
     )
-    metadata["disease"] = "Kidney Transplant"
-    metadata["dataset_id"] = "GSE112927"
+    kidney_adata.obs["disease"] = "Kidney Transplant"
+    kidney_adata.obs["dataset_id"] = "GSE112927"
 
     return kidney_adata
 
 
 def import_covid_marine():
-    counts, counts_tmm, metadata = load_archs4("GSE198449")
+    covid_m_adata = load_archs4("GSE198449")
 
-    metadata = metadata.loc[
+    covid_m_adata.obs = covid_m_adata.obs.loc[
         :,
         [
             "Sex",
@@ -693,7 +584,7 @@ def import_covid_marine():
             "symptom",
         ],
     ]
-    metadata = metadata.rename(
+    covid_m_adata.obs = covid_m_adata.obs.rename(
         columns={
             "participant id": "subject_id",
             "sample collection time point (days since t0)": "time",
@@ -702,14 +593,7 @@ def import_covid_marine():
         }
     )
 
-    metadata["dataset_id"] = "GSE198449"
-
-    covid_m_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    covid_m_adata.layers["raw"] = counts
+    covid_m_adata.obs["dataset_id"] = "GSE198449"
 
     # Remove all non-COVID or problem samples
     covid_m_adata = covid_m_adata[~covid_m_adata.obs["disease"].isna()]  # type: ignore
@@ -746,10 +630,7 @@ def import_bc_tcr():
         index_col=0,
         delimiter="\t",
     )
-    counts = aggregate_duplicate_genes(counts)
-    counts_tmm = normalize(counts=counts, tmm_outlier=0.05)
     counts = counts.T
-    counts_tmm = counts_tmm.T
 
     # Read in breast cancer metadata
     metadata = pd.read_json(
@@ -773,10 +654,9 @@ def import_bc_tcr():
     metadata["dataset_id"] = "GSE239933"
 
     bc_tcr_adata = ad.AnnData(
-        X=counts_tmm,
+        X=counts,
         obs=metadata,
         var=pd.DataFrame(index=counts.columns),
     )
-    bc_tcr_adata.layers["raw"] = counts
 
     return bc_tcr_adata

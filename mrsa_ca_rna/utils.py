@@ -198,6 +198,13 @@ def concat_datasets(
     # Concat all anndata objects together keeping only the vars and obs in common
     whole_ad = ad.concat(adata_list, join="inner")
 
+    # TMM normalize the data
+    counts_tmm = normalize(counts=whole_ad.X, tmm_outlier=0.05)
+
+    # Replace the X matrix with the normalized counts
+    whole_ad.layers["raw"] = whole_ad.to_df().copy()
+    whole_ad.X = counts_tmm
+
     # If shrink is False,
     # replace the resulting obs with a pd.concat of all obs data in obs_list
     if not shrink:
@@ -222,6 +229,65 @@ def concat_datasets(
         whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
 
     return whole_ad
+
+def normalize(counts, tmm_outlier=0.05):
+    """
+    Normalize the count matrix using a specified method.
+    "tmm": Perform trimmed mean normalization
+
+    Args:
+        counts (np.ndarray): A numpy array representing the count matrix.
+
+    Returns:
+        np.ndarray: A normalized count matrix.
+    """
+    # Convert to numpy array if not already
+    counts_array = np.asarray(counts)
+    
+    # Perform TMM normalization
+    norm_exp = tmm_norm(counts_array, tmm_outlier)
+    
+    return norm_exp.astype(np.float32)
+
+
+def tmm_norm(exp, percentage=0.05):
+    """
+    Perform TMM (Trimmed Mean of M-values) normalization.
+    
+    Args:
+        exp (np.ndarray): Expression matrix to normalize.
+        percentage (float): Percentage of data to trim when calculating means.
+        
+    Returns:
+        np.ndarray: Normalized expression matrix.
+    """
+    # Add 1 and log2 transform to handle zeros
+    lexp = np.log2(1 + exp).astype(np.float32)
+    
+    # Calculate trimmed means for each column
+    tmm = trimmed_mean(lexp, percentage)
+    
+    # Create normalization factors matrix (repeated for each sample)
+    nf = np.tile(tmm, (exp.shape[0], 1))
+    
+    # Normalize by dividing log-expression by normalization factors
+    temp = lexp / nf
+    
+    return temp
+
+
+def trimmed_mean(matrix, percentage):
+    matrix = np.array(matrix)
+    trimmed_means = []
+    for col in range(matrix.shape[1]):
+        data = matrix[:, col].copy()
+        data = data[data > 0]
+        n_trim = int(len(data) * percentage)
+        sorted_values = np.sort(data)
+        trimmed_values = sorted_values[n_trim:-n_trim]
+        trimmed_mean = np.mean(trimmed_values)
+        trimmed_means.append(trimmed_mean)
+    return trimmed_means
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:

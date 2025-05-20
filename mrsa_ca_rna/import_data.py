@@ -16,6 +16,7 @@ import multiprocessing
 from os.path import abspath, dirname, join
 
 import anndata as ad
+import archs4py.align as a4_align
 import archs4py.data as a4_data
 import archs4py.meta as a4_meta
 import archs4py.utils as a4_utils
@@ -91,10 +92,13 @@ def load_archs4(geo_accession):
 def import_mrsa():
     # Read in mrsa counts
     counts_mrsa = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_mrsa_archs4.csv.gz"),
+        join(BASE_DIR, "mrsa_ca_rna", "data", "tfac_counts.txt.zip"),
         index_col=0,
         delimiter=",",
     )
+    gene_map = a4_align.get_ensembl_mappings(species="hsapiens", release="latest")
+    counts_mrsa.columns = counts_mrsa.columns.map(dict(zip(gene_map["ensembl_gene"], gene_map["symbol"])))
+    counts_mrsa = counts_mrsa.T
     counts_mrsa = a4_utils.aggregate_duplicate_genes(counts_mrsa)
     counts_mrsa_tmm = a4_utils.normalize(
         counts=counts_mrsa, method="tmm", tmm_outlier=0.05
@@ -102,34 +106,36 @@ def import_mrsa():
     counts_mrsa = counts_mrsa.T
     counts_mrsa_tmm = counts_mrsa_tmm.T
 
-    # Grab mrsa metadata from SRA database since it is not on GEO
-    metadata_ncbi = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
+    # # Grab mrsa metadata from SRA database since it is not on GEO
+    # metadata_ncbi = pd.read_csv(
+    #     join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
+    #     index_col=0,
+    #     delimiter=",",
+    # )
+
+    # # Pair down metadata and ensure "disease" and "status" columns are present
+    # metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
+    # metadata_ncbi.index.name = None
+
+    # metadata_ncbi["disease"] = "MRSA"
+    # metadata_ncbi["dataset_id"] = "SRP414349"
+    # metadata_ncbi = metadata_ncbi.reset_index(
+    #     drop=False, names=["accession"]
+    # ).set_index("isolate")
+
+    metadata = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_josh_new.csv"),
         index_col=0,
         delimiter=",",
     )
+    metadata["disease"] = "MRSA"
+    metadata["dataset_id"] = "SRP414349"
 
-    # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
-    metadata_ncbi.index.name = None
-
-    metadata_ncbi["disease"] = "MRSA"
-    metadata_ncbi["dataset_id"] = "SRP414349"
-    metadata_ncbi = metadata_ncbi.reset_index(
-        drop=False, names=["accession"]
-    ).set_index("isolate")
-
-    sex_matched = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_joshua.csv"),
-        index_col=0,
-        delimiter=",",
-    )
-
-    # Combine and make the SRR IDs the index to match the counts
-    metadata = pd.concat([metadata_ncbi, sex_matched], axis=1, join="inner")
-    metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
-        "accession"
-    )
+    # # Combine and make the SRR IDs the index to match the counts
+    # metadata = pd.concat([metadata_ncbi, sex_matched], axis=1, join="inner")
+    # metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
+    #     "accession"
+    # )
 
     # Make a regression classes for multinomial regression
     metadata["status"] = "Unknown"

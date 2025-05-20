@@ -108,7 +108,7 @@ def download_srr(srr, input_dir, max_retries=3):
         for retry in range(max_retries):
             try:
                 # Load SRR data with a timeout for the whole operation
-                logger.info(f"Downloading {srr} (attempt {retry+1}/{max_retries})...")
+                logger.info(f"Downloading {srr} (attempt {retry + 1}/{max_retries})...")
 
                 # Start download with safety timeout of 2 hours
                 start_time = time.time()
@@ -130,7 +130,7 @@ def download_srr(srr, input_dir, max_retries=3):
                     logger.info(f"Download of {srr} completed and verified.")
                     return srr, True
             except Exception as e:
-                logger.error(f"Error downloading {srr} (attempt {retry+1}): {str(e)}")
+                logger.error(f"Error downloading {srr} (attempt {retry + 1}): {str(e)}")
                 time.sleep(15)  # Longer wait before retry
 
         logger.error(f"Failed to download {srr} after {max_retries} attempts")
@@ -192,7 +192,7 @@ def align_srr(
     for retry in range(max_retries):
         try:
             # Align the fastq
-            logger.info(f"Aligning {srr} (attempt {retry+1}/{max_retries})...")
+            logger.info(f"Aligning {srr} (attempt {retry + 1}/{max_retries})...")
             result = a4_align.fastq(
                 genome, fastq_path, return_type=return_type, identifier=identifier
             )
@@ -226,7 +226,7 @@ def align_srr(
                 except Exception as e:
                     logger.warning(
                         f"Error saving result for {srr} "
-                        f"(attempt {save_retry+1}): {str(e)}"
+                        f"(attempt {save_retry + 1}): {str(e)}"
                     )
                     time.sleep(2)
 
@@ -244,7 +244,7 @@ def align_srr(
 
             return result
         except Exception as e:
-            logger.error(f"Error aligning {srr} (attempt {retry+1}): {str(e)}")
+            logger.error(f"Error aligning {srr} (attempt {retry + 1}): {str(e)}")
             time.sleep(5)  # Wait before retry
 
     logger.error(f"Failed to align {srr} after {max_retries} attempts")

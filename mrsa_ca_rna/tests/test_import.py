@@ -64,14 +64,14 @@ def test_import_functions(import_func, gene_list):
     adata = import_func()
 
     # Test var.index length
-    assert (
-        len(adata.var.index) == 62548
-    ), f"Expected 62548 genes, got {len(adata.var.index)}"
+    assert len(adata.var.index) == 62548, (
+        f"Expected 62548 genes, got {len(adata.var.index)}"
+    )
 
     # Test var.index for duplicates
-    assert len(adata.var.index) == len(
-        set(adata.var.index)
-    ), "var.index contains duplicates"
+    assert len(adata.var.index) == len(set(adata.var.index)), (
+        "var.index contains duplicates"
+    )
 
     # Test obs contains status column
     assert "status" in adata.obs.columns, "obs does not contain 'status' column"
@@ -86,9 +86,9 @@ def test_import_functions(import_func, gene_list):
     assert "raw" in adata.layers, "adata.layers['raw'] does not exist"
 
     # Test var.index matches gene_list.txt
-    assert set(adata.var.index) == set(
-        gene_list
-    ), "var.index does not match gene_list.txt"
+    assert set(adata.var.index) == set(gene_list), (
+        "var.index does not match gene_list.txt"
+    )
 
     # Test raw layer has same shape as X
     assert adata.layers["raw"].shape == adata.X.shape, "raw layer shape doesn't match X"
@@ -121,51 +121,51 @@ def test_all_datasets_gene_compatibility():
     covid_marine_adata = import_covid_marine()
     bc_tcr_adata = import_bc_tcr()
 
-    assert np.array_equal(
-        mrsa_adata.var.index, ca_adata.var.index
-    ), "MRSA and CA datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, bc_adata.var.index
-    ), "MRSA and BC datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, tb_adata.var.index
-    ), "MRSA and TB datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, uc_adata.var.index
-    ), "MRSA and UC datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, t1dm_adata.var.index
-    ), "MRSA and T1DM datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, covid_adata.var.index
-    ), "MRSA and COVID datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, lupus_adata.var.index
-    ), "MRSA and LUPUS datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, hiv_adata.var.index
-    ), "MRSA and HIV datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, em_adata.var.index
-    ), "MRSA and EM datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, zika_adata.var.index
-    ), "MRSA and ZIKA datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, heme_adata.var.index
-    ), "MRSA and HEME datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, ra_adata.var.index
-    ), "MRSA and RA datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, hbv_adata.var.index
-    ), "MRSA and HBV datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, kidney_adata.var.index
-    ), "MRSA and KIDNEY datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, covid_marine_adata.var.index
-    ), "MRSA and COVID MARINE datasets have different genes"
-    assert np.array_equal(
-        mrsa_adata.var.index, bc_tcr_adata.var.index
-    ), "MRSA and BC TCR datasets have different genes"
+    assert np.array_equal(mrsa_adata.var.index, ca_adata.var.index), (
+        "MRSA and CA datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, bc_adata.var.index), (
+        "MRSA and BC datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, tb_adata.var.index), (
+        "MRSA and TB datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, uc_adata.var.index), (
+        "MRSA and UC datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, t1dm_adata.var.index), (
+        "MRSA and T1DM datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, covid_adata.var.index), (
+        "MRSA and COVID datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, lupus_adata.var.index), (
+        "MRSA and LUPUS datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, hiv_adata.var.index), (
+        "MRSA and HIV datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, em_adata.var.index), (
+        "MRSA and EM datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, zika_adata.var.index), (
+        "MRSA and ZIKA datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, heme_adata.var.index), (
+        "MRSA and HEME datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, ra_adata.var.index), (
+        "MRSA and RA datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, hbv_adata.var.index), (
+        "MRSA and HBV datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, kidney_adata.var.index), (
+        "MRSA and KIDNEY datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, covid_marine_adata.var.index), (
+        "MRSA and COVID MARINE datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, bc_tcr_adata.var.index), (
+        "MRSA and BC TCR datasets have different genes"
+    )

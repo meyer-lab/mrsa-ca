@@ -31,9 +31,9 @@ def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
         Data prepared for tensor factorization via parafac2_nd
     """
 
-    assert (
-        expansion_dim != "None"
-    ), "Please provide the expansion dimension for the data"
+    assert expansion_dim != "None", (
+        "Please provide the expansion dimension for the data"
+    )
 
     # Get the indices for subsetting the data
     _, sgIndex = np.unique(X.obs_vector(expansion_dim), return_inverse=True)

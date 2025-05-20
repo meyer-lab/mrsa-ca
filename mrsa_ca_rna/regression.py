@@ -47,9 +47,9 @@ def perform_LR(
         clf_cv (LogisticRegressionCV): classifier object fit to the data
     """
 
-    assert (
-        X_data.shape[0] == y_data.shape[0]
-    ), "Passed X and y data must be the same length!"
+    assert X_data.shape[0] == y_data.shape[0], (
+        "Passed X and y data must be the same length!"
+    )
 
     # set up stratified kfold for nested cross validation
     skf = StratifiedKFold(n_splits=splits)
@@ -131,9 +131,9 @@ def perform_PLSR(
 
 
 def caluclate_R2Y_Q2Y(model: PLSRegression, X_data: pd.DataFrame, y_data: pd.DataFrame):
-    assert isinstance(
-        model, PLSRegression
-    ), "Passed model was not a PLSRegression object!"
+    assert isinstance(model, PLSRegression), (
+        "Passed model was not a PLSRegression object!"
+    )
 
     # calculate R2Y using score()
     R2Y = model.score(X_data, y_data)

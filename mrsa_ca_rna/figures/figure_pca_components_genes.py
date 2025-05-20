@@ -35,7 +35,6 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
 
 # setup figure
 def figure_setup():
-    """Collect the data required for figure03a"""
     top_n = 5
 
     # get the data
@@ -56,9 +55,9 @@ def figure_setup():
 
     # truncate the combined components to MRSA data and only the first 5
     mrsa_index = combined_ad.obs["disease"] == "MRSA"
-    patient_comps = patient_comps.loc[mrsa_index, :"PC5"].copy()
+    patient_comps = patient_comps.loc[mrsa_index, :"PC10"].copy()
 
-    gene_comps = gene_comps.loc[:"PC5", :].copy()
+    gene_comps = gene_comps.loc[:"PC10", :].copy()
 
     # optionally print out the gene components to a csv
     # gene_comps.T.to_csv("output/pca_genes.csv")
@@ -81,8 +80,8 @@ def figure_setup():
 
 
 def genFig():
-    fig_size = (8, 12)
-    layout = {"ncols": 2, "nrows": 4}
+    fig_size = (12, 15)
+    layout = {"ncols": 3, "nrows": 5}
     ax, f, _ = setupBase(fig_size, layout)
 
     y_proba, y_true, weights, comp_genes = figure_setup()
@@ -93,12 +92,12 @@ def genFig():
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
     a.set_title(
-        "Classification of MRSA outcomes using a 5 component\n"
+        "Classification of MRSA outcomes using a 10 component\n"
         "PCA decomposition of Combined data\n"
         f"AUC: {auc:.3f}"
     )
 
-    # plot the top 5 components and their weights
+    # plot the top 10 components and their weights
     a = sns.barplot(x=list(weights.keys()), y=list(weights.values()), ax=ax[1])
     a.set_xlabel("Component")
     a.set_ylabel("Weight")

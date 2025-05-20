@@ -6,13 +6,22 @@ import pytest
 from mrsa_ca_rna.import_data import (
     BASE_DIR,
     import_bc,
+    import_bc_tcr,
     import_ca,
     import_covid,
+    import_covid_marine,
+    import_em,
+    import_hbv,
+    import_heme,
+    import_hiv,
+    import_kidney,
     import_lupus,
     import_mrsa,
+    import_ra,
     import_t1dm,
     import_tb,
     import_uc,
+    import_zika,
 )
 
 # Path to gene list file
@@ -38,6 +47,15 @@ def gene_list():
         import_t1dm,
         import_covid,
         import_lupus,
+        import_hiv,
+        import_em,
+        import_zika,
+        import_heme,
+        import_ra,
+        import_hbv,
+        import_kidney,
+        import_covid_marine,
+        import_bc_tcr,
     ],
 )
 def test_import_functions(import_func, gene_list):
@@ -93,6 +111,15 @@ def test_all_datasets_gene_compatibility():
     t1dm_adata = import_t1dm()
     covid_adata = import_covid()
     lupus_adata = import_lupus()
+    hiv_adata = import_hiv()
+    em_adata = import_em()
+    zika_adata = import_zika()
+    heme_adata = import_heme()
+    ra_adata = import_ra()
+    hbv_adata = import_hbv()
+    kidney_adata = import_kidney()
+    covid_marine_adata = import_covid_marine()
+    bc_tcr_adata = import_bc_tcr()
 
     assert np.array_equal(mrsa_adata.var.index, ca_adata.var.index), (
         "MRSA and CA datasets have different genes"
@@ -114,4 +141,31 @@ def test_all_datasets_gene_compatibility():
     )
     assert np.array_equal(mrsa_adata.var.index, lupus_adata.var.index), (
         "MRSA and LUPUS datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, hiv_adata.var.index), (
+        "MRSA and HIV datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, em_adata.var.index), (
+        "MRSA and EM datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, zika_adata.var.index), (
+        "MRSA and ZIKA datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, heme_adata.var.index), (
+        "MRSA and HEME datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, ra_adata.var.index), (
+        "MRSA and RA datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, hbv_adata.var.index), (
+        "MRSA and HBV datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, kidney_adata.var.index), (
+        "MRSA and KIDNEY datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, covid_marine_adata.var.index), (
+        "MRSA and COVID MARINE datasets have different genes"
+    )
+    assert np.array_equal(mrsa_adata.var.index, bc_tcr_adata.var.index), (
+        "MRSA and BC TCR datasets have different genes"
     )

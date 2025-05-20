@@ -106,3 +106,7 @@ def genFig():
         a.set_title(f"Top 5 genes for Component component {i+1}")
 
     return f
+
+
+if __name__ == "__main__":
+    genFig()

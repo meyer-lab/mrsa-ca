@@ -182,7 +182,7 @@ pandas==2.2.3
     # via tlviz
     # via xalign
     # via xarray
-parafac2 @ git+https://github.com/meyer-lab/parafac2@6f7c98e33bd35ef5cc23ffe71d1d10d5442ecfd2
+parafac2 @ git+https://github.com/meyer-lab/parafac2@2f42b793999f198b29430aeca50c520b8b02f3b3
     # via mrsa-ca-rna
 parso==0.8.4
     # via jedi

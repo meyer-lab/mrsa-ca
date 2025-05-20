@@ -658,7 +658,7 @@ def import_covid_marine():
     covid_m_adata.layers["raw"] = counts
 
     # Remove all non-COVID or problem samples
-    covid_m_adata = covid_m_adata[~covid_m_adata.obs["disease"].isna()]
+    covid_m_adata = covid_m_adata[~covid_m_adata.obs["disease"].isna()]  # type: ignore
     covid_m_adata = covid_m_adata[
         covid_m_adata.obs["disease"].str.contains("Not|Detected")
     ].copy()

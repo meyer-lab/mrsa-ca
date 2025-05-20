@@ -1,7 +1,7 @@
 """This file will contain utility functions for the project.
 These functions will be used throughout the project to perform various common tasks."""
 
-from copy import deepcopy
+from concurrent.futures import ProcessPoolExecutor
 
 import anndata as ad
 import numpy as np
@@ -169,12 +169,25 @@ def concat_datasets(
 
     # Call the data import functions and store the resulting AnnData objects
     adata_list = []
+
     for ad_key in ad_list:
-        if ad_key in data_dict:
-            print(f"Importing {ad_key} dataset...")
-            adata_list.append(data_dict[ad_key]())
-        else:
-            print(f"Warning: Dataset '{ad_key}' not found in available datasets.")
+        if ad_key not in data_dict:
+            raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
+
+    with ProcessPoolExecutor(max_workers=4) as executor:
+        future_to_ad_key = {
+            executor.submit(data_dict[ad_key]): ad_key
+            for ad_key in ad_list
+            if ad_key in data_dict
+        }
+
+        for future in future_to_ad_key:
+            ad_key = future_to_ad_key[future]
+            try:
+                print(f"Importing {ad_key} dataset...")
+                adata_list.append(future.result())
+            except Exception as exc:
+                print(f"{ad_key} generated an exception: {exc}")
 
     if not adata_list:
         raise ValueError("No valid datasets provided or found")
@@ -221,10 +234,7 @@ def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
     Returns:
         sparsity (float): the sparsity of the array"""
 
-    A = deepcopy(array)
-    A[np.abs(A) < threshold] = 0
-    sparsity = 1.0 - (np.count_nonzero(A) / A.size)
-    return sparsity
+    return float(np.mean(threshold > array))
 
 
 def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:

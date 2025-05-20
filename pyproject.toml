@@ -17,7 +17,7 @@ dependencies = [
     "parafac2 @ git+https://github.com/meyer-lab/parafac2",
     "tlviz>=0.1.1",
     "tensorly>=0.9.0",
-    "archs4py>=1.0.4",
+    "h5py>=3.13.0",
 ]
 
 [project.scripts]                                                        

@@ -10,19 +10,13 @@ In the future, we might create a more comprehensive disease registry to
 better keep track of all diseases represented across all datasets.
 """
 
-import contextlib
 import json
-import multiprocessing
 from os.path import abspath, dirname, join
 
 import anndata as ad
-import archs4py.data as a4_data
-import archs4py.meta as a4_meta
-import archs4py.utils as a4_utils
+import h5py as h5
+import numpy as np
 import pandas as pd
-
-with contextlib.suppress(RuntimeError):
-    multiprocessing.set_start_method("spawn")  # loss of speed but avoids fork() issues
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
@@ -67,25 +61,157 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
     return result_df
 
 
-def load_archs4(geo_accession):
+def series_local(file, series_id):
+    f = h5.File(file, "r")
+
+    # find samples that correspond to a series
+    series = [x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])]
+    sample_idx = [i for i, x in enumerate(series) if x == series_id]
+    assert len(sample_idx) > 0
+
+    # find gene names
+    genes = np.array([x.decode("UTF-8") for x in np.array(f["meta/genes/symbol"])])
+    gsm_ids = np.array(
+        [x.decode("UTF-8") for x in np.array(f["meta/samples/geo_accession"])]
+    )[sample_idx]
+
+    # get expression counts
+    exp = np.array(f["data/expression"][:, sample_idx], dtype=np.uint32)
+
+    f.close()
+    exp = pd.DataFrame(exp, index=genes, columns=gsm_ids, dtype=np.uint32)
+    return exp
+
+
+def normalize(counts, tmm_outlier=0.05):
+    """
+    Normalize the count matrix using a specified method.
+    "tmm": Perform trimmed mean normalization
+
+    Args:
+        counts (pd.DataFrame): A pandas DataFrame representing the count matrix.
+
+    Returns:
+        pd.DataFrame: A normalized count matrix as a pandas DataFrame with the same
+                      index and columns as the input.
+
+    Raises:
+        ValueError: If an unsupported normalization method is provided.
+    """
+    norm_exp = tmm_norm(counts, tmm_outlier)
+    norm_exp = pd.DataFrame(
+        norm_exp, index=counts.index, columns=counts.columns, dtype=np.float32
+    )
+    return norm_exp
+
+
+def tmm_norm(exp, percentage=0.05):
+    lexp = np.log2(1 + exp).astype(np.float32)
+    tmm = trimmed_mean(lexp, percentage)
+    nf = pd.DataFrame(
+        np.tile(tmm, (exp.shape[0], 1)), index=lexp.index, columns=lexp.columns
+    )
+    temp = lexp / nf
+    return temp
+
+
+def trimmed_mean(matrix, percentage):
+    matrix = np.array(matrix)
+    trimmed_means = []
+    for col in range(matrix.shape[1]):
+        data = matrix[:, col].copy()
+        data = data[data > 0]
+        n_trim = int(len(data) * percentage)
+        sorted_values = np.sort(data)
+        trimmed_values = sorted_values[n_trim:-n_trim]
+        trimmed_mean = np.mean(trimmed_values)
+        trimmed_means.append(trimmed_mean)
+    return trimmed_means
+
+
+def aggregate_duplicate_genes(exp):
+    return exp.groupby(exp.index).sum()
+
+
+def a4_series(
+    file,
+    series,
+):
+    """
+    Extracts metadata for specified series from an HDF5 file.
+
+    Args:
+        file (str): Path to the HDF5 file.
+        series: Series to extract metadata for.
+
+    Returns:
+        pandas.DataFrame: DataFrame containing the extracted metadata, with metadata
+                          fields as columns and samples as rows.
+    """
+    meta_fields=[
+        "geo_accession",
+        "series_id",
+        "characteristics_ch1",
+        "extract_protocol_ch1",
+        "source_name_ch1",
+        "title",
+    ]
+
+    with h5.File(file, "r") as f:
+        dG = f["meta"]["samples"]
+
+        meta_series = np.array(
+            [
+                x.decode("UTF-8")
+                for x in list(np.array(dG["series_id"]))
+            ]
+        )
+        idx = [i for i, x in enumerate(meta_series) if x == series]
+
+        meta = []
+        mfields = []
+
+        for field in meta_fields:
+            meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])
+            mfields.append(field)
+
+        meta = pd.DataFrame(
+            meta,
+            index=mfields,
+            columns=[
+                x.decode("UTF-8")
+                for x in list(np.array(dG["geo_accession"][idx]))
+            ],
+        )
+    return meta.T
+
+
+def load_archs4(geo_accession) -> ad.AnnData:
     file_path = "/opt/extra-storage/jpopoli/human_gene_v2.6.h5"
 
     # Extract the count data from the ARCHS4 file, fail if not found
-    counts = a4_data.series(file_path, geo_accession)
+    counts = series_local(file_path, geo_accession)
     if not isinstance(counts, pd.DataFrame):
         raise ValueError(
             f"Could not find GEO accession {geo_accession} in the file {file_path}"
         )
-    counts = a4_utils.aggregate_duplicate_genes(counts)
-    counts_tmm = a4_utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
+    counts = aggregate_duplicate_genes(counts)
+    counts_tmm = normalize(counts=counts, tmm_outlier=0.05)
 
     # Extract the metadata from the ARCHS4 file after success with counts
-    metadata = a4_meta.series(file_path, geo_accession)
+    metadata = a4_series(file_path, geo_accession)
 
     # Parse the metadata to extract the clinical variables
     clinical_variables = parse_metadata(metadata)
 
-    return counts.T, counts_tmm.T, clinical_variables
+    adata = ad.AnnData(
+        X=counts_tmm.T,
+        obs=clinical_variables,
+        var=pd.DataFrame(index=counts.index),
+    )
+    adata.layers["raw"] = counts.T
+
+    return adata
 
 
 def import_mrsa():
@@ -95,10 +221,8 @@ def import_mrsa():
         index_col=0,
         delimiter=",",
     )
-    counts_mrsa = a4_utils.aggregate_duplicate_genes(counts_mrsa)
-    counts_mrsa_tmm = a4_utils.normalize(
-        counts=counts_mrsa, method="tmm", tmm_outlier=0.05
-    )
+    counts_mrsa = aggregate_duplicate_genes(counts_mrsa)
+    counts_mrsa_tmm = normalize(counts=counts_mrsa, tmm_outlier=0.05)
     counts_mrsa = counts_mrsa.T
     counts_mrsa_tmm = counts_mrsa_tmm.T
 
@@ -172,8 +296,8 @@ def import_ca():
         index_col=0,
         delimiter="\t",
     )
-    counts_ca = a4_utils.aggregate_duplicate_genes(counts_ca)
-    counts_ca_tmm = a4_utils.normalize(counts=counts_ca, method="tmm", tmm_outlier=0.05)
+    counts_ca = aggregate_duplicate_genes(counts_ca)
+    counts_ca_tmm = normalize(counts=counts_ca, tmm_outlier=0.05)
     counts_ca = counts_ca.T
     counts_ca_tmm = counts_ca_tmm.T
 
@@ -229,19 +353,8 @@ def import_ca():
 
 
 def import_bc():
-    counts, counts_tmm, metadata = load_archs4("GSE201085")
-
-    metadata["disease"] = "Breast Cancer"
-    metadata = metadata.rename(columns={"response": "status"})
-    metadata["dataset_id"] = "GSE201085"
-
-    bc_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    bc_adata.layers["raw"] = counts
-
+    bc_adata = load_archs4("GSE201085")
+    bc_adata.obs["disease"] = "Breast Cancer"
     return bc_adata
 
 
@@ -341,7 +454,7 @@ def import_tb():
 
 
 def import_t1dm():
-    counts, counts_tmm, metadata = load_archs4("GSE124400")
+    t1dm_adata = load_archs4("GSE124400")
 
     metadata = metadata.loc[
         :, ["subject", "age at enrollment", "visit day", "rate of c-peptide change"]
@@ -377,7 +490,7 @@ def import_t1dm():
 
 
 def import_covid():
-    counts, counts_tmm, metadata = load_archs4("GSE161731")
+    covid_adata = load_archs4("GSE161731")
 
     metadata = metadata.loc[
         :, ["subject_id", "age", "gender", "cohort", "time_since_onset", "hospitalized"]
@@ -406,7 +519,7 @@ def import_covid():
 
 
 def import_lupus():
-    counts, counts_tmm, metadata = load_archs4("GSE116006")
+    lupus_adata = load_archs4("GSE116006")
 
     metadata = metadata.loc[
         :,
@@ -431,21 +544,14 @@ def import_lupus():
     metadata["disease"] = "Lupus"
     metadata["dataset_id"] = "GSE116006"
 
-    lupus_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    lupus_adata.layers["raw"] = counts
-
     return lupus_adata
 
 
 def import_hiv():
-    counts, counts_tmm, metadata = load_archs4("GSE162914")
+    hiv_adata = load_archs4("GSE162914")
 
     # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata = metadata.loc[
+    hiv_adata.obs = hiv_adata.obs.loc[
         :,
         [
             "patient id",
@@ -457,7 +563,7 @@ def import_hiv():
             "treatment-outcome code",
         ],
     ]
-    metadata = metadata.rename(
+    hiv_adata.obs = hiv_adata.obs.rename(
         columns={
             "patient id": "subject_id",
             "baseline cd4+": "baseline_cd4+",
@@ -467,21 +573,14 @@ def import_hiv():
             "treatment-outcome code": "treatment_outcome_code",
         }
     )
-    metadata["disease"] = "HIV_CM"
-    metadata["dataset_id"] = "GSE162914"
-
-    hiv_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    hiv_adata.layers["raw"] = counts
+    hiv_adata.obs["disease"] = "HIV_CM"
+    hiv_adata.obs["dataset_id"] = "GSE162914"
 
     return hiv_adata
 
 
 def import_em():
-    counts, counts_tmm, metadata = load_archs4("GSE133378")
+    em_adata = load_archs4("GSE133378")
 
     metadata = metadata.loc[:, ["infected with/healthy control"]]
     metadata["dataset_id"] = "GSE133378"
@@ -489,13 +588,6 @@ def import_em():
 
     metadata = metadata.rename(columns={"infected with/healthy control": "disease"})
     metadata["disease"] = metadata["disease"].str.replace("Control", "Healthy")
-
-    em_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    em_adata.layers["raw"] = counts
 
     # Take only the Enterovirus and Healthy samples
     em_adata = em_adata[
@@ -506,7 +598,7 @@ def import_em():
 
 
 def import_zika():
-    counts, counts_tmm, metadata = load_archs4("GSE129882")
+    zika_adata = load_archs4("GSE129882")
 
     metadata = metadata.loc[
         :,
@@ -527,18 +619,11 @@ def import_zika():
     metadata["disease"] = "Zika"
     metadata["dataset_id"] = "GSE129882"
 
-    zika_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    zika_adata.layers["raw"] = counts
-
     return zika_adata
 
 
 def import_heme():
-    counts, counts_tmm, metadata = load_archs4("GSE133758")
+    heme_adata = load_archs4("GSE133758")
 
     metadata = metadata.loc[:, ["globin-block applied", "identifier"]]
     metadata = metadata.rename(
@@ -549,18 +634,12 @@ def import_heme():
     )
     metadata["disease"] = "Healthy_heme"
     metadata["dataset_id"] = "GSE133758"
-    heme_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    heme_adata.layers["raw"] = counts
 
     return heme_adata
 
 
 def import_ra():
-    counts, counts_tmm, metadata = load_archs4("GSE120178")
+    ra_adata = load_archs4("GSE120178")
 
     metadata = metadata.rename(
         columns={"disease state": "disease", "timepoint": "time"}
@@ -570,13 +649,6 @@ def import_ra():
     metadata["status"] = "Unknown"
     metadata["dataset_id"] = "GSE120178"
 
-    ra_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    ra_adata.layers["raw"] = counts
-
     # Keep only the RA samples
     ra_adata = ra_adata[ra_adata.obs["disease"] == "RA"].copy()
 
@@ -584,25 +656,18 @@ def import_ra():
 
 
 def import_hbv():
-    counts, counts_tmm, metadata = load_archs4("GSE173897")
+    hbv_adata = load_archs4("GSE173897")
 
     metadata = metadata.loc[:, ["ethnicity", "gender", "hbv status"]]
     metadata = metadata.rename(columns={"hbv status": "status"})
     metadata["disease"] = "HBV"
     metadata["dataset_id"] = "GSE173897"
 
-    hbv_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    hbv_adata.layers["raw"] = counts
-
     return hbv_adata
 
 
 def import_kidney():
-    counts, counts_tmm, metadata = load_archs4("GSE112927")
+    kidney_adata = load_archs4("GSE112927")
 
     metadata = metadata.loc[:, ["death censored graft loss", "follow up days"]]
     metadata = metadata.rename(
@@ -613,13 +678,6 @@ def import_kidney():
     )
     metadata["disease"] = "Kidney Transplant"
     metadata["dataset_id"] = "GSE112927"
-
-    kidney_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    kidney_adata.layers["raw"] = counts
 
     return kidney_adata
 
@@ -692,8 +750,8 @@ def import_bc_tcr():
         index_col=0,
         delimiter="\t",
     )
-    counts = a4_utils.aggregate_duplicate_genes(counts)
-    counts_tmm = a4_utils.normalize(counts=counts, method="tmm", tmm_outlier=0.05)
+    counts = aggregate_duplicate_genes(counts)
+    counts_tmm = normalize(counts=counts, tmm_outlier=0.05)
     counts = counts.T
     counts_tmm = counts_tmm.T
 
@@ -726,76 +784,3 @@ def import_bc_tcr():
     bc_tcr_adata.layers["raw"] = counts
 
     return bc_tcr_adata
-
-
-def import_test():
-    counts, counts_tmm, metadata = load_archs4("GSE239933")
-
-    test_adata = ad.AnnData(
-        X=counts_tmm,
-        obs=metadata,
-        var=pd.DataFrame(index=counts.columns),
-    )
-    test_adata.layers["raw"] = counts
-    test_adata.obs["disease"] = "Test"
-    test_adata.obs["status"] = "Unknown"
-    test_adata.obs["dataset_id"] = "GSExxxxxxx"
-
-    return test_adata
-
-
-if __name__ == "__main__":
-    test_adata = import_test()
-
-
-def build_disease_registry(save_path=None):
-    """
-    Build a registry mapping diseases to their source datasets.
-
-    Parameters:
-        save_path (str, optional): If provided, saves the registry as JSON
-
-    Returns:
-        dict: Dictionary mapping disease names to lists of dataset identifiers
-    """
-    import_functions = {
-        "mrsa": import_mrsa,
-        "ca": import_ca,
-        "bc": import_bc,
-        "tb": import_tb,
-        "uc": import_uc,
-        "t1dm": import_t1dm,
-        "covid": import_covid,
-        "lupus": import_lupus,
-        "hiv": import_hiv,
-        "em": import_em,
-        "zika": import_zika,
-        "heme": import_heme,
-        "ra": import_ra,
-        "hbv": import_hbv,
-        "kidney": import_kidney,
-        "covid_marine": import_covid_marine,
-        "bc_tcr": import_bc_tcr,
-    }
-
-    registry = {}
-    print("Building disease registry...")
-
-    for dataset_id, import_func in import_functions.items():
-        try:
-            print(f"Processing dataset: {dataset_id}")
-            adata = import_func()
-            for disease in adata.obs["disease"].unique():
-                if disease not in registry:
-                    registry[disease] = []
-                if dataset_id not in registry[disease]:
-                    registry[disease].append(dataset_id)
-        except Exception as e:
-            print(f"Error processing {dataset_id}: {e}")
-
-    if save_path:
-        with open(save_path, "w") as f:
-            json.dump(registry, f, indent=2)
-        print(f"Registry saved to {save_path}")
-
-    return registry

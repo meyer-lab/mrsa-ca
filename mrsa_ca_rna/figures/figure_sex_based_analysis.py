@@ -46,7 +46,7 @@ def create_model(data, gene_list):
     target = data.obs["status"]
 
     # Create and train model
-    score, proba, model = perform_LR(X, target, splits=8)
+    score, proba, model = perform_LR(X, target, splits=6)
 
     return X, target, score, proba, model
 

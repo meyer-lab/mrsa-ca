@@ -46,7 +46,7 @@ def create_model(data, gene_list):
     target = data.obs["status"]
 
     # Create and train model
-    score, proba, model = perform_LR(X, target, splits=5)
+    score, proba, model = perform_LR(X, target, splits=10)
 
     return X, target, score, proba, model
 
@@ -143,23 +143,23 @@ def plot_coefficients_for_tier(ax, X, model, top_n=10):
     # Choose consistent legend position
     ax.legend(title="Class", loc="upper right", fontsize="small")
 
-        # Add dividing lines between gene groups
+    # Add dividing lines between gene groups
     # Get the x-tick positions
     xticks = ax.get_xticks()
-    
+
     # Add alternating background for each gene group
     for i in range(len(xticks)):
         # Calculate the boundaries for each gene group
         if i < len(xticks) - 1:
-            left = (xticks[i] + xticks[i+1]) / 2
-            ax.axvline(x=left, color='gray', linestyle='--', alpha=0.5, linewidth=0.7)
-    
+            left = (xticks[i] + xticks[i + 1]) / 2
+            ax.axvline(x=left, color="gray", linestyle="--", alpha=0.5, linewidth=0.7)
+
     # Add light background shading for alternate gene groups
     for i in range(len(xticks)):
         if i % 2 == 0 and i < len(xticks) - 1:
             left = xticks[i] - 0.4
             right = xticks[i] + 0.4
-            ax.axvspan(left, right, color='lightgray', alpha=0.2, zorder=0)
+            ax.axvspan(left, right, color="lightgray", alpha=0.2, zorder=0)
 
 
 def genFig():

@@ -97,7 +97,9 @@ def import_mrsa():
         delimiter=",",
     )
     gene_map = a4_align.get_ensembl_mappings(species="hsapiens", release="latest")
-    counts_mrsa.columns = counts_mrsa.columns.map(dict(zip(gene_map["ensembl_gene"], gene_map["symbol"])))
+    counts_mrsa.columns = counts_mrsa.columns.map(
+        dict(zip(gene_map["ensembl_gene"], gene_map["symbol"], strict=False))
+    )
     counts_mrsa = counts_mrsa.T
     counts_mrsa = a4_utils.aggregate_duplicate_genes(counts_mrsa)
     counts_mrsa_tmm = a4_utils.normalize(
@@ -106,23 +108,6 @@ def import_mrsa():
     counts_mrsa = counts_mrsa.T
     counts_mrsa_tmm = counts_mrsa_tmm.T
 
-    # # Grab mrsa metadata from SRA database since it is not on GEO
-    # metadata_ncbi = pd.read_csv(
-    #     join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
-    #     index_col=0,
-    #     delimiter=",",
-    # )
-
-    # # Pair down metadata and ensure "disease" and "status" columns are present
-    # metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
-    # metadata_ncbi.index.name = None
-
-    # metadata_ncbi["disease"] = "MRSA"
-    # metadata_ncbi["dataset_id"] = "SRP414349"
-    # metadata_ncbi = metadata_ncbi.reset_index(
-    #     drop=False, names=["accession"]
-    # ).set_index("isolate")
-
     metadata = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_josh_new.csv"),
         index_col=0,
@@ -130,12 +115,6 @@ def import_mrsa():
     )
     metadata["disease"] = "MRSA"
     metadata["dataset_id"] = "SRP414349"
-
-    # # Combine and make the SRR IDs the index to match the counts
-    # metadata = pd.concat([metadata_ncbi, sex_matched], axis=1, join="inner")
-    # metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
-    #     "accession"
-    # )
 
     # Make a regression classes for multinomial regression
     metadata["status"] = "Unknown"

@@ -135,7 +135,7 @@ def aggregate_duplicate_genes(exp):
 
 def a4_series(
     file,
-    series,
+    series: str,
 ):
     """
     Extracts metadata for specified series from an HDF5 file.
@@ -148,7 +148,7 @@ def a4_series(
         pandas.DataFrame: DataFrame containing the extracted metadata, with metadata
                           fields as columns and samples as rows.
     """
-    meta_fields=[
+    meta_fields = [
         "geo_accession",
         "series_id",
         "characteristics_ch1",
@@ -161,10 +161,7 @@ def a4_series(
         dG = f["meta"]["samples"]
 
         meta_series = np.array(
-            [
-                x.decode("UTF-8")
-                for x in list(np.array(dG["series_id"]))
-            ]
+            [x.decode("UTF-8") for x in list(np.array(dG["series_id"]))]
         )
         idx = [i for i, x in enumerate(meta_series) if x == series]
 
@@ -179,14 +176,13 @@ def a4_series(
             meta,
             index=mfields,
             columns=[
-                x.decode("UTF-8")
-                for x in list(np.array(dG["geo_accession"][idx]))
+                x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))
             ],
         )
     return meta.T
 
 
-def load_archs4(geo_accession) -> ad.AnnData:
+def load_archs4(geo_accession: str) -> ad.AnnData:
     file_path = "/opt/extra-storage/jpopoli/human_gene_v2.6.h5"
 
     # Extract the count data from the ARCHS4 file, fail if not found

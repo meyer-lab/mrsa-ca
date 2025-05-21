@@ -279,6 +279,8 @@ def import_ca():
 def import_bc():
     bc_adata = load_archs4("GSE201085")
     bc_adata.obs["disease"] = "Breast Cancer"
+    bc_adata.obs = bc_adata.obs.rename(columns={"response": "status"})
+    bc_adata.obs["dataset_id"] = "GSE201085"
     return bc_adata
 
 

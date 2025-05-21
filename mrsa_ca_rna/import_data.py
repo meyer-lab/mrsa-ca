@@ -12,7 +12,7 @@ better keep track of all diseases represented across all datasets.
 
 import json
 from os.path import abspath, dirname, join
-from typing import Any, cast
+from typing import Any
 
 import anndata as ad
 import h5py as h5
@@ -67,24 +67,24 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     # find samples that correspond to a series
     series = [
-        x.decode("UTF-8") for x in np.array(cast("Any", f["meta/samples/series_id"]))
+        x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])
     ]
     sample_idx = [i for i, x in enumerate(series) if x == series_id]
     assert len(sample_idx) > 0
 
     # find gene names
     genes = np.array(
-        [x.decode("UTF-8") for x in np.array(cast("Any", f["meta/genes/symbol"]))]
+        [x.decode("UTF-8") for x in np.array(f["meta/genes/symbol"])]
     )
     gsm_ids = np.array(
         [
             x.decode("UTF-8")
-            for x in np.array(cast("Any", f["meta/samples/geo_accession"]))
+            for x in np.array(f["meta/samples/geo_accession"])
         ]
     )[sample_idx]
 
     # get expression counts
-    exp = np.array(cast("Any", f["data/expression"])[:, sample_idx], dtype=np.uint32)
+    exp = np.array(f["data/expression"][:, sample_idx], dtype=np.uint32)
 
     exp = pd.DataFrame(exp, index=genes, columns=gsm_ids, dtype=np.uint32)
 
@@ -98,10 +98,10 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
         "title",
     ]
 
-    dG: Any = cast("Any", f["meta"]["samples"])
+    dG: Any = f["meta"]["samples"]
 
     meta_series = np.array(
-        [x.decode("UTF-8") for x in list(np.array(cast("Any", dG["series_id"])))]
+        [x.decode("UTF-8") for x in list(np.array(dG["series_id"]))]
     )
     idx = [i for i, x in enumerate(meta_series) if x == series_id]
 
@@ -110,7 +110,7 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     for field in meta_fields:
         meta.append(
-            [x.decode("UTF-8") for x in list(np.array(cast("Any", dG[field][idx])))]
+            [x.decode("UTF-8") for x in list(np.array(dG[field][idx]))]
         )
         mfields.append(field)
 
@@ -120,7 +120,7 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
         columns=pd.Index(
             [
                 x.decode("UTF-8")
-                for x in list(np.array(cast("Any", dG["geo_accession"][idx])))
+                for x in list(np.array(dG["geo_accession"][idx]))
             ]
         ),
     )

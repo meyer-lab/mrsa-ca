@@ -68,7 +68,7 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
     # find samples that correspond to a series
     series = [x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])]
     sample_idx = [i for i, x in enumerate(series) if x == series_id]
-    assert len(sample_idx) > 0
+    assert len(sample_idx) > 0, f"Could not find series {series_id} in the file {file}"
 
     # find gene names
     genes = np.array([x.decode("UTF-8") for x in np.array(f["meta/genes/symbol"])])
@@ -679,3 +679,23 @@ def import_bc_tcr():
     )
 
     return bc_tcr_adata
+
+
+def import_sepsis():
+    sepsis_adata = load_archs4("GSE185263")
+
+    sepsis_adata.obs = sepsis_adata.obs.loc[
+        :, ["Sex", "age", "disease state", "in hospital mortality"]
+    ]
+    sepsis_adata.obs = sepsis_adata.obs.rename(
+        columns={
+            "disease state": "disease",
+            "in hospital mortality": "status",
+        }
+    )
+    sepsis_adata.obs["dataset_id"] = "GSE185263"
+    
+    # Keep only the Sepsis samples (exclude healthy controls)
+    sepsis_adata = sepsis_adata[sepsis_adata.obs["disease"] == "sepsis"].copy()
+
+    return sepsis_adata

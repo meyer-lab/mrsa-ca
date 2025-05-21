@@ -12,7 +12,6 @@ better keep track of all diseases represented across all datasets.
 
 import json
 from os.path import abspath, dirname, join
-from typing import Any
 
 import anndata as ad
 import h5py as h5
@@ -63,6 +62,7 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
 
 
 def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
+    # Pyright does not understand that h5py.File supports dict-like access
     f: h5.File = h5.File(file, "r")
 
     # find samples that correspond to a series
@@ -77,7 +77,7 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
     )[sample_idx]
 
     # get expression counts
-    exp = np.array(f["data/expression"][:, sample_idx], dtype=np.uint32)
+    exp = np.array(f["data/expression"][:, sample_idx], dtype=np.uint32)  # type: ignore
 
     exp = pd.DataFrame(exp, index=genes, columns=gsm_ids, dtype=np.uint32)
 
@@ -91,23 +91,23 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
         "title",
     ]
 
-    dG: Any = f["meta"]["samples"]
+    dG = f["meta"]["samples"]  # type: ignore
 
-    meta_series = np.array([x.decode("UTF-8") for x in list(np.array(dG["series_id"]))])
+    meta_series = np.array([x.decode("UTF-8") for x in list(np.array(dG["series_id"]))])  # type: ignore
     idx = [i for i, x in enumerate(meta_series) if x == series_id]
 
     meta = []
     mfields = []
 
     for field in meta_fields:
-        meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])
+        meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])  # type: ignore
         mfields.append(field)
 
     meta = pd.DataFrame(
         meta,
         index=pd.Index(mfields),
         columns=pd.Index(
-            [x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))]
+            [x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))]  # type: ignore
         ),
     )
 

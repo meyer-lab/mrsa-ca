@@ -48,6 +48,8 @@ gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
     # via wandb
+gseapy==1.1.8
+    # via mrsa-ca-rna
 h5py==3.13.0
     # via anndata
     # via mrsa-ca-rna
@@ -71,6 +73,7 @@ jupyterlab-widgets==3.0.13
 kiwisolver==1.4.7
     # via matplotlib
 matplotlib==3.10.3
+    # via gseapy
     # via ipympl
     # via mrsa-ca-rna
     # via seaborn
@@ -83,6 +86,7 @@ numpy==2.1.1
     # via anndata
     # via contourpy
     # via cupy-cuda12x
+    # via gseapy
     # via h5py
     # via ipympl
     # via matplotlib
@@ -103,6 +107,7 @@ packaging==24.1
     # via xarray
 pandas==2.2.3
     # via anndata
+    # via gseapy
     # via mrsa-ca-rna
     # via seaborn
     # via statsmodels
@@ -147,6 +152,7 @@ pytz==2024.2
 pyyaml==6.0.2
     # via wandb
 requests==2.32.3
+    # via gseapy
     # via tlviz
     # via wandb
 scikit-learn==1.6.1
@@ -154,6 +160,7 @@ scikit-learn==1.6.1
     # via parafac2
 scipy==1.15.2
     # via anndata
+    # via gseapy
     # via parafac2
     # via scikit-learn
     # via statsmodels

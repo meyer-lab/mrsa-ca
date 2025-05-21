@@ -43,6 +43,10 @@ def genFig():
 
     cmap = sns.diverging_palette(145, 300, as_cmap=True)
 
+    component_labels = [
+        str(x) for x in range(1, weighted_projections["MRSA"].shape[1] + 1)
+    ]
+
     for i, (disease, projection) in enumerate(weighted_projections.items()):
         a = sns.heatmap(
             projection,
@@ -50,8 +54,8 @@ def genFig():
             cmap=cmap,
             center=0,
             cbar=True,
-            xticklabels=False,
-            yticklabels=range(1, projection.shape[1] + 1),
+            xticklabels=component_labels,
+            yticklabels=False,
         )
         a.set_title(f"Weighted Projections for {disease}")
         a.set_xlabel("Components")

@@ -15,7 +15,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 20
+    rank = 5
 
     datasets = "all"
 

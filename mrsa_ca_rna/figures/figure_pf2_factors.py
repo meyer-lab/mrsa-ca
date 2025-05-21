@@ -24,17 +24,10 @@ def figure_setup():
         scale=True,
     )
 
-    def callback(iteration, err, factors, _):
-        sparsity = check_sparsity(factors[2])
-        R2X = 1 - err
-        print(f"Iteration: {iteration} | R2X: {R2X:.2e} | Sparsity: {sparsity:.2f}")
-        return 0
-
     _, factors, _, r2x = perform_parafac2(
         disease_data,
         condition_name="disease",
         rank=rank,
-        callback=callback,
     )
 
     return factors, r2x, disease_data

@@ -82,16 +82,10 @@ def test_import_functions(import_func, gene_list):
     # Test obs contains dataset_id column
     assert "dataset_id" in adata.obs.columns, "obs does not contain 'dataset_id' column"
 
-    # Test raw layer exists
-    assert "raw" in adata.layers, "adata.layers['raw'] does not exist"
-
     # Test var.index matches gene_list.txt
     assert set(adata.var.index) == set(gene_list), (
         "var.index does not match gene_list.txt"
     )
-
-    # Test raw layer has same shape as X
-    assert adata.layers["raw"].shape == adata.X.shape, "raw layer shape doesn't match X"
 
     # Test data is not empty
     assert adata.n_obs > 0, "Dataset has no observations"

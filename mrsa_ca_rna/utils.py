@@ -225,10 +225,10 @@ def concat_datasets(
         assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
 
     if scale:
-        whole_ad = whole_ad.copy()
-        whole_ad.X = StandardScaler().fit_transform(whole_ad.X)
+        whole_ad.X = StandardScaler().fit_transform(whole_ad.X).copy()
 
     return whole_ad
+
 
 def normalize(counts, tmm_outlier=0.05):
     """
@@ -241,38 +241,47 @@ def normalize(counts, tmm_outlier=0.05):
     Returns:
         np.ndarray: A normalized count matrix.
     """
+    if counts.shape[0] < counts.shape[1]:
+        counts = counts.T
+        rotated = True
+    else:
+        rotated = False
+
     # Convert to numpy array if not already
     counts_array = np.asarray(counts)
-    
+
     # Perform TMM normalization
     norm_exp = tmm_norm(counts_array, tmm_outlier)
-    
+
+    if rotated:
+        norm_exp = norm_exp.T
+
     return norm_exp.astype(np.float32)
 
 
 def tmm_norm(exp, percentage=0.05):
     """
     Perform TMM (Trimmed Mean of M-values) normalization.
-    
+
     Args:
         exp (np.ndarray): Expression matrix to normalize.
         percentage (float): Percentage of data to trim when calculating means.
-        
+
     Returns:
         np.ndarray: Normalized expression matrix.
     """
     # Add 1 and log2 transform to handle zeros
     lexp = np.log2(1 + exp).astype(np.float32)
-    
+
     # Calculate trimmed means for each column
     tmm = trimmed_mean(lexp, percentage)
-    
+
     # Create normalization factors matrix (repeated for each sample)
     nf = np.tile(tmm, (exp.shape[0], 1))
-    
+
     # Normalize by dividing log-expression by normalization factors
     temp = lexp / nf
-    
+
     return temp
 
 

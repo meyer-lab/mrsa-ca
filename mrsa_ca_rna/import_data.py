@@ -66,21 +66,14 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
     f: h5.File = h5.File(file, "r")
 
     # find samples that correspond to a series
-    series = [
-        x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])
-    ]
+    series = [x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])]
     sample_idx = [i for i, x in enumerate(series) if x == series_id]
     assert len(sample_idx) > 0
 
     # find gene names
-    genes = np.array(
-        [x.decode("UTF-8") for x in np.array(f["meta/genes/symbol"])]
-    )
+    genes = np.array([x.decode("UTF-8") for x in np.array(f["meta/genes/symbol"])])
     gsm_ids = np.array(
-        [
-            x.decode("UTF-8")
-            for x in np.array(f["meta/samples/geo_accession"])
-        ]
+        [x.decode("UTF-8") for x in np.array(f["meta/samples/geo_accession"])]
     )[sample_idx]
 
     # get expression counts
@@ -100,28 +93,21 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     dG: Any = f["meta"]["samples"]
 
-    meta_series = np.array(
-        [x.decode("UTF-8") for x in list(np.array(dG["series_id"]))]
-    )
+    meta_series = np.array([x.decode("UTF-8") for x in list(np.array(dG["series_id"]))])
     idx = [i for i, x in enumerate(meta_series) if x == series_id]
 
     meta = []
     mfields = []
 
     for field in meta_fields:
-        meta.append(
-            [x.decode("UTF-8") for x in list(np.array(dG[field][idx]))]
-        )
+        meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])
         mfields.append(field)
 
     meta = pd.DataFrame(
         meta,
         index=pd.Index(mfields),
         columns=pd.Index(
-            [
-                x.decode("UTF-8")
-                for x in list(np.array(dG["geo_accession"][idx]))
-            ]
+            [x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))]
         ),
     )
 

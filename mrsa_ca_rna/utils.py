@@ -1,8 +1,6 @@
 """This file will contain utility functions for the project.
 These functions will be used throughout the project to perform various common tasks."""
 
-from concurrent.futures import ProcessPoolExecutor
-
 import anndata as ad
 import numpy as np
 import pandas as pd
@@ -173,21 +171,8 @@ def concat_datasets(
     for ad_key in ad_list:
         if ad_key not in data_dict:
             raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
-
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        future_to_ad_key = {
-            executor.submit(data_dict[ad_key]): ad_key
-            for ad_key in ad_list
-            if ad_key in data_dict
-        }
-
-        for future in future_to_ad_key:
-            ad_key = future_to_ad_key[future]
-            try:
-                print(f"Importing {ad_key} dataset...")
-                adata_list.append(future.result())
-            except Exception as exc:
-                print(f"{ad_key} generated an exception: {exc}")
+        else:
+            adata_list.append(data_dict[ad_key]())
 
     if not adata_list:
         raise ValueError("No valid datasets provided or found")

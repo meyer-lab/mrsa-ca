@@ -22,52 +22,32 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 
 def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
-    # GEO metadata in SOFT format stores clinical data in the characteristics_ch1 column
-    metadata_char_ch1 = metadata.loc[:, "characteristics_ch1"].copy()
+    """Parses metadata from a DataFrame, extracting key-value pairs from the
+    'characteristics_ch1' column.
+    """
+    metadata_char_ch1 = metadata["characteristics_ch1"].copy()
 
-    # First, collect all unique column names from all rows
-    all_keys = set()
-    for value in metadata_char_ch1:
-        if isinstance(value, str):
-            items = value.split(",")
-            for item in items:
-                if ": " in item:
-                    key = item.split(": ")[0].strip()
-                    all_keys.add(key)
+    def parse_row(row):
+        if isinstance(row, str):
+            items = [item.split(": ", 1) for item in row.split(",") if ": " in item]
+            return {k.strip(): v.strip() for k, v in items if len(k) > 0 and len(v) > 0}
+        else:
+            return {}
 
-    # Create a DataFrame with these keys as columns
-    result_df = pd.DataFrame(
-        index=metadata_char_ch1.index, columns=pd.Index(sorted(all_keys))
-    )
-
-    # Fill in the data for each row
-    for idx, value in enumerate(metadata_char_ch1):
-        if isinstance(value, str):
-            items = value.split(",")
-            for item in items:
-                if ": " in item:
-                    try:
-                        key, val = item.split(": ", 1)
-                        key = key.strip()
-                        val = val.strip()
-                        result_df.loc[metadata_char_ch1.index[idx], key] = val
-                    except ValueError:
-                        continue
-
-    """I do not know if this is necessary yet"""
-    # # Fill NaN values with "Unknown" to indicate we filled in the data
-    # result_df = result_df.fillna("Unkown")
-
+    parsed_data = metadata_char_ch1.apply(parse_row)
+    result_df = pd.DataFrame.from_records(parsed_data, index=metadata_char_ch1.index)
     return result_df
 
 
-def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
+def series_local(file: str, series_id: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Pyright does not understand that h5py.File supports dict-like access
     f: h5.File = h5.File(file, "r")
 
+    dG = f["meta/samples"]  # type: ignore
+
     # find samples that correspond to a series
     series = [x.decode("UTF-8") for x in np.array(f["meta/samples/series_id"])]
-    sample_idx = [i for i, x in enumerate(series) if x == series_id]
+    sample_idx = (np.array(series) == series_id).nonzero()[0]
     assert len(sample_idx) > 0
 
     # find gene names
@@ -91,27 +71,18 @@ def series_local(file, series_id) -> tuple[pd.DataFrame, pd.DataFrame]:
         "title",
     ]
 
-    dG = f["meta"]["samples"]  # type: ignore
-
-    meta_series = np.array([x.decode("UTF-8") for x in list(np.array(dG["series_id"]))])  # type: ignore
-    idx = [i for i, x in enumerate(meta_series) if x == series_id]
-
     meta = []
-    mfields = []
 
     for field in meta_fields:
-        meta.append([x.decode("UTF-8") for x in list(np.array(dG[field][idx]))])  # type: ignore
-        mfields.append(field)
+        meta.append([x.decode("UTF-8") for x in np.array(dG[field][sample_idx])])  # type: ignore
+
+    f.close()
 
     meta = pd.DataFrame(
         meta,
-        index=pd.Index(mfields),
-        columns=pd.Index(
-            [x.decode("UTF-8") for x in list(np.array(dG["geo_accession"][idx]))]  # type: ignore
-        ),
+        index=pd.Index(meta_fields),
+        columns=pd.Index(gsm_ids),
     )
-
-    f.close()
 
     return exp, meta.T
 

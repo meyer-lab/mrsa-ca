@@ -35,7 +35,9 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
             return {}
 
     parsed_data = metadata_char_ch1.apply(parse_row)
-    result_df = pd.DataFrame.from_records(parsed_data, index=metadata_char_ch1.index)
+    result_df = pd.DataFrame.from_records(
+        parsed_data.to_list(), index=metadata_char_ch1.index
+    )
     return result_df
 
 

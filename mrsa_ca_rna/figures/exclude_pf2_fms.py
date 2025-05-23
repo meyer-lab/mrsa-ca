@@ -33,45 +33,31 @@ def bootstrap_fms(X, rank, target_trials=30, random_state=None):
     fms_list = []
     R2X_diff_list = []
 
-    # Track successful and failed trials
-    successful_trials = 0
-    failed_trials = 0
+    seeds = rng.integers(0, 1000, size=(target_trials,))
+    
+    for i in range(target_trials):
+        # uniquely set the seed for the current trial
+        seed = seeds[i]
 
-    seeds = rng.integers(0, 1000, size=(target_trials * 2,))
+        # factorize the original and resampled data
+        factors_true, R2X_true = factorize(X, rank, random_state=seed)
+        factors_resampled, R2X_resampled = factorize(
+            resample_adata(X), rank, random_state=seed
+        )
 
-    # continue until we have enough successful trials
-    while successful_trials < target_trials:
-        try:
-            # uniquely set the seed for the current trial
-            seed = seeds[successful_trials + failed_trials]
+        # calculate the factor match score
+        factor_match = factor_match_score(
+            factors_true, factors_resampled, consider_weights=False, skip_mode=1
+        )
 
-            # factorize the original and resampled data
-            factors_true, R2X_true = factorize(X, rank, random_state=seed)
-            factors_resampled, R2X_resampled = factorize(
-                resample_adata(X), rank, random_state=seed
-            )
+        # calculate the relative difference in R2X
+        R2X_diff_percent = (R2X_resampled - R2X_true) / R2X_true
 
-            # calculate the factor match score
-            factor_match = factor_match_score(
-                factors_true, factors_resampled, consider_weights=False, skip_mode=1
-            )
+        # collect the metrics
+        R2X_diff_list.append(R2X_diff_percent)
+        fms_list.append(factor_match)
 
-            # calculate the relative difference in R2X
-            R2X_diff_percent = (R2X_resampled - R2X_true) / R2X_true
-
-            # collect the metrics
-            R2X_diff_list.append(R2X_diff_percent)
-            fms_list.append(factor_match)
-
-            successful_trials += 1
-            print(f"Successful trial {successful_trials}/{target_trials}")
-
-        except Exception as e:
-            failed_trials += 1
-            print(f"Trial failed: {e}")
-            continue
-
-    return fms_list, R2X_diff_list, successful_trials, failed_trials
+    return fms_list, R2X_diff_list
 
 
 def figure_setup():
@@ -81,28 +67,18 @@ def figure_setup():
         scale=False,
     )
 
-    ranks = [10, 20]
+    rank = 5
 
-    fms_0, R2X_0, s_0, f_0 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[0], target_trials=10
-    )
-    fms_1, R2X_1, s_1, f_1 = bootstrap_fms(
-        disease_data.copy(), rank=ranks[1], target_trials=10
+    fms_list, r2x_list = bootstrap_fms(
+        disease_data.copy(), rank=rank, target_trials=10
     )
 
-    # combined the matrics from the 20 and 30 rank trials
-    fms_list = fms_0 + fms_1
-    R2X_diff_list = R2X_0 + R2X_1
-    s_trials = s_0 + s_1
-    f_trials = f_0 + f_1
-    ranks = [ranks[0]] * len(fms_0) + [ranks[1]] * len(fms_1)
-
-    metrics = {"rank": ranks, "fms": fms_list, "R2X_diff": R2X_diff_list}
+    metrics = {"fms": fms_list, "R2X_diff": r2x_list}
     metrics = pd.DataFrame(
         metrics, index=range(len(fms_list)), columns=pd.Index(list(metrics.keys()))
     )
 
-    return metrics, s_trials, f_trials
+    return metrics
 
 
 def genFig():
@@ -110,18 +86,17 @@ def genFig():
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    data, successes, failures = figure_setup()
+    data = figure_setup()
 
-    a = sns.scatterplot(data=data, x="fms", y="R2X_diff", hue="rank", ax=ax[0])
+    a = sns.scatterplot(data=data, x="fms", y="R2X_diff", ax=ax[0])
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("R2X Difference (%)")
     a.set_title(
         "FMS and R2X percent difference of PF2 factor matrices\n"
-        f"Successes: {successes}, Failures: {failures}\n"
-        f"Rank: {data['rank'].unique()}"
+        "Rank: 5, Trials: 10"
     )
 
-    a = sns.kdeplot(data=data, x="fms", hue="rank", clip=(0, 1), ax=ax[1])
+    a = sns.kdeplot(data=data, x="fms", clip=(0, 1), ax=ax[1])
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("Density")
     a.set_xlim(0, 1)

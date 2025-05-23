@@ -37,8 +37,8 @@ def genFig():
     # Get the weighted projections
     weighted_projections = figure_setup()
 
-    layout = {"ncols": 5, "nrows": 4}
-    fig_size = (20, 16)
+    layout = {"ncols": 4, "nrows": 4}
+    fig_size = (16, 16)
     ax, f, _ = setupBase(fig_size, layout)
 
     cmap = sns.diverging_palette(145, 300, as_cmap=True)

@@ -8,7 +8,6 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
-    gene_filter,
 )
 
 
@@ -17,12 +16,7 @@ def figure_setup():
 
     rank = 5
 
-    datasets = "all"
-
-    disease_data = concat_datasets(
-        datasets,
-        scale=True,
-    )
+    disease_data = concat_datasets()
 
     _, factors, _, r2x = perform_parafac2(
         disease_data,
@@ -60,11 +54,14 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # grab the top 300 genes
+    # Order the genes by their mean value
+    genes_df["abs_mean"] = genes_df.abs().mean(axis=1)
+    genes_df = genes_df.sort_values(by="abs_mean", ascending=False)
+    genes_df = genes_df.drop(columns=["abs_mean"])
+    # Select the top n genes
     top_n = 300
-    genes_df: pd.DataFrame = gene_filter(
-        genes_df.T, threshold=0, method="mean", top_n=top_n
-    ).T
+    genes_df = genes_df.iloc[:top_n, :]
+    
 
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values

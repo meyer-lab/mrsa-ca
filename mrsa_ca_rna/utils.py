@@ -143,8 +143,8 @@ def concat_datasets(
         "ca": import_ca,
         "bc": import_bc,
         "tb": import_tb,
-        "uc": import_uc,
-        "t1dm": import_t1dm,
+        # "uc": import_uc,
+        # "t1dm": import_t1dm,
         "covid": import_covid,
         "lupus": import_lupus,
         "hiv": import_hiv,
@@ -153,8 +153,8 @@ def concat_datasets(
         "heme": import_heme,
         "ra": import_ra,
         "hbv": import_hbv,
-        "covid_marine": import_covid_marine,
-        "bc_tcr": import_bc_tcr,
+        # "covid_marine": import_covid_marine,
+        # "bc_tcr": import_bc_tcr,
     }
 
     # If no list is provided or "all" is specified, use all available datasets
@@ -172,6 +172,7 @@ def concat_datasets(
         if ad_key not in data_dict:
             raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
         else:
+            print(ad_key)
             adata_list.append(data_dict[ad_key]())
 
     if not adata_list:
@@ -241,7 +242,7 @@ def normalize(counts, tmm_outlier=0.05):
     if rotated:
         norm_exp = norm_exp.T
 
-    return norm_exp.astype(np.float32)
+    return norm_exp.astype(np.float64)
 
 
 def tmm_norm(exp, percentage=0.05):
@@ -256,7 +257,7 @@ def tmm_norm(exp, percentage=0.05):
         np.ndarray: Normalized expression matrix.
     """
     # Add 1 and log2 transform to handle zeros
-    lexp = np.log2(1 + exp).astype(np.float32)
+    lexp = np.log2(1 + exp).astype(np.float64)
 
     # Calculate trimmed means for each column
     tmm = trimmed_mean(lexp, percentage)

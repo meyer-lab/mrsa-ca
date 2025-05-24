@@ -5,54 +5,42 @@ perform the factorization using the parafac2_nd function from the parafac2 libra
 """
 
 import anndata as ad
-import cupy as cp
 import numpy as np
-from parafac2 import parafac2_nd
+from scipy.optimize import linear_sum_assignment
+from tensorly.cp_tensor import cp_flip_sign, cp_normalize
+from tensorly.decomposition import parafac2
+from tensorly.preprocessing import (
+    svd_compress_tensor_slices,
+    svd_decompress_parafac2_tensor,
+)
 
-# set the gpu id to use for the factorization
-cp.cuda.Device(1).use()
 
+def standardize_pf2(
+    factors: list[np.ndarray], projections: list[np.ndarray]
+) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
+    weights, factors = cp_flip_sign(cp_normalize((None, factors)), mode=1)
 
-# prepare the data to form a numpy list using xarray to pass to tensorly's parafac2
-def prepare_data(X: ad.AnnData, expansion_dim: str = "None"):
-    """Prepares the data for tensor factorization by creating a unique index for the
-    condition by which we slice the tensor and pre-calculating the gene means.
+    # Order components by weight
+    w_idx = np.argsort(weights)
+    factors = [f[:, w_idx] for f in factors]
 
-    Parameters
-    ----------
-    X : ad.AnnData
-        The data to be prepared for tensor factorization
-    expansion_dim : str
-        The dimension by which to expand the data
+    # Order eigen-cells to maximize the diagonal of B
+    _, col_ind = linear_sum_assignment(np.abs(factors[1].T), maximize=True)
+    factors[1] = factors[1][col_ind, :]
+    projections = [p[:, col_ind] for p in projections]
 
-    Returns
-    -------
-    ad.AnnData
-        Data prepared for tensor factorization via parafac2_nd
-    """
+    # Flip the sign based on B
+    signn = np.sign(np.diag(factors[1]))
+    factors[1] *= signn[:, np.newaxis]
+    projections = [p * signn for p in projections]
 
-    assert expansion_dim != "None", (
-        "Please provide the expansion dimension for the data"
-    )
-
-    # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(expansion_dim), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-    X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
-
-    # Pre-calculate gene means
-    means = np.mean(X.X, axis=0)  # type: ignore
-    X.var["means"] = means
-
-    return X
+    return weights, factors, projections
 
 
 def perform_parafac2(
     X: ad.AnnData,
     condition_name: str = "disease",
     rank: int = 10,
-    rnd_seed: int | None = None,
-    callback=None,
 ):
     """Performs the parafac2 tensor factorization on the data by calling our custom
     parafac2_nd function.
@@ -65,12 +53,6 @@ def perform_parafac2(
         The condition by which to slice the data, by default "disease"
     rank : int, optional
         The rank of the resulting decomposition, by default 10
-    gpu_id : int, options: 0 or 1
-        the GPU target to run the factorization on, by default 1
-    rnd_seed : int, optional
-        specify a random state for the factorization, by default None
-    callback : func, optional
-        for interior value extraction during wandb experiments, by default None
 
     Returns
     -------
@@ -78,19 +60,32 @@ def perform_parafac2(
         the weights, factors, projections, and R2X value of the decomposition
     """
 
-    # Prepare the data for the tensor factorization
-    X = prepare_data(X, expansion_dim=condition_name)
+    # Get the indices for subsetting the data
+    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
+    X.obs["condition_unique_idxs"] = sgIndex
+    X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
 
-    decomposition, R2X = parafac2_nd(
-        X_in=X,
-        rank=rank,
-        n_iter_max=100,
-        tol=1e-12,
-        random_state=rnd_seed,
-        callback=callback,
+    # convert to list
+    X_list = [np.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
+
+    scores, loadings = svd_compress_tensor_slices(
+        X_list, 0.00001, rank * 2 + 10, "randomized_svd"
     )
-    weights = decomposition[0]
-    factors = decomposition[1]
-    projections = decomposition[2]
+
+    decomposition = parafac2(
+        scores,
+        rank=rank,
+        verbose=True,
+        init="svd",
+        svd="randomized_svd",
+        tol=1e-5,
+        n_iter_max=100,
+    )
+
+    weights, factors, projections = svd_decompress_parafac2_tensor(
+        decomposition, loadings
+    )
+
+    R2X = 0.1
 
     return weights, factors, projections, R2X

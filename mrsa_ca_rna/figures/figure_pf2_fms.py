@@ -34,7 +34,7 @@ def bootstrap_fms(X, rank, target_trials=30, random_state=None):
     R2X_diff_list = []
 
     seeds = rng.integers(0, 1000, size=(target_trials,))
-    
+
     for i in range(target_trials):
         # uniquely set the seed for the current trial
         seed = seeds[i]
@@ -69,9 +69,7 @@ def figure_setup():
 
     rank = 5
 
-    fms_list, r2x_list = bootstrap_fms(
-        disease_data.copy(), rank=rank, target_trials=10
-    )
+    fms_list, r2x_list = bootstrap_fms(disease_data.copy(), rank=rank, target_trials=10)
 
     metrics = {"fms": fms_list, "R2X_diff": r2x_list}
     metrics = pd.DataFrame(
@@ -92,8 +90,7 @@ def genFig():
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("R2X Difference (%)")
     a.set_title(
-        "FMS and R2X percent difference of PF2 factor matrices\n"
-        "Rank: 5, Trials: 10"
+        "FMS and R2X percent difference of PF2 factor matrices\nRank: 5, Trials: 10"
     )
 
     a = sns.kdeplot(data=data, x="fms", clip=(0, 1), ax=ax[1])

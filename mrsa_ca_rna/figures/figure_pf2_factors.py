@@ -61,7 +61,6 @@ def genFig():
     # Select the top n genes
     top_n = 300
     genes_df = genes_df.iloc[:top_n, :]
-    
 
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values

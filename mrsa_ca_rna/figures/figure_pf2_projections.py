@@ -10,12 +10,11 @@ from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
-    datasets = "all"
-    data = concat_datasets(datasets, scale=True)
+    data = concat_datasets()
 
     rank = 5
 
-    _, factors, projections, r2x = perform_parafac2(
+    _, factors, projections, _ = perform_parafac2(
         data, condition_name="disease", rank=rank
     )
 

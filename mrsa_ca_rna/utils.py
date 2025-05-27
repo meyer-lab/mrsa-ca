@@ -3,6 +3,7 @@ These functions will be used throughout the project to perform various common ta
 
 import anndata as ad
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.import_data import (
@@ -29,8 +30,28 @@ def concat_datasets(
     ad_list: list[str] | None = None,
     filter_threshold: float = 0.1,
 ) -> ad.AnnData:
-    """
-    
+    """Concatenate multiple AnnData objects from different datasets into
+    a single AnnData object. Perform filtering of genes based on a threshold,
+    normalization of counts, log2 transformation, and z-score scaling.
+
+    Parameters
+    ----------
+    ad_list : list[str], optional
+        list of datasets to include, by default None = All datasets
+    filter_threshold : float, optional
+        mean gene expression cutoff, by default 0.1
+
+    Returns
+    -------
+    ad.AnnData
+        Concatenated and preprocessed AnnData object containing all datasets
+
+    Raises
+    ------
+    RuntimeError
+        If requested dataset is not found in the available datasets.
+    ValueError
+        If no valid datasets are provided or found.
     """
     # Create a dictionary of all available import functions
     data_dict = {
@@ -76,7 +97,8 @@ def concat_datasets(
     adata = ad.concat(adata_list, join="inner")
 
     # Filter low expression genes
-    adata_filtered = adata[:, (np.abs(adata.X).mean(axis=0) > filter_threshold)]
+    filtered_genes = gene_filter(adata.to_df(), threshold=filter_threshold)
+    adata_filtered = adata[:, filtered_genes.columns].copy()
 
     # RPM normalize and z-score the data
     norm_counts = normalize_counts(counts=adata_filtered.X)
@@ -86,6 +108,27 @@ def concat_datasets(
     adata_filtered.X = norm_counts
 
     return adata_filtered
+
+
+def gene_filter(genes: pd.DataFrame, threshold: float = 0.1) -> pd.DataFrame:
+    """Generate a filter for genes based on a threshold. Dataframe is expected
+    to have genes as columns and samples as rows. The filter will keep only those
+    genes that have a mean expression above the threshold across all samples.
+
+    Parameters
+    ----------
+    genes : pd.DataFrame
+        DataFrame containing gene expression data
+    threshold : float
+        Threshold for filtering genes | default=0.1
+
+    Returns
+    -------
+    pd.DataFrame
+        Filtered DataFrame with genes that have mean expression above the threshold
+    """
+    return genes.loc[:, genes.mean(axis=0) > threshold]
+
 
 def normalize_counts(counts: np.ndarray) -> np.ndarray:
     """Read-depth normalization, log2 transformation, and z-score scaling of the data.
@@ -117,7 +160,6 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
 
 
 def rpm_norm(exp):
-
     # Calculate the library size
     total_counts = np.sum(exp, axis=1, keepdims=True)
 
@@ -126,7 +168,6 @@ def rpm_norm(exp):
 
     # RPM normalization
     rpm_normalized = exp / total_counts * 1e6
-
 
     return rpm_normalized.astype(np.float32)
 
@@ -177,3 +218,7 @@ def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     )
 
     return X_in_resampled
+
+
+if __name__ == "__main__":
+    adata = concat_datasets()

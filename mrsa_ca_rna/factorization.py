@@ -5,14 +5,12 @@ perform the factorization using the parafac2_nd function from the parafac2 libra
 """
 
 import anndata as ad
+import cupy as cp
 import numpy as np
+import tensorly as tl
 from scipy.optimize import linear_sum_assignment
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.decomposition import parafac2
-from tensorly.preprocessing import (
-    svd_compress_tensor_slices,
-    svd_decompress_parafac2_tensor,
-)
 
 
 def standardize_pf2(
@@ -66,26 +64,30 @@ def perform_parafac2(
     X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
 
     # convert to list
-    X_list = [np.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
+    X_list = [cp.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
 
-    scores, loadings = svd_compress_tensor_slices(
-        X_list, 0.00001, rank * 2 + 10, "randomized_svd"
-    )
+    tl.set_backend("cupy")
 
-    decomposition = parafac2(
-        scores,
+    pf2, errors = parafac2(
+        X_list,
         rank=rank,
         verbose=True,
         init="svd",
         svd="randomized_svd",
         tol=1e-5,
         n_iter_max=100,
+        return_errors=True,
     )
 
-    weights, factors, projections = svd_decompress_parafac2_tensor(
-        decomposition, loadings
-    )
+    # calculate R2X
+    # FIXME: I think this is the sqrt of the norm, not the norm
+    R2X = 1.0 - errors[-1]
+    R2X = cp.asnumpy(R2X.get())
 
-    R2X = 0.1
+    tl.set_backend("numpy")
+
+    weights = cp.asnumpy(pf2[0].get())
+    factors = [cp.asnumpy(f.get()) for f in pf2[1]]
+    projections = [cp.asnumpy(p.get()) for p in pf2[2]]
 
     return weights, factors, projections, R2X

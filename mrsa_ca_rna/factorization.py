@@ -73,7 +73,6 @@ def perform_parafac2(
         rank=rank,
         verbose=True,
         init="svd",
-        svd="randomized_svd",
         tol=1e-5,
         n_iter_max=100,
         return_errors=True,

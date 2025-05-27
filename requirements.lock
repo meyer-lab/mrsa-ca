@@ -179,6 +179,8 @@ threadpoolctl==3.5.0
     # via scikit-learn
 tlviz==0.1.1
     # via mrsa-ca-rna
+tqdm==4.67.1
+    # via mrsa-ca-rna
 traitlets==5.14.3
     # via comm
     # via ipympl

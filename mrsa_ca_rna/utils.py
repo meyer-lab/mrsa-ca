@@ -143,8 +143,8 @@ def concat_datasets(
         "ca": import_ca,
         "bc": import_bc,
         "tb": import_tb,
-        # "uc": import_uc,
-        # "t1dm": import_t1dm,
+        "uc": import_uc,
+        "t1dm": import_t1dm,
         "covid": import_covid,
         "lupus": import_lupus,
         "hiv": import_hiv,
@@ -153,8 +153,8 @@ def concat_datasets(
         "heme": import_heme,
         "ra": import_ra,
         "hbv": import_hbv,
-        # "covid_marine": import_covid_marine,
-        # "bc_tcr": import_bc_tcr,
+        "covid_marine": import_covid_marine,
+        "bc_tcr": import_bc_tcr,
     }
 
     # If no list is provided or "all" is specified, use all available datasets
@@ -172,7 +172,6 @@ def concat_datasets(
         if ad_key not in data_dict:
             raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
         else:
-            print(ad_key)
             adata_list.append(data_dict[ad_key]())
 
     if not adata_list:

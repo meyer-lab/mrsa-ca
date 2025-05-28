@@ -4,7 +4,6 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 """
 
 # imports
-from typing import TYPE_CHECKING
 
 import numpy as np
 import seaborn as sns
@@ -13,10 +12,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets, gene_filter
-
-if TYPE_CHECKING:
-    import pandas as pd
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -33,58 +29,56 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
     return data, auc
 
 
-# setup figure
 def figure_setup():
     top_n = 5
 
-    # get the data
-    datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
-    combined_ad = concat_datasets(
-        datasets,
-        diseases,
-        scale=False,
-    )
-    y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
-        int
-    )
+    # Get the MRSA and CA data, grab persistance labels
+    combined_ad = concat_datasets(["mrsa", "ca"])
+    y_true = combined_ad.obs.loc[combined_ad["disease"] == "MRSA", "status"].astype(int)
 
-    # perform PCA on the combined data
+    # Perform PCA on the combined data
     combined_df = combined_ad.to_df()
     patient_comps, gene_comps, _ = perform_pca(combined_df)
 
-    # truncate the combined components to MRSA data and only the first 5
+    # Can only use MRSA data for regression, so truncate the combined PC data
     mrsa_index = combined_ad.obs["disease"] == "MRSA"
     patient_comps = patient_comps.loc[mrsa_index, :"PC10"].copy()
-
     gene_comps = gene_comps.loc[:"PC10", :].copy()
 
-    # optionally print out the gene components to a csv
-    # gene_comps.T.to_csv("output/pca_genes.csv")
-
-    # perform logistic regression on the combined data
+    # Perform logistic regression on the PCA components
     _, y_proba, model = perform_LR(patient_comps, y_true, splits=10)
 
     # get the beta coefficients from the model and associate them with the components
     weights: np.ndarray = model.coef_[0]
     weights_dict = {f"PC{i + 1}": weights[i] for i in range(len(weights))}
 
-    ## TODO: this move is too slick, refactor
-    # transform into a series of dataframes with the top genes for each component
-    top_genes: pd.DataFrame = gene_comps.apply(  # type: ignore
-        lambda x: gene_filter(x.to_frame().T, threshold=0, method="mean", top_n=top_n),
-        axis=1,
+    # Get top genes for each component individually
+    top_genes_per_component = {}
+    for pc in gene_comps.index:
+        # Find top genes for this component based on absolute contribution
+        component_top_genes = (
+            gene_comps.loc[pc].abs().sort_values(ascending=False).head(top_n)
+        )
+        top_genes_per_component[pc] = component_top_genes.index.tolist()
+
+    # Create a unique set of all top genes across components
+    all_top_genes = list(
+        set([gene for genes in top_genes_per_component.values() for gene in genes])
     )
 
-    return y_proba, y_true, weights_dict, top_genes
+    # Filter gene_comps to only include these top genes
+    gene_comps = gene_comps.loc[:, all_top_genes]
+
+    return y_proba, y_true, weights_dict, gene_comps, top_genes_per_component
 
 
 def genFig():
-    fig_size = (12, 15)
-    layout = {"ncols": 3, "nrows": 5}
+    fig_size = (12, 16)
+    layout = {"ncols": 3, "nrows": 4}
     ax, f, _ = setupBase(fig_size, layout)
 
-    y_proba, y_true, weights, comp_genes = figure_setup()
+    # TODO: split up functions to not be returning so much data
+    y_proba, y_true, weights, comp_genes, top_genes_per_component = figure_setup()
 
     data, auc = make_roc_curve(y_true, y_proba)
 
@@ -103,14 +97,21 @@ def genFig():
     a.set_ylabel("Weight")
     a.set_title("Beta Coefficients of the PCA Components")
 
-    for i, comp in enumerate(comp_genes):
-        a = sns.barplot(data=comp, ax=ax[i + 2])
-        a.set_xlabel("Gene")
-        a.set_ylabel("Weight")
-        a.set_title(f"Top 5 genes for Component component {i + 1}")
+    # plot the top 10 components and their associated gene values
+    for i, pc in enumerate(comp_genes.index[:10]):
+        pc_top_genes = top_genes_per_component[pc]
+        component_data = comp_genes.loc[pc, pc_top_genes]
+
+        b = sns.barplot(
+            x=component_data.index,
+            y=component_data.values,
+            order=component_data.index,
+            ax=ax[i + 2],
+        )
+        b.set(title=f"Gene Contributions to {pc}", xlabel="Gene", ylabel="Contribution")
+        # Rotate x-tick labels for better readability
+        b.set_xticklabels(
+            b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
+        )
 
     return f
-
-
-if __name__ == "__main__":
-    genFig()

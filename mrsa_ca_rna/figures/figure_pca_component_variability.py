@@ -54,8 +54,7 @@ def matrix_fms(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
 def figure_setup():
     # import and convert the data to pandas for resample
     datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
-    mrsa_ca = concat_datasets(datasets, diseases, scale=True).to_df()
+    mrsa_ca = concat_datasets(datasets).to_df()
 
     n_comp = 15
     # start with a pca decomposition of the true data
@@ -67,6 +66,9 @@ def figure_setup():
         resample(mrsa_ca, replace=True)
         for _ in range(n_resamples)  # type: ignore
     ]
+
+    # Z-score the resampled data
+    resampled_data = [(data - data.mean()) / data.std() for data in resampled_data]
 
     # set up dataframes
     pc_index = pd.Index([f"{i}" for i in range(1, n_comp + 1)])

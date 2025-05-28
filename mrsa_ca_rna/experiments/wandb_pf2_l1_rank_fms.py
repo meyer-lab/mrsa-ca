@@ -20,7 +20,6 @@ def objective(config):
     disease_data = concat_datasets(
         datasets,
         filter_threshold=thresh,
-        scale=False,
     )
     data_size = disease_data.shape[1] / 16315
     wb.log({"data_size": data_size})

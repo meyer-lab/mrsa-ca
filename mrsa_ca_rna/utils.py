@@ -101,10 +101,10 @@ def concat_datasets(
     adata_filtered = adata[:, filtered_genes.columns].copy()
 
     # RPM normalize and z-score the data
-    norm_counts = normalize_counts(counts=adata_filtered.X)
+    norm_counts = normalize_counts(counts=np.asarray(adata_filtered.X))
 
     # Preserve the raw counts in a new layer and add the norm counts to the adata object
-    adata_filtered.layers["raw"] = adata_filtered.X.copy()
+    adata_filtered.layers["raw"] = np.asarray(adata_filtered.X).copy()
     adata_filtered.X = norm_counts
 
     return adata_filtered
@@ -127,7 +127,7 @@ def gene_filter(genes: pd.DataFrame, threshold: float = 0.1) -> pd.DataFrame:
     pd.DataFrame
         Filtered DataFrame with genes that have mean expression above the threshold
     """
-    return genes.loc[:, genes.mean(axis=0) > threshold]
+    return genes.loc[:, genes.abs().mean(axis=0) > threshold]
 
 
 def normalize_counts(counts: np.ndarray) -> np.ndarray:

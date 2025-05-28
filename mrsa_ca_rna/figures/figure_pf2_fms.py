@@ -61,11 +61,7 @@ def bootstrap_fms(X, rank, target_trials=30, random_state=None):
 
 
 def figure_setup():
-    disease_list = "all"
-    disease_data = concat_datasets(
-        disease_list,
-        scale=False,
-    )
+    disease_data = concat_datasets()
 
     rank = 5
 

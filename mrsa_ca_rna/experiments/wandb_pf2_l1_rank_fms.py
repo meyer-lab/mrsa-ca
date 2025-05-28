@@ -3,13 +3,12 @@ rank, L1 strength, and data size for the model."""
 
 from datetime import datetime
 
-import numpy as np
 import wandb as wb
 from sklearn.preprocessing import StandardScaler
 from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.utils import check_sparsity, concat_datasets, resample_adata
+from mrsa_ca_rna.utils import concat_datasets, resample_adata
 
 
 def objective(config):
@@ -34,27 +33,16 @@ def objective(config):
     X_resampled = resample_adata(X_resampled)
     X_resampled.X = StandardScaler().fit_transform(X_resampled.X)
 
-    def callback(it, error, factors, _):
-        R2X = 1 - error
-        sparsity = check_sparsity(factors[2])
-        wb.log({"iteration": it, "R2X": R2X, "sparsity": sparsity})
-
-    # factorize the original and resampled data with the same random state
-    random_state = np.random.randint(0, 1000)  # noqa: NPY002
-
     _, factors_true, _, _ = perform_parafac2(
         X,
         condition_name="disease",
         rank=rank,
-        rnd_seed=random_state,
-        callback=callback,
     )
 
     _, factors_resampled, _, _ = perform_parafac2(
         X_resampled,
         condition_name="disease",
         rank=rank,
-        rnd_seed=random_state,
     )
 
     """calculate the factor match score for different ranks and L1 strengths."""

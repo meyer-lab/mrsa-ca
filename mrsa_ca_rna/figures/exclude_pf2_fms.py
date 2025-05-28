@@ -16,11 +16,11 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import concat_datasets, resample_adata
 
 
-def factorize(X_in: ad.AnnData, rank: int, random_state=None):
+def factorize(X_in: ad.AnnData, rank: int):
     X_in.X = StandardScaler().fit_transform(X_in.X)
 
     weights, factors, _, R2X = perform_parafac2(
-        X_in, condition_name="disease", rank=rank, rnd_seed=random_state
+        X_in, condition_name="disease", rank=rank
     )
     factors = (weights, factors)
 
@@ -37,18 +37,13 @@ def bootstrap_fms(X, rank, target_trials=30, random_state=None):
     successful_trials = 0
     failed_trials = 0
 
-    seeds = rng.integers(0, 1000, size=(target_trials * 2,))
-
     # continue until we have enough successful trials
     while successful_trials < target_trials:
         try:
-            # uniquely set the seed for the current trial
-            seed = seeds[successful_trials + failed_trials]
-
             # factorize the original and resampled data
-            factors_true, R2X_true = factorize(X, rank, random_state=seed)
+            factors_true, R2X_true = factorize(X, rank)
             factors_resampled, R2X_resampled = factorize(
-                resample_adata(X), rank, random_state=seed
+                resample_adata(X, random_state=rng), rank
             )
 
             # calculate the factor match score

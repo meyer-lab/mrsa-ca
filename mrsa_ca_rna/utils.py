@@ -241,7 +241,7 @@ def normalize(counts, tmm_outlier=0.05):
     if rotated:
         norm_exp = norm_exp.T
 
-    return norm_exp.astype(np.float32)
+    return norm_exp.astype(np.float64)
 
 
 def tmm_norm(exp, percentage=0.05):
@@ -256,7 +256,7 @@ def tmm_norm(exp, percentage=0.05):
         np.ndarray: Normalized expression matrix.
     """
     # Add 1 and log2 transform to handle zeros
-    lexp = np.log2(1 + exp).astype(np.float32)
+    lexp = np.log2(1 + exp).astype(np.float64)
 
     # Calculate trimmed means for each column
     tmm = trimmed_mean(lexp, percentage)

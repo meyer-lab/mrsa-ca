@@ -30,7 +30,7 @@ def figure_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
+    fig_size = (20, 20)
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
@@ -58,9 +58,6 @@ def genFig():
     genes_df["abs_mean"] = genes_df.abs().mean(axis=1)
     genes_df = genes_df.sort_values(by="abs_mean", ascending=False)
     genes_df = genes_df.drop(columns=["abs_mean"])
-    # Select the top n genes
-    top_n = 300
-    genes_df = genes_df.iloc[:top_n, :]
 
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values
@@ -116,7 +113,7 @@ def genFig():
     )
     c.set_title(
         f"Gene Factor Matrix\n"
-        f"R2X: {r2x:.2f} | Top {top_n} genes\n"
+        f"R2X: {r2x:.2f}\n"
         f"Sparsity: {sparsity:.2f}"
     )
     c.set_xlabel(x_ax_label)

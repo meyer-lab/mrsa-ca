@@ -151,12 +151,12 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     norm_exp = rpm_norm(counts_array)
 
     # Log transform the data
-    counts_array = np.log2(counts_array + 1).astype(np.float32)
+    counts_array = np.log2(counts_array + 1).astype(np.float64)
 
     # z-score the data
     scaled_norm = StandardScaler().fit_transform(norm_exp)
 
-    return scaled_norm.astype(np.float32)
+    return scaled_norm.astype(np.float64)
 
 
 def rpm_norm(exp):
@@ -169,7 +169,7 @@ def rpm_norm(exp):
     # RPM normalization
     rpm_normalized = exp / total_counts * 1e6
 
-    return rpm_normalized.astype(np.float32)
+    return rpm_normalized.astype(np.float64)
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:

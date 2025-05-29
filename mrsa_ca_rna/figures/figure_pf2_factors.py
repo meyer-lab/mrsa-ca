@@ -30,7 +30,7 @@ def figure_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (20, 20)
+    fig_size = (60, 20)
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
@@ -54,11 +54,6 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # Order the genes by their mean value
-    genes_df["abs_mean"] = genes_df.abs().mean(axis=1)
-    genes_df = genes_df.sort_values(by="abs_mean", ascending=False)
-    genes_df = genes_df.drop(columns=["abs_mean"])
-
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values
 
@@ -68,8 +63,6 @@ def genFig():
         disease_ranks_labels,
         False,
     ]
-
-    # plot heatmap of disease factors with independent cmaps
 
     # Set the A matrix colors
     A_cmap = sns.color_palette("light:#df20df", as_cmap=True)

@@ -5,7 +5,6 @@ matrices over 30 trials. The rank and l1 values are determined from wandb explor
 """
 
 import anndata as ad
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -27,15 +26,12 @@ def factorize(X_in: ad.AnnData, rank: int):
     return factors, R2X
 
 
-def bootstrap_fms(X, rank, target_trials=30, random_state=None):
-    rng = np.random.default_rng(random_state)
+def bootstrap_fms(X, rank, target_trials=30):
 
     fms_list = []
     R2X_diff_list = []
 
-    seeds = rng.integers(0, 1000, size=(target_trials,))
-
-    for i in range(target_trials):
+    for _ in range(target_trials):
 
         # factorize the original and resampled data
         factors_true, R2X_true = factorize(X, rank)

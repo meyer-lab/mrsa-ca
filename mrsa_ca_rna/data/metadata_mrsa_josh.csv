@@ -1,0 +1,45 @@
+﻿sid,cohort,Persistent,Source Category,age,gender,race,dialdep,dm,foreignb,agebin
+3469,13,1,Endovascular infection,49,0,3,1,0,1,0
+3567,13,0,Endovascular infection,63,0,3,1,1,1,2
+4059,13,0,Endovascular infection,62,1,3,1,1,1,2
+4095,13,1,Endovascular infection,72,1,2,0,0,1,2
+4255,13,1,Endovascular infection,46,1,3,1,0,1,0
+4256,13,0,Endovascular infection,73,1,2,0,0,0,2
+4378,13,0,Endovascular infection,62,0,3,1,1,1,2
+4471,13,1,Endovascular infection,66,0,3,1,1,1,2
+4529,13,1,Endovascular infection,58,1,3,1,1,1,1
+4547,13,0,"Skin, soft tissue, joint/bone infection",70,1,3,1,1,0,2
+4711,13,0,Unknown,61,1,3,0,0,0,1
+4721,13,1,Unknown,64,0,2,0,0,1,2
+4785,13,1,"Skin, soft tissue, joint/bone infection",81,0,2,0,0,1,3
+4859,13,1,Endovascular infection,65,1,2,0,0,1,2
+4873,13,1,GI/GU infection,83,1,2,0,0,1,3
+4878,13,0,Endovascular infection,56,0,3,1,0,1,1
+4886,13,1,GI/GU infection,61,1,3,1,0,1,1
+4942,13,0,GI/GU infection,44,0,2,0,0,0,0
+5004,13,1,"Skin, soft tissue, joint/bone infection",43,1,3,0,0,1,0
+5019,13,1,GI/GU infection,50,1,3,1,1,1,0
+5030,13,1,"Skin, soft tissue, joint/bone infection",49,1,2,0,0,1,0
+5101,13,0,GI/GU infection,89,1,2,0,0,1,3
+5170,13,0,GI/GU infection,60,0,3,0,0,1,1
+5208,13,1,Unknown,46,0,3,1,1,1,0
+5500,13,0,"Skin, soft tissue, joint/bone infection",70,0,3,0,1,1,2
+5867,13,1,"Skin, soft tissue, joint/bone infection",67,1,3,0,1,0,2
+6363,,1,,36,1,3,0,0,0,0
+6365,,1,,63,1,3,1,1,1,2
+6373,13,1,,88,0,2,0,0,1,3
+6379,,1,,34,1,2,0,0,1,0
+6422,,0,,70,0,2,0,0,1,2
+6438,,1,,78,0,2,0,0,1,3
+6456,,0,,25,0,2,0,0,1,0
+6485,,0,,41,0,3,0,0,1,0
+6494,,0,,45,1,3,0,0,1,0
+6524,13,0,,80,1,2,0,0,0,3
+6566,,1,,51,0,3,1,1,1,1
+6590,,0,,21,0,3,0,0,0,0
+6699,13,0,,58,0,2,0,0,0,1
+6872,13,0,,60,1,2,0,0,1,1
+6902,13,0,,41,0,3,0,0,1,0
+7157,13,0,,59,1,2,0,0,1,1
+7209,,0,,64,0,2,0,0,0,2
+7220,,0,,55,0,2,0,0,1,1

@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
@@ -15,7 +15,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 20
+    rank = 5
 
     datasets = "all"
 
@@ -36,8 +36,7 @@ def figure_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    layout, fig_size = calculate_layout(num_plots=3, scale_factor=4)
     ax, f, _ = setupBase(fig_size, layout)
 
     disease_factors, r2x, disease_data = figure_setup()

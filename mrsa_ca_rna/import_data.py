@@ -120,74 +120,91 @@ def aggregate_duplicate_genes(exp):
 
 
 def import_mrsa():
+
     # Read in mrsa counts
     counts_mrsa = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_mrsa_archs4.csv.gz"),
+        join(BASE_DIR, "mrsa_ca_rna", "data", "tfac_counts.txt.zip"),
         index_col=0,
         delimiter=",",
     )
-    counts_mrsa = aggregate_duplicate_genes(counts_mrsa)
+
+    # Load ensembl to gene symbol mapping
+    gene_map = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "gene_mapping.csv"),
+    )
+    counts_mrsa.columns = counts_mrsa.columns.map(
+        dict(zip(gene_map["ensembl_gene"], gene_map["symbol"], strict=False))
+    )
     counts_mrsa = counts_mrsa.T
+    counts_mrsa = aggregate_duplicate_genes(counts_mrsa)
 
-    # Grab mrsa metadata from SRA database since it is not on GEO
-    metadata_ncbi = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa.csv"),
+    # Read in the sex based mrsa metadata
+    metadata = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_josh.csv"),
         index_col=0,
         delimiter=",",
     )
+    metadata["disease"] = "MRSA"
+    metadata["dataset_id"] = "SRP414349"
 
-    # Pair down metadata and ensure "disease" and "status" columns are present
-    metadata_ncbi = metadata_ncbi.loc[:, ["isolate"]]
-    metadata_ncbi.index.name = None
+    # Make a regression classes for multinomial regression
+    metadata["status"] = "Unknown"
+    metadata.loc[
+        (metadata["gender"] == 0) & (metadata["Persistent"] == 0), "status"
+    ] = "male_resolver"
+    metadata.loc[
+        (metadata["gender"] == 1) & (metadata["Persistent"] == 0), "status"
+    ] = "female_resolver"
+    metadata.loc[
+        (metadata["gender"] == 0) & (metadata["Persistent"] == 1), "status"
+    ] = "male_persistent"
+    metadata.loc[
+        (metadata["gender"] == 1) & (metadata["Persistent"] == 1), "status"
+    ] = "female_persistent"
 
-    metadata_ncbi["disease"] = "MRSA"
-    metadata_ncbi["dataset_id"] = "SRP414349"
-    metadata_ncbi = metadata_ncbi.reset_index(
-        drop=False, names=["accession"]
-    ).set_index("isolate")
-
-    """Cannot reconcile the NCBI uploaded metadata with the TFAC-MRSA metadata.
-    Until we get more informationa on the NCBI metadata, we will use
-    the TFAC-MRSA metadata, which agrees with Dr. Joshua Thaden's data."""
-
-    # Combine the two parts of the tfac metadata for complete status
-    metadata_tfac = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
-        index_col=0,
-        delimiter=",",
-    )
-    metadata_aux = pd.read_csv(
-        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_tfac_validation.txt"),
-        index_col=0,
-        delimiter=",",
-    )
-    val_idx = metadata_aux.index
-    metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
-
-    # Combine the tfac metadata with the NCBI metadata to map the isolate numbers
-    # to the SRA accessions
-    metadata = pd.concat([metadata_ncbi, metadata_tfac], axis=1, join="inner")
-    metadata = metadata.loc[
-        :, ["accession", "dataset_id", "disease", "status", "cohort", "age", "gender"]
-    ]
-    metadata = metadata.reset_index(drop=False, names=["subject_id"]).set_index(
-        "accession"
-    )
-
-    # Order the indices of the counts and metadata to match for AnnData
-    common_idx = counts_mrsa.index.intersection(metadata.index)
-    counts_mrsa = counts_mrsa.loc[common_idx]
-    metadata = metadata.loc[common_idx]
+    # Trim rna data down to only samples for this analysis
+    counts_mrsa = counts_mrsa.T
+    common_idxs = metadata.index.intersection(counts_mrsa.index)
+    counts_mrsa = counts_mrsa.loc[common_idxs, :]
+    metadata = metadata.loc[common_idxs, :]
 
     mrsa_adata = ad.AnnData(
         X=counts_mrsa,
         obs=metadata,
         var=pd.DataFrame(index=counts_mrsa.columns),
     )
-    mrsa_adata.obs["status"] = mrsa_adata.obs["status"].astype(int)
 
     return mrsa_adata
 
+def import_gene_tiers():
+    tier_1 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier1.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+    tier_2 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier2.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+    tier_3 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier3.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+    tier_4 = (
+        pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier4.csv"), header=None)
+        .squeeze()
+        .tolist()
+    )
+
+    gene_tiers = {
+        "Tier 1": tier_1,
+        "Tier 2": tier_2,
+        "Tier 3": tier_3,
+        "Tier 4": tier_4,
+    }
+    return gene_tiers
 
 def import_ca():
     # Read in ca counts

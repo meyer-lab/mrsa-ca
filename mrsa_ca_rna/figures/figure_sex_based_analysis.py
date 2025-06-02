@@ -3,9 +3,15 @@ through ROC curves and gene coefficient analysis across gene tiers."""
 
 import anndata as ad
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    confusion_matrix,
+    roc_auc_score,
+    roc_curve,
+)
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.import_data import import_gene_tiers
@@ -16,7 +22,7 @@ from mrsa_ca_rna.utils import concat_datasets
 def setup_data():
     """Load the dataset."""
 
-    # Load the MRSA dataset without any filtering
+    # Load the MRSA dataset with minimal filtering
     data = concat_datasets(["mrsa"], filter_threshold=0)
 
     return data
@@ -76,7 +82,7 @@ def plot_roc_for_tier(ax, targets, proba, model):
     # Plot all ROC curves
     sns.lineplot(data=combined_roc_df, x="FPR", y="TPR", hue="Class", ax=ax)
 
-    # Add diagonal line (random classifier)
+    # Add diagonal line
     ax.plot([0, 1], [0, 1], "k--", label="Random (AUC=0.5)")
 
     # Set plot labels and title
@@ -158,8 +164,31 @@ def plot_coefficients_for_tier(ax, X, model, top_n=10):
             ax.axvspan(left, right, color="lightgray", alpha=0.2, zorder=0)
 
 
+def plot_confusion_matrix(ax, targets, proba, model):
+    """Plot confusion matrix for model predictions."""
+    # Get predicted classes from probabilities
+    y_pred = model.classes_[np.argmax(proba, axis=1)]
+
+    # Create and plot confusion matrix
+    cm = confusion_matrix(targets, y_pred, labels=model.classes_)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+    disp.plot(ax=ax, cmap="Blues", colorbar=False)
+
+    # Set title and labels
+    ax.set_xlabel("Predicted Label")
+    ax.set_ylabel("True Label")
+
+    # Rotate x-axis labels for better readability
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
+
+    # Improve formatting
+    for text in ax.texts:
+        text.set_fontsize(10)
+
+
 def genFig():
-    """Generate both ROC curve and coefficient plots for each gene tier"""
+    """Generate ROC curves, confusion matrices, and coefficient plots
+    for each gene tier"""
     # Get tiers data
     tiers = import_gene_tiers()
 
@@ -172,10 +201,10 @@ def genFig():
 
     num_tiers = len(tiers)
 
-    # Create first figure for ROC curves
-    roc_fig_size = (4, num_tiers * 4)
-    roc_layout = {"ncols": 1, "nrows": num_tiers}
-    roc_ax, roc_f, _ = setupBase(roc_fig_size, roc_layout)
+    # Create first figure for ROC curves and confusion matrices
+    roc_cm_fig_size = (8, num_tiers * 4)
+    roc_cm_layout = {"ncols": 2, "nrows": num_tiers}
+    roc_cm_ax, roc_cm_f, _ = setupBase(roc_cm_fig_size, roc_cm_layout)
 
     # Create second figure for coefficients
     coef_fig_size = (14, num_tiers * 5)
@@ -183,32 +212,45 @@ def genFig():
     coef_ax, coef_f, _ = setupBase(coef_fig_size, coef_layout)
 
     # Set titles for both figures
-    roc_f.suptitle("ROC Curves for Gene Tiers in MRSA Prediction", fontsize=16)
+    roc_cm_f.suptitle(
+        "ROC Curves and Confusion Matrices for Gene Tiers in MRSA Prediction",
+        fontsize=16,
+    )
     coef_f.suptitle("Gene Coefficients by Class for MRSA Prediction", fontsize=16)
 
-    # Process each tier, creating a single model for both plots
+    # Process each tier, creating a single model for all plots
     for i, (tier_name, gene_list) in enumerate(tiers.items()):
         print(f"Modeling {tier_name} genes...")
 
         # Create model once
         X, targets, score, proba, model = create_model(data, gene_list)
 
-        # Plot ROC curves
-        plot_roc_for_tier(roc_ax[i], targets, proba, model)
+        # Calculate the indices for ROC curve and confusion matrix
+        roc_idx = i * 2
+        cm_idx = i * 2 + 1
+
+        # Plot ROC curves in first column
+        plot_roc_for_tier(roc_cm_ax[roc_idx], targets, proba, model)
+
+        # Plot confusion matrix in second column
+        plot_confusion_matrix(roc_cm_ax[cm_idx], targets, proba, model)
 
         # Plot coefficients
         plot_coefficients_for_tier(coef_ax[i], X, model)
 
         # Add tier name to ROC title
-        roc_ax[i].set_title(
-            f"ROC Curves by Class - {tier_name} ({len(X.columns)} genes)"
+        roc_cm_ax[roc_idx].set_title(
+            f"ROC Curves - {tier_name} ({len(X.columns)} genes)"
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-        # Add tier name to coefficients title
+        # Add tier name to confusion matrix title
+        roc_cm_ax[cm_idx].set_title(f"Confusion Matrix - {tier_name}")
+
+        # Add tier name to coefficients title (unchanged)
         coef_ax[i].set_title(
             f"Top 10 Predictive Genes - {tier_name} ({len(X.columns)} genes)"
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-    return (roc_f, coef_f)
+    return (roc_cm_f, coef_f)

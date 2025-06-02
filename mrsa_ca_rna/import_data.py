@@ -120,7 +120,6 @@ def aggregate_duplicate_genes(exp):
 
 
 def import_mrsa():
-
     # Read in mrsa counts
     counts_mrsa = pd.read_csv(
         join(BASE_DIR, "mrsa_ca_rna", "data", "tfac_counts.txt.zip"),
@@ -176,6 +175,7 @@ def import_mrsa():
 
     return mrsa_adata
 
+
 def import_gene_tiers():
     tier_1 = (
         pd.read_csv(join(BASE_DIR, "mrsa_ca_rna", "data", "Tier1.csv"), header=None)
@@ -205,6 +205,7 @@ def import_gene_tiers():
         "Tier 4": tier_4,
     }
     return gene_tiers
+
 
 def import_ca():
     # Read in ca counts

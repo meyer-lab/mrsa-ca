@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
@@ -104,11 +104,7 @@ def genFig():
         xticklabels=disease_ranks_labels,
         yticklabels=disease_labels[2],
     )
-    c.set_title(
-        f"Gene Factor Matrix\n"
-        f"R2X: {r2x:.2f}\n"
-        f"Sparsity: {sparsity:.2f}"
-    )
+    c.set_title(f"Gene Factor Matrix\nR2X: {r2x:.2f}\nSparsity: {sparsity:.2f}")
     c.set_xlabel(x_ax_label)
     c.set_ylabel(d_ax_labels[2])
 

@@ -27,17 +27,13 @@ def factorize(X_in: ad.AnnData, rank: int):
 
 
 def bootstrap_fms(X, rank, target_trials=30):
-
     fms_list = []
     R2X_diff_list = []
 
     for _ in range(target_trials):
-
         # factorize the original and resampled data
         factors_true, R2X_true = factorize(X, rank)
-        factors_resampled, R2X_resampled = factorize(
-            resample_adata(X), rank
-        )
+        factors_resampled, R2X_resampled = factorize(resample_adata(X), rank)
 
         # calculate the factor match score
         factor_match = factor_match_score(

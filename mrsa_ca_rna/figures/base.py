@@ -147,9 +147,9 @@ def genFigure():
     # Check if multiple figures were returned
     if isinstance(figures, list | tuple):
         for i, fig in enumerate(figures):
-            fig_name = f"{nameOut}_{i+1}"
+            fig_name = f"{nameOut}_{i + 1}"
             fig.savefig(f"{fdir}{fig_name}.svg", bbox_inches="tight", pad_inches=0.1)
-            logging.info(f"Saved figure {i+1} as {fig_name}.svg")
+            logging.info(f"Saved figure {i + 1} as {fig_name}.svg")
     else:
         # Single figure returned
         figures.savefig(f"{fdir}{nameOut}.svg", bbox_inches="tight", pad_inches=0.1)

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import spatial
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from tlviz.factor_tools import factor_match_score
 from tqdm import tqdm
@@ -67,8 +68,15 @@ def figure_setup():
         for _ in range(n_resamples)  # type: ignore
     ]
 
-    # Z-score the resampled data
-    resampled_data = [(data - data.mean()) / data.std() for data in resampled_data]
+    # Z-score each resampled dataset
+    resampled_data = [
+        pd.DataFrame(
+            StandardScaler().fit_transform(data.to_numpy()),
+            index=data.index,
+            columns=data.columns,
+        )
+        for data in resampled_data
+    ]
 
     # set up dataframes
     pc_index = pd.Index([f"{i}" for i in range(1, n_comp + 1)])

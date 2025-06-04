@@ -79,8 +79,7 @@ def perform_parafac2(
     )
 
     # calculate R2X
-    # FIXME: I think this is the sqrt of the norm, not the norm
-    R2X = 1.0 - errors[-1]
+    R2X = 1.0 - errors[-1] ** 2
     R2X = cp.asnumpy(R2X.get())
 
     tl.set_backend("numpy")

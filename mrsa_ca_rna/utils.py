@@ -218,7 +218,3 @@ def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     )
 
     return X_in_resampled
-
-
-if __name__ == "__main__":
-    adata = concat_datasets()

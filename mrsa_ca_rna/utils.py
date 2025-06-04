@@ -152,12 +152,12 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     norm_exp = rpm_norm(counts_array)
 
     # Log transform the data
-    counts_array = np.log2(counts_array + 1).astype(np.float64)
+    trans_exp = np.log2(norm_exp + 1).astype(np.float64)
 
     # z-score the data
-    scaled_norm = StandardScaler().fit_transform(norm_exp)
+    scaled_exp = StandardScaler().fit_transform(trans_exp)
 
-    return scaled_norm.astype(np.float64)
+    return scaled_exp.astype(np.float64)
 
 
 def rpm_norm(exp):

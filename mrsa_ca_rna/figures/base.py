@@ -15,7 +15,6 @@ import sys
 import time
 
 import matplotlib
-import matplotlib.figure
 import seaborn as sns
 from matplotlib import gridspec
 from matplotlib import pyplot as plt
@@ -55,6 +54,41 @@ matplotlib.rcParams["xtick.minor.pad"] = 0.9
 matplotlib.rcParams["ytick.labelsize"] = 8
 matplotlib.rcParams["ytick.major.pad"] = 1.0
 matplotlib.rcParams["ytick.minor.pad"] = 0.9
+
+
+def calculate_layout(num_plots, scale_factor=4):
+    """
+    Calculate appropriate layout and figure size based on number of plots.
+
+    Parameters:
+    -----------
+    num_plots : int
+        Number of plots to be displayed
+    scale_factor : float, optional
+        Scale factor for figure size (default: 4)
+
+    Returns:
+    --------
+    layout : dict
+        Dictionary with 'nrows' and 'ncols'
+    fig_size : tuple
+        Figure size (width, height)
+    """
+    import math
+
+    # Calculate number of rows and columns (aim for square-ish layout)
+    # Prefer more columns than rows if not perfectly square
+    cols = math.ceil(math.sqrt(num_plots))
+    rows = math.ceil(num_plots / cols)
+
+    # Calculate figure size based on scale factor
+    width = cols * scale_factor
+    height = rows * scale_factor
+
+    layout = {"ncols": cols, "nrows": rows}
+    fig_size = (width, height)
+
+    return layout, fig_size
 
 
 def setupBase(figsize, gridd):
@@ -107,7 +141,17 @@ def genFigure():
     nameOut = "figure" + sys.argv[1]
 
     exec("from mrsa_ca_rna.figures import " + nameOut)
-    ff = eval(nameOut + ".genFig()")
-    ff.savefig(fdir + nameOut + ".svg", bbox_inches="tight", pad_inches=0.1)
+    figures = eval(nameOut + ".genFig()")
+
+    # Check if multiple figures were returned
+    if isinstance(figures, list | tuple):
+        for i, fig in enumerate(figures):
+            fig_name = f"{nameOut}_{i + 1}"
+            fig.savefig(f"{fdir}{fig_name}.svg", bbox_inches="tight", pad_inches=0.1)
+            logging.info(f"Saved figure {i + 1} as {fig_name}.svg")
+    else:
+        # Single figure returned
+        figures.savefig(f"{fdir}{nameOut}.svg", bbox_inches="tight", pad_inches=0.1)
+        logging.info(f"Saved figure as {nameOut}.svg")
 
     logging.info("%s is done after %s seconds.", nameOut, time.time() - start)

@@ -30,7 +30,7 @@ def figure_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (60, 20)
+    fig_size = (12, 4)
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 

@@ -1,5 +1,7 @@
 """This file plots the pf2 factor matrices for the disease datasets"""
 
+import datashader as ds
+import datashader.transfer_functions as tf
 import pandas as pd
 import seaborn as sns
 
@@ -26,6 +28,85 @@ def figure_setup():
 
     return factors, r2x, disease_data
 
+def plot_with_datashader(data_df: pd.DataFrame, ax, x_label="Rank", y_label="Genes", 
+                         title=None, cmap="coolwarm", center=0):
+    """
+    Plot a large dataframe using datashader for efficient rendering.
+    
+    Parameters:
+    -----------
+    data_df : pandas.DataFrame
+        DataFrame to plot (rows=genes, columns=ranks)
+    ax : matplotlib.axes.Axes
+        The matplotlib axes to plot on
+    x_label : str
+        Label for the x-axis
+    y_label : str
+        Label for the y-axis
+    title : str, optional
+        Title for the plot
+    cmap : str, optional
+        Colormap name
+    center : float, optional
+        Center value for diverging colormaps
+        
+    Returns:
+    --------
+    img : matplotlib.image.AxesImage
+        The image object for further customization
+    """
+    
+    # Convert DataFrame to long format for datashader
+    df_long = data_df.reset_index().melt(
+        id_vars='index', 
+        var_name='rank', 
+        value_name='value'
+    )
+    
+    # Create canvas with appropriate dimensions
+    cvs = ds.Canvas(
+        plot_width=len(data_df.columns)*20,
+        plot_height=min(1000, len(data_df))
+    )
+    
+    # Aggregate points by rank and gene index
+    agg = cvs.points(
+        df_long, 
+        x='rank', 
+        y='index', 
+        agg=ds.mean('value')
+    )
+    
+    # Render the aggregate as an image
+    if center is not None:
+        img = tf.shade(agg, cmap=cmap, how='eq_hist', span=[-abs(agg.data.max()), abs(agg.data.max())])
+    else:
+        img = tf.shade(agg, cmap=cmap, how='eq_hist')
+    
+    # Convert to RGB array for matplotlib
+    img_data = tf.Image(img).rgb.values
+    
+    # Plot the image on matplotlib axes
+    img_plot = ax.imshow(
+        img_data,
+        aspect='auto',
+        extent=(-0.5, len(data_df.columns)-0.5, len(data_df)-0.5, -0.5)
+    )
+    
+    # Set axis labels and title
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    if title:
+        ax.set_title(title)
+    
+    # Set x-ticks to rank names
+    ax.set_xticks(range(len(data_df.columns)))
+    ax.set_xticklabels(data_df.columns)
+    
+    # Hide y-tick labels (too many genes)
+    ax.set_yticks([])
+    
+    return img_plot
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
@@ -52,9 +133,7 @@ def genFig():
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
-
-    # put the new genes_df back into the disease_factors[2]
-    disease_factors[2] = genes_df.values
+    gene_count = len(genes_df.index)
 
     # tick labels: disease, rank, genes
     disease_labels = [
@@ -95,16 +174,14 @@ def genFig():
     b.set_ylabel(d_ax_labels[1])
 
     # plot the gene factor matrix using diverging cmap
-    c = sns.heatmap(
-        disease_factors[2],
+    c = plot_with_datashader(
+        genes_df,
         ax=ax[2],
+        x_label=x_ax_label,
+        y_label=d_ax_labels[2],
+        title=f"Gene Factor Matrix\n {gene_count} genes, {sparsity:.2%} sparsity",
         cmap=BC_cmap,
         center=0,
-        xticklabels=disease_ranks_labels,
-        yticklabels=disease_labels[2],
     )
-    c.set_title(f"Gene Factor Matrix\nR2X: {r2x:.2f}\nSparsity: {sparsity:.2f}")
-    c.set_xlabel(x_ax_label)
-    c.set_ylabel(d_ax_labels[2])
 
     return f

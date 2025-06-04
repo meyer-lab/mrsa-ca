@@ -28,85 +28,76 @@ def figure_setup():
 
     return factors, r2x, disease_data
 
-def plot_with_datashader(data_df: pd.DataFrame, ax, x_label="Rank", y_label="Genes", 
-                         title=None, cmap="coolwarm", center=0):
+
+def plot_with_datashader(
+    data_df: pd.DataFrame,
+    ax,
+    x_label="Rank",
+    y_label="Genes",
+    title=None,
+    cmap="coolwarm",
+    center=0,
+):
     """
     Plot a large dataframe using datashader for efficient rendering.
-    
-    Parameters:
-    -----------
-    data_df : pandas.DataFrame
-        DataFrame to plot (rows=genes, columns=ranks)
-    ax : matplotlib.axes.Axes
-        The matplotlib axes to plot on
-    x_label : str
-        Label for the x-axis
-    y_label : str
-        Label for the y-axis
-    title : str, optional
-        Title for the plot
-    cmap : str, optional
-        Colormap name
-    center : float, optional
-        Center value for diverging colormaps
-        
-    Returns:
-    --------
-    img : matplotlib.image.AxesImage
-        The image object for further customization
     """
-    
-    # Convert DataFrame to long format for datashader
+    # Create numeric mappings for both ranks and genes
+    rank_mapping = {col: i for i, col in enumerate(data_df.columns)}
+    gene_mapping = {gene: i for i, gene in enumerate(data_df.index)}
+
+    # Convert DataFrame to long format
     df_long = data_df.reset_index().melt(
-        id_vars='index', 
-        var_name='rank', 
-        value_name='value'
+        id_vars="index", var_name="rank", value_name="value"
     )
-    
+
+    # Add numeric columns for both axes
+    df_long["rank_num"] = df_long["rank"].map(rank_mapping)
+    df_long["gene_num"] = df_long["index"].map(gene_mapping)
+
     # Create canvas with appropriate dimensions
     cvs = ds.Canvas(
-        plot_width=len(data_df.columns)*20,
-        plot_height=min(1000, len(data_df))
+        plot_width=len(data_df.columns) * 20, plot_height=min(1000, len(data_df))
     )
-    
-    # Aggregate points by rank and gene index
-    agg = cvs.points(
-        df_long, 
-        x='rank', 
-        y='index', 
-        agg=ds.mean('value')
-    )
-    
+
+    # Use numeric values for both x and y
+    agg = cvs.points(df_long, x="rank_num", y="gene_num", agg=ds.mean("value"))
+
     # Render the aggregate as an image
     if center is not None:
-        img = tf.shade(agg, cmap=cmap, how='eq_hist', span=[-abs(agg.data.max()), abs(agg.data.max())])
+        img = tf.shade(
+            agg,
+            cmap=cmap,
+            how="eq_hist",
+            span=[-abs(agg.data.max()), abs(agg.data.max())],
+        )
     else:
-        img = tf.shade(agg, cmap=cmap, how='eq_hist')
-    
+        img = tf.shade(agg, cmap=cmap, how="eq_hist")
+
     # Convert to RGB array for matplotlib
     img_data = tf.Image(img).rgb.values
-    
+
     # Plot the image on matplotlib axes
     img_plot = ax.imshow(
         img_data,
-        aspect='auto',
-        extent=(-0.5, len(data_df.columns)-0.5, len(data_df)-0.5, -0.5)
+        aspect="auto",
+        extent=(-0.5, len(data_df.columns) - 0.5, len(data_df.index) - 0.5, -0.5),
     )
-    
+
     # Set axis labels and title
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     if title:
         ax.set_title(title)
-    
+
     # Set x-ticks to rank names
     ax.set_xticks(range(len(data_df.columns)))
     ax.set_xticklabels(data_df.columns)
-    
+
     # Hide y-tick labels (too many genes)
     ax.set_yticks([])
-    
+
     return img_plot
+
 
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""

@@ -98,7 +98,8 @@ def concat_datasets(
 
     # Filter low expression genes
     filtered_genes = gene_filter(adata.to_df(), threshold=filter_threshold)
-    adata_filtered = adata[:, filtered_genes.columns].copy()
+    var_mask = adata.var_names.isin(filtered_genes.columns)
+    adata_filtered = adata[:, var_mask].copy()
 
     # RPM normalize and z-score the data
     norm_counts = normalize_counts(counts=np.asarray(adata_filtered.X))

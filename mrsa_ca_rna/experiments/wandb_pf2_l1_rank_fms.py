@@ -15,9 +15,7 @@ def objective(config):
     rank = config.rank
     thresh = config.thresh
 
-    datasets = "all"
     disease_data = concat_datasets(
-        datasets,
         filter_threshold=thresh,
     )
     data_size = disease_data.shape[1] / 16315

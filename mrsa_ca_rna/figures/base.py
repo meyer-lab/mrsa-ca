@@ -15,8 +15,6 @@ import sys
 import time
 
 import matplotlib
-import matplotlib.figure
-import numpy as np
 import seaborn as sns
 from matplotlib import gridspec
 from matplotlib import pyplot as plt
@@ -157,84 +155,3 @@ def genFigure():
         logging.info(f"Saved figure as {nameOut}.svg")
 
     logging.info("%s is done after %s seconds.", nameOut, time.time() - start)
-
-
-def capture_rasterized_plot(plot_function, ax, *args, **kwargs):
-    """
-    Captures an external plot as a raster image and displays it in the given axis.
-    This is an effort to increase compatibility with different plotting functions
-    that may create their own figures with our desired style.
-
-    Parameters:
-    -----------
-    plot_function : callable
-        Function that generates a plot and returns a figure or tuple of figures
-    ax : matplotlib.axes.Axes
-        Target axis to display the captured plot
-    *args, **kwargs
-        Arguments to pass to the plotting function
-    """
-
-    # Get figsize from kwargs or use default
-    figsize = kwargs.get("figsize", (8, 6))
-
-    # Override figsize to higher quality for capturing
-    kwargs["figsize"] = (figsize[0] * 1.5, figsize[1] * 1.5)
-
-    # Store current figures
-    current_figs = plt.get_fignums()
-
-    # Call the function that may create its own figure(s)
-    result = plot_function(*args, **kwargs)
-
-    # Handle different return types
-    if isinstance(result, tuple) and hasattr(result[0], "canvas"):
-        # Function returned multiple figures, use first one
-        fig_to_capture = result[0]
-    elif hasattr(result, "canvas"):
-        # Function returned a single figure
-        fig_to_capture = result
-    else:
-        # Function created figures but didn't return them
-        # Get the newest figure that wasn't there before
-        new_fig_nums = [num for num in plt.get_fignums() if num not in current_figs]
-        if not new_fig_nums:
-            return result  # No new figures were created
-        fig_to_capture = plt.figure(new_fig_nums[-1])
-
-    # Set tight layout to maximize space usage
-    fig_to_capture.set_tight_layout(True)
-
-    # Increase DPI for higher quality
-    fig_to_capture.set_dpi(300)
-
-    # Add padding to avoid cutoff
-    plt.subplots_adjust(left=0.15, right=0.95, bottom=0.15, top=0.9)
-
-    # Render figure to an array at higher resolution
-    fig_to_capture.canvas.draw()
-    img = np.array(fig_to_capture.canvas.renderer.buffer_rgba())
-
-    # Clear the target axis and display the image
-    ax.clear()
-
-    # Aspect ratio to avoid stretching
-    ax.imshow(img, aspect="auto")
-
-    # Remove axes elements from the target axis
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["bottom"].set_visible(False)
-    ax.spines["left"].set_visible(False)
-
-    # Clean up by closing the captured figure
-    plt.close(fig_to_capture)
-
-    # If there were multiple figures returned, close the others too
-    if isinstance(result, tuple) and all(hasattr(fig, "canvas") for fig in result):
-        for fig in result[1:]:
-            plt.close(fig)
-
-    return result

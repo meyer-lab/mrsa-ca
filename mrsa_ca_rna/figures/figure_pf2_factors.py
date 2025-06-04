@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,

@@ -3,10 +3,6 @@ Graph PC's against each other in pairs (PC1 vs PC2, PC3 vs PC4, etc.)
 and analyze the results. We are hoping to see interesting patterns
 across patients i.e. the scores matrix.
 
-To-do:
-
-    Get pairplot to work with base.py and general plotting procedure
-
 """
 
 import numpy as np
@@ -26,23 +22,15 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
     PC2 and 3 might be the most interesting to look at.
     """
 
-    # bring in the rna anndata objects and push them to dataframes for perform_pca()
-    datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
+    # Load the combined datasets
+    combined = concat_datasets(ad_list=["mrsa", "ca"])
 
-    adata = concat_datasets(
-        datasets,
-        diseases,
-        scale=False,
-    )
-
-    df = adata.to_df()
-
-    scores, _, _ = perform_pca(df, components=5)
+    scores, _, _ = perform_pca(combined.to_df(), components=5)
 
     # subset the scores to just MRSA
-    scores_mrsa = scores.loc[adata.obs["disease"] == "MRSA"].copy()
-    y_mrsa = adata.obs.loc[adata.obs["disease"] == "MRSA", "status"].copy().astype(int)
+    mrsa_idxs = combined[combined.obs["disease"] == "MRSA"].obs_names
+    scores_mrsa = scores.loc[mrsa_idxs].copy()
+    y_mrsa = combined.obs.loc[mrsa_idxs, "status"].astype(int)
 
     accuracy, _, model = perform_LR(scores_mrsa, y_mrsa)
     betas = model.coef_
@@ -52,8 +40,8 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
 
     # relabel the columns after the matrix multiplication
     data.columns = data.columns.map({0: "PC1", 1: "PC2", 2: "PC3", 3: "PC4", 4: "PC5"})
-    data["disease"] = adata.obs["disease"]
-    data["status"] = adata.obs["status"]
+    data["disease"] = combined.obs.loc[mrsa_idxs, "disease"]
+    data["status"] = combined.obs.loc[mrsa_idxs, "status"]
 
     return data, accuracy
 

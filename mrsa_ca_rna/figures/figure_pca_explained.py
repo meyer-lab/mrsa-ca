@@ -6,6 +6,7 @@ Datasets are MRSA, MRSA+CA, and CA.
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
@@ -17,19 +18,16 @@ def figure_setup():
 
     # list the datasets we want to compare and define total components
     datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
     components = 70
 
-    # grab the combined dataset
-    combined_data = concat_datasets(
-        datasets,
-        diseases,
-        scale=False,
-    )
-
-    # split it into the datasets we want to compare
+    # Get all the data, then split it into the datasets we want to compare
+    combined_data = concat_datasets(datasets)
     mrsa_data = combined_data[combined_data.obs["disease"] == "MRSA"].copy()
     ca_data = combined_data[combined_data.obs["disease"] == "Candidemia"].copy()
+
+    # Z-score the split datasets
+    mrsa_data.X = StandardScaler().fit_transform(mrsa_data.X)
+    ca_data.X = StandardScaler().fit_transform(ca_data.X)
 
     # convert the datasets to pd.dataframes to hand to perform_pca
     combined_data = combined_data.to_df()

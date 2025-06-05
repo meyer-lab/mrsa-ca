@@ -2,8 +2,12 @@
 
 import datashader as ds
 import datashader.transfer_functions as tf
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+import numpy as np
 import pandas as pd
 import seaborn as sns
+import xarray as xr
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
@@ -29,63 +33,115 @@ def figure_setup():
     return factors, r2x, disease_data
 
 
-def plot_with_datashader(
-    data_df: pd.DataFrame,
-    ax,
-    x_label="Rank",
-    y_label="Genes",
-    title=None,
-    cmap="coolwarm",
-    center=0,
+def plot_gene_matrix_with_datashader(data_df, ax, title=None, cmap="coolwarm"):
+    """
+    Plot a gene matrix using datashader with proper data display.
+    """
+
+    # Create DataArray with proper coordinates
+    data_array = xr.DataArray(
+        data_df.values,
+        coords=[
+            ("gene", np.arange(len(data_df))),
+            ("rank", np.arange(len(data_df.columns))),
+        ],
+    )
+
+    # Create canvas with dimensions matching the data
+    cvs = ds.Canvas(
+        plot_width=len(data_df.columns) * 100,  # Each rank gets 100 pixels width
+        plot_height=1000,  # Fixed height
+        x_range=(-0.5, len(data_df.columns) - 0.5),
+        y_range=(-0.5, len(data_df) - 0.5),
+    )
+
+    # Render directly as raster with no grid lines
+    agg = cvs.raster(data_array)
+
+    # Get value range for colormap
+    vmin, vmax = np.nanpercentile(data_df.values, [5, 95])
+    max_abs = max(abs(vmin), abs(vmax))
+
+    # Create image with proper colormap and NO grid lines
+    img = tf.shade(agg, cmap=cmap, how="linear", span=[-max_abs, max_abs])
+
+    # Plot the image with proper extent
+    artist = ax.imshow(
+        np.array(img),
+        aspect="auto",
+        extent=(-0.5, len(data_df.columns) - 0.5, len(data_df) - 0.5, -0.5),
+        interpolation="nearest",  # Prevent interpolation between ranks
+    )
+
+    # Add colorbar
+    norm = colors.Normalize(vmin=-max_abs, vmax=max_abs)
+    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
+
+    # Add labels and title
+    ax.set_xlabel("Rank")
+    ax.set_ylabel("Genes")
+    if title:
+        ax.set_title(title)
+
+    # Set tick positions centered on ranks
+    ax.set_xticks(range(len(data_df.columns)))
+    ax.set_xticklabels(data_df.columns)
+    ax.set_yticks([])
+
+    return artist
+
+
+# Backup function to plot gene matrix using matplotlib's rasterization
+def plot_gene_matrix_with_rasterize(
+    data_df: pd.DataFrame, ax, title=None, cmap="coolwarm"
 ):
     """
-    Plot a large dataframe using datashader for efficient rendering.
+    Plot a gene matrix using matplotlib's rasterization for efficiency.
+
+    Parameters:
+    -----------
+    data_df : pandas.DataFrame
+        DataFrame with genes as index and ranks as columns
+    ax : matplotlib.axes.Axes
+        Matplotlib axes to plot on
+    title : str, optional
+        Plot title
+    cmap : str, optional
+        Colormap name
+
+    Returns:
+    --------
+    artist : matplotlib.artist.Artist
+        The created plot artist
     """
-    # Create numeric mappings for both ranks and genes
-    rank_mapping = {col: i for i, col in enumerate(data_df.columns)}
-    gene_mapping = {gene: i for i, gene in enumerate(data_df.index)}
+    # Find min/max values for colormap
+    vmin, vmax = data_df.values.min(), data_df.values.max()
+    max_abs = max(abs(vmin), abs(vmax))
 
-    # Convert DataFrame to long format
-    df_long = data_df.reset_index().melt(
-        id_vars="index", var_name="rank", value_name="value"
-    )
-
-    # Add numeric columns for both axes
-    df_long["rank_num"] = df_long["rank"].map(rank_mapping)
-    df_long["gene_num"] = df_long["index"].map(gene_mapping)
-
-    # Create canvas with appropriate dimensions
-    cvs = ds.Canvas(
-        plot_width=len(data_df.columns) * 20, plot_height=min(1000, len(data_df))
-    )
-
-    # Use numeric values for both x and y
-    agg = cvs.points(df_long, x="rank_num", y="gene_num", agg=ds.mean("value"))
-
-    # Render the aggregate as an image
-    if center is not None:
-        img = tf.shade(
-            agg,
-            cmap=cmap,
-            how="eq_hist",
-            span=[-abs(agg.data.max()), abs(agg.data.max())],
-        )
-    else:
-        img = tf.shade(agg, cmap=cmap, how="eq_hist")
-
-    # Convert to RGB array for matplotlib
-    img_data = tf.Image(img).rgb.values
-
-    # Plot the image on matplotlib axes
-    img_plot = ax.imshow(
-        img_data,
+    # Plot directly with imshow (rasterized)
+    artist = ax.imshow(
+        data_df.values,
         aspect="auto",
-        extent=(-0.5, len(data_df.columns) - 0.5, len(data_df.index) - 0.5, -0.5),
+        cmap=cmap,
+        vmin=-max_abs,
+        vmax=max_abs,
+        interpolation="nearest",
     )
+
+    # Add colorbar
+    cbar = ax.figure.colorbar(
+        artist, ax=ax, orientation="vertical", shrink=0.8, pad=0.01
+    )
+    cbar.ax.tick_params(labelsize=8)
+
+    # Add zero line to colorbar for emphasis
+    cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
 
     # Set axis labels and title
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
+    ax.set_xlabel("Rank")
+    ax.set_ylabel("Genes")
     if title:
         ax.set_title(title)
 
@@ -96,24 +152,25 @@ def plot_with_datashader(
     # Hide y-tick labels (too many genes)
     ax.set_yticks([])
 
-    return img_plot
+    return artist
 
 
 def genFig():
-    """Start by generating heatmaps of the factor matrices for the diseases and time"""
-
-    layout, fig_size = calculate_layout(num_plots=3, scale_factor=4)
+    """Generate heatmaps of the factor matrices"""
+    layout, fig_size = calculate_layout(num_plots=4, scale_factor=4)
     ax, f, _ = setupBase(fig_size, layout)
 
     disease_factors, r2x, disease_data = figure_setup()
 
     disease_ranks = range(1, disease_factors[0].shape[1] + 1)
     disease_ranks_labels = [str(x) for x in disease_ranks]
+
     # x axis label: rank
     x_ax_label = "Rank"
     # y axis labels: disease, eigen, genes
     d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
+    # Create a DataFrame for the gene factor matrix
     genes_df = pd.DataFrame(
         disease_factors[2],
         index=disease_data.var.index,
@@ -126,11 +183,10 @@ def genFig():
     sparsity = check_sparsity(genes_df.to_numpy())
     gene_count = len(genes_df.index)
 
-    # tick labels: disease, rank, genes
+    # tick labels: disease, rank
     disease_labels = [
         disease_data.obs["disease"].unique(),
         disease_ranks_labels,
-        False,
     ]
 
     # Set the A matrix colors
@@ -164,15 +220,19 @@ def genFig():
     b.set_xlabel(x_ax_label)
     b.set_ylabel(d_ax_labels[1])
 
-    # plot the gene factor matrix using diverging cmap
-    c = plot_with_datashader(
+    # plot the gene factor matrix using datashader
+    plot_gene_matrix_with_rasterize(
         genes_df,
         ax=ax[2],
-        x_label=x_ax_label,
-        y_label=d_ax_labels[2],
-        title=f"Gene Factor Matrix\n {gene_count} genes, {sparsity:.2%} sparsity",
+        title=f"Gene Factor Matrix\n{gene_count} genes, {sparsity:.2%} sparsity",
         cmap=BC_cmap,
-        center=0,
+    )
+
+    plot_gene_matrix_with_datashader(
+        genes_df,
+        ax=ax[3],
+        title=f"Gene Factor Matrix (Datashader)\n{gene_count} genes, {sparsity:.2%} sparsity",
+        cmap=BC_cmap,
     )
 
     return f

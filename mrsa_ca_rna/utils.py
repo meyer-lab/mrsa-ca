@@ -26,116 +26,32 @@ from mrsa_ca_rna.import_data import (
 )
 
 
-# gene activity function to pair down gene matrices to important genes
-def gene_filter(
-    data: ad.AnnData | pd.DataFrame,
-    threshold: float,
-    method: str,
-    top_n: int = 0,
-) -> ad.AnnData | pd.DataFrame:
-    """
-    Pairs down gene matrices to the most active genes,
-    either by threshold or top_n genes. Using threshold,
-    the method can be "mean", "any", or "total".
-    Mean: mean expression across all samples exceeds threshold
-    Any: expression in any sample exceeds threshold
-    Total: sum of expression across all samples exceeds threshold
-
-    Parameters:
-        data (ad.AnnData | pd.DataFrame): RNA data to filter.
-            Assumes (samples x genes) format.
-        top_n (int): number of top genes to keep
-        threshold (float): minimum expression threshold to keep a gene
-        method (str): method to use for filtering genes
-
-
-    Returns:
-        data (ad.AnnData | pd.DataFrame): filtered RNA data"""
-
-    # check that either top_n or threshold is provided
-    assert threshold or top_n, "Must provide either a threshold or top_n value"
-
-    # convert to dataframe if AnnData because numpy cannot column-wise filter
-    if isinstance(data, ad.AnnData):
-        data_to_filter = data.to_df().copy()
-    else:
-        data_to_filter = data.copy()
-
-    if threshold:
-        # if method is any:
-        # we keep genes that exceed the threshold in any sample
-        if method == "any":
-            # filter out genes with low expression across all samples
-            data_filtered = data_to_filter.loc[
-                :, (data_to_filter.abs() > threshold).any()
-            ]
-        # if method is mean:
-        # we keep genes that exceed the threshold in the mean of all samples
-        elif method == "mean":
-            # filter out genes with low expression across all samples
-            data_filtered = data_to_filter.loc[
-                :, data_to_filter.abs().mean() > threshold
-            ]
-        # if method is total:
-        # we keep genes that exceed the threshold as a sum across all samples
-        elif method == "total":
-            # filter out genes with low expression across all samples
-            data_filtered = data_to_filter.loc[
-                :, data_to_filter.abs().sum() > threshold
-            ]
-        else:
-            raise ValueError(
-                "Method must be 'mean', 'any', or 'total' when threshold is provided"
-            )
-
-        # print out how many genes were filtered out
-        print(
-            f"Filtered out {data_to_filter.shape[1] - data_filtered.shape[1]} genes "
-            f"({data_filtered.shape[1] / data_to_filter.shape[1]:.2%} remaining)"
-        )
-    else:
-        data_filtered = data_to_filter
-
-    if top_n:
-        # make sure data filtered is a dataframe so that we can nlargest
-        assert isinstance(data_filtered, pd.DataFrame)
-
-        # keep only the top_n genes
-        meaned_expression = pd.Series(data_filtered.abs().mean())
-
-        top_genes = meaned_expression.nlargest(top_n).index
-        data_filtered = data_filtered.loc[:, top_genes]
-
-    if isinstance(data, ad.AnnData):
-        return data[:, data.var.index.isin(data_filtered.columns)].copy()
-    else:
-        return data_filtered
-
-
 def concat_datasets(
-    ad_list=None,
-    diseases=None,
-    filter_threshold: float = 0,
-    filter_method: str = "mean",
-    shrink: bool = True,
-    scale: bool = True,
+    ad_list: list[str] | None = None,
+    filter_threshold: float = 0.1,
 ) -> ad.AnnData:
-    """
-    Concatenate any group of AnnData objects together along the genes axis.
-    Truncates to shared genes and optionally filters to specific diseases.
+    """Concatenate multiple AnnData objects from different datasets into
+    a single AnnData object. Perform filtering of genes based on a threshold,
+    normalization of counts, log2 transformation, and z-score scaling.
 
-    Parameters:
-        ad_list (list of strings or "all"): datasets to concatenate | Default = "all".
-            Options: "mrsa", "ca", "bc", "tb", "uc", "t1dm" or any new datasets added
-        diseases (list of strings or None): specific diseases to include |
-            Default = None (all diseases)
-        filter_threshold (float): threshold for gene filtering
-        filter_method (str): method for gene filtering. Options: "mean", "any", "total"
-        shrink (bool): whether to shrink the resulting obs to only the shared obs
-        scale (bool): whether to scale the data
+    Parameters
+    ----------
+    ad_list : list[str], optional
+        list of datasets to include, by default None = All datasets
+    filter_threshold : float, optional
+        mean gene expression cutoff, by default 0.1
 
-    Returns:
-        ad (AnnData): concatenated AnnData object
+    Returns
+    -------
+    ad.AnnData
+        Concatenated and preprocessed AnnData object containing all datasets
+
+    Raises
+    ------
+    RuntimeError
+        If requested dataset is not found in the available datasets.
+    ValueError
+        If no valid datasets are provided or found.
     """
     # Create a dictionary of all available import functions
     data_dict = {
@@ -177,111 +93,84 @@ def concat_datasets(
     if not adata_list:
         raise ValueError("No valid datasets provided or found")
 
-    # Collect the obs data from each AnnData object
-    obs_list = [ad.obs for ad in adata_list]
-
     # Concat all anndata objects together keeping only the vars and obs in common
-    whole_ad = ad.concat(adata_list, join="inner")
+    adata = ad.concat(adata_list, join="inner")
 
-    # TMM normalize the data
-    counts_tmm = normalize(counts=whole_ad.X, tmm_outlier=0.05)
+    # Filter low expression genes
+    filtered_genes = gene_filter(adata.to_df(), threshold=filter_threshold)
+    var_mask = adata.var_names.isin(filtered_genes.columns)
+    adata_filtered = adata[:, var_mask].copy()
 
-    # Replace the X matrix with the normalized counts
-    whole_ad.layers["raw"] = whole_ad.to_df().copy()
-    whole_ad.X = counts_tmm
+    # RPM normalize and z-score the data
+    norm_counts = normalize_counts(counts=np.asarray(adata_filtered.X))
 
-    # If shrink is False,
-    # replace the resulting obs with a pd.concat of all obs data in obs_list
-    if not shrink:
-        whole_ad.obs = pd.concat(obs_list, axis=0, join="outer")
+    # Preserve the raw counts in a new layer and add the norm counts to the adata object
+    adata_filtered.layers["raw"] = np.asarray(adata_filtered.X).copy()
+    adata_filtered.X = norm_counts
 
-    # Filter by specified diseases if provided
-    if diseases:
-        if isinstance(diseases, str):
-            diseases = [diseases]
-        disease_mask = whole_ad.obs["disease"].isin(diseases)
-        whole_ad = whole_ad[disease_mask.to_numpy()]
-
-    # If filter_threshold is provided, filter out genes with low expression
-    if filter_threshold:
-        whole_ad = gene_filter(
-            whole_ad, threshold=filter_threshold, method=filter_method
-        )
-        assert isinstance(whole_ad, ad.AnnData), "whole_ad must be an AnnData object"
-
-    if scale:
-        whole_ad.X = StandardScaler().fit_transform(whole_ad.X).copy()
-
-    return whole_ad
+    return adata_filtered
 
 
-def normalize(counts, tmm_outlier=0.05):
+def gene_filter(genes: pd.DataFrame, threshold: float = 0.1) -> pd.DataFrame:
+    """Generate a filter for genes based on a threshold. Dataframe is expected
+    to have genes as columns and samples as rows. The filter will keep only those
+    genes that have a mean expression above the threshold across all samples.
+
+    Parameters
+    ----------
+    genes : pd.DataFrame
+        DataFrame containing gene expression data
+    threshold : float
+        Threshold for filtering genes | default=0.1
+
+    Returns
+    -------
+    pd.DataFrame
+        Filtered DataFrame with genes that have mean expression above the threshold
     """
-    Normalize the count matrix using a specified method.
-    "tmm": Perform trimmed mean normalization
+    return genes.loc[:, genes.abs().mean(axis=0) > threshold]
 
-    Args:
-        counts (np.ndarray): A numpy array representing the count matrix.
 
-    Returns:
-        np.ndarray: A normalized count matrix.
+def normalize_counts(counts: np.ndarray) -> np.ndarray:
+    """Read-depth normalization, log2 transformation, and z-score scaling of the data.
+
+    Parameters
+    ----------
+    counts : np.ndarray
+        gene count matrix to be normalized
+
+    Returns
+    -------
+    np.ndarray
+        normalized gene count matrix
     """
-    if counts.shape[0] < counts.shape[1]:
-        counts = counts.T
-        rotated = True
-    else:
-        rotated = False
 
     # Convert to numpy array if not already
     counts_array = np.asarray(counts)
 
-    # Perform TMM normalization
-    norm_exp = tmm_norm(counts_array, tmm_outlier)
+    # Perform RPM normalization
+    norm_exp = rpm_norm(counts_array)
 
-    if rotated:
-        norm_exp = norm_exp.T
+    # Log transform the data
+    trans_exp = np.log2(norm_exp + 1).astype(np.float64)
 
-    return norm_exp.astype(np.float64)
+    # z-score the data
+    scaled_exp = StandardScaler().fit_transform(trans_exp)
 
-
-def tmm_norm(exp, percentage=0.05):
-    """
-    Perform TMM (Trimmed Mean of M-values) normalization.
-
-    Args:
-        exp (np.ndarray): Expression matrix to normalize.
-        percentage (float): Percentage of data to trim when calculating means.
-
-    Returns:
-        np.ndarray: Normalized expression matrix.
-    """
-    # Add 1 and log2 transform to handle zeros
-    lexp = np.log2(1 + exp).astype(np.float64)
-
-    # Calculate trimmed means for each column
-    tmm = trimmed_mean(lexp, percentage)
-
-    # Create normalization factors matrix (repeated for each sample)
-    nf = np.tile(tmm, (exp.shape[0], 1))
-
-    # Normalize by dividing log-expression by normalization factors
-    temp = lexp / nf
-
-    return temp
+    return scaled_exp.astype(np.float64)
 
 
-def trimmed_mean(matrix, percentage):
-    matrix = np.array(matrix)
-    trimmed_means = []
-    for col in range(matrix.shape[1]):
-        data = matrix[:, col].copy()
-        data = data[data > 0]
-        n_trim = int(len(data) * percentage)
-        sorted_values = np.sort(data)
-        trimmed_values = sorted_values[n_trim:-n_trim]
-        trimmed_mean = np.mean(trimmed_values)
-        trimmed_means.append(trimmed_mean)
-    return trimmed_means
+def rpm_norm(exp):
+    # Calculate the library size
+    total_counts = np.sum(exp, axis=1, keepdims=True)
+
+    # Avoid division by zero (should not happen due to previous filtering)
+    total_counts = np.maximum(total_counts, 1)
+
+    # RPM normalization
+    rpm_normalized = exp / total_counts * 1e6
+
+    return rpm_normalized.astype(np.float64)
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:

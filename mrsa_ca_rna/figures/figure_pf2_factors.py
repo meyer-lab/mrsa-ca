@@ -244,7 +244,7 @@ def genFig():
         y=X.obsm["Pf2_PaCMAP"][:, 1],
         hue=X.obs["disease"],
         ax=ax1[0],
-        palette="Set2",
+        palette="tab20",
     )
     d.set_title("PaCMAP Embedding of Disease Projections")
     d.set_xlabel("PaCMAP 1")

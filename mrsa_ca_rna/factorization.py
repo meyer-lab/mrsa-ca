@@ -130,6 +130,6 @@ def perform_parafac2(
     X = store_pf2(X, weights, factors, projections)
 
     pcm = PaCMAP()
-    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(X.obsm["weighted_Pf2_projections"])
+    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(X.obsm["Pf2_projections"])
 
     return X, R2X

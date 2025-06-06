@@ -16,15 +16,15 @@ def figure_setup():
 
     rank = 5
 
-    disease_data = concat_datasets()
+    X = concat_datasets()
 
-    _, factors, _, r2x = perform_parafac2(
-        disease_data,
-        condition_name="disease",
+    X, r2x = perform_parafac2(
+        X,
+        slice_col="disease",
         rank=rank,
     )
 
-    return factors, r2x, disease_data
+    return X, r2x
 
 
 def genFig():
@@ -34,9 +34,9 @@ def genFig():
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    disease_factors, r2x, disease_data = figure_setup()
+    X, r2x = figure_setup()
 
-    disease_ranks = range(1, disease_factors[0].shape[1] + 1)
+    disease_ranks = range(1, X.uns["Pf2_A"].shape[1] + 1)
     disease_ranks_labels = [str(x) for x in disease_ranks]
     # x axis label: rank
     x_ax_label = "Rank"
@@ -44,8 +44,8 @@ def genFig():
     d_ax_labels = ["Disease", "Eigen-states", "Genes"]
 
     genes_df = pd.DataFrame(
-        disease_factors[2],
-        index=disease_data.var.index,
+        X.varm["Pf2_C"],
+        index=X.var.index,
         columns=pd.Index(disease_ranks_labels),
     )
 
@@ -54,12 +54,12 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # put the new genes_df back into the disease_factors[2]
-    disease_factors[2] = genes_df.values
+    # put the new genes_df back into the X.varm["Pf2_C"]
+    X.varm["Pf2_C"] = genes_df.values
 
     # tick labels: disease, rank, genes
     disease_labels = [
-        disease_data.obs["disease"].unique(),
+        X.obs["disease"].unique(),
         disease_ranks_labels,
         False,
     ]
@@ -72,7 +72,7 @@ def genFig():
 
     # plot the disease factor matrix using non-negative cmap
     a = sns.heatmap(
-        disease_factors[0],
+        X.uns["Pf2_A"],
         ax=ax[0],
         cmap=A_cmap,
         vmin=0,
@@ -85,7 +85,7 @@ def genFig():
 
     # plot the eigenstate factor matrix using diverging cmap
     b = sns.heatmap(
-        disease_factors[1],
+        X.uns["Pf2_B"],
         ax=ax[1],
         cmap=BC_cmap,
         xticklabels=disease_ranks_labels,
@@ -97,7 +97,7 @@ def genFig():
 
     # plot the gene factor matrix using diverging cmap
     c = sns.heatmap(
-        disease_factors[2],
+        X.varm["Pf2_C"],
         ax=ax[2],
         cmap=BC_cmap,
         center=0,
@@ -109,3 +109,6 @@ def genFig():
     c.set_ylabel(d_ax_labels[2])
 
     return f
+
+if __name__ == '__main__':
+    genFig()

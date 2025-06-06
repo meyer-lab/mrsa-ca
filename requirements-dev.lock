@@ -102,8 +102,8 @@ numpy==2.2.6
     # via h5py
     # via ipympl
     # via matplotlib
-    # via numba
     # via mrsa-ca-rna
+    # via numba
     # via pandas
     # via patsy
     # via scikit-learn
@@ -181,9 +181,10 @@ requests==2.32.3
     # via wandb
 scikit-learn==1.6.1
     # via mrsa-ca-rna
-scipy==1.15.2
+scipy==1.15.3
     # via anndata
     # via datashader
+    # via mrsa-ca-rna
     # via scikit-learn
     # via statsmodels
     # via tensorly
@@ -214,6 +215,8 @@ tlviz==0.1.1
     # via mrsa-ca-rna
 toolz==1.0.0
     # via datashader
+tqdm==4.67.1
+    # via mrsa-ca-rna
 traitlets==5.14.3
     # via comm
     # via ipympl

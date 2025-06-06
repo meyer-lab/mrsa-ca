@@ -34,7 +34,9 @@ def figure_setup():
 
     # Get the MRSA and CA data, grab persistance labels
     combined_ad = concat_datasets(["mrsa", "ca"])
-    y_true = combined_ad.obs.loc[combined_ad["disease"] == "MRSA", "status"].astype(int)
+    y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
+        int
+    )
 
     # Perform PCA on the combined data
     combined_df = combined_ad.to_df()

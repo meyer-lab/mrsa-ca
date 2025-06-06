@@ -31,7 +31,7 @@ def figure_setup():
     combined_df = combined.to_df()
 
     # Z-score the now independent mrsa dataset
-    mrsa_df = StandardScaler().fit_transform(mrsa_df)
+    mrsa_df.loc[:, :] = StandardScaler().fit_transform(mrsa_df.to_numpy())
 
     # Get status targets for regression
     y_true = mrsa_split.obs["status"].astype(int)

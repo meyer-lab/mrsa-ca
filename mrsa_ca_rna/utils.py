@@ -98,7 +98,8 @@ def concat_datasets(
 
     # Filter low expression genes
     filtered_genes = gene_filter(adata.to_df(), threshold=filter_threshold)
-    adata_filtered = adata[:, filtered_genes.columns].copy()
+    var_mask = adata.var_names.isin(filtered_genes.columns)
+    adata_filtered = adata[:, var_mask].copy()
 
     # RPM normalize and z-score the data
     norm_counts = normalize_counts(counts=np.asarray(adata_filtered.X))
@@ -151,12 +152,12 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     norm_exp = rpm_norm(counts_array)
 
     # Log transform the data
-    counts_array = np.log2(counts_array + 1).astype(np.float64)
+    trans_exp = np.log2(norm_exp + 1).astype(np.float64)
 
     # z-score the data
-    scaled_norm = StandardScaler().fit_transform(norm_exp)
+    scaled_exp = StandardScaler().fit_transform(trans_exp)
 
-    return scaled_norm.astype(np.float64)
+    return scaled_exp.astype(np.float64)
 
 
 def rpm_norm(exp):
@@ -218,7 +219,3 @@ def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     )
 
     return X_in_resampled
-
-
-if __name__ == "__main__":
-    adata = concat_datasets()

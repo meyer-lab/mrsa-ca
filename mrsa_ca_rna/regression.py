@@ -22,7 +22,7 @@ from sklearn.model_selection import (
 
 def perform_LR(
     X_data: pd.DataFrame,
-    y_data: pd.DataFrame,
+    y_data: pd.Series | pd.DataFrame,
     splits: int = 10,
 ) -> tuple[float, np.ndarray, LogisticRegressionCV]:
     """

@@ -13,7 +13,13 @@ from scipy.optimize import linear_sum_assignment
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.decomposition import parafac2
 
-def store_pf2(X: ad.AnnData, weights: np.ndarray, factors: list[np.ndarray], projections: list[np.ndarray]) -> ad.AnnData:
+
+def store_pf2(
+    X: ad.AnnData,
+    weights: np.ndarray,
+    factors: list[np.ndarray],
+    projections: list[np.ndarray],
+) -> ad.AnnData:
     """Store the parafac2 factors and projections in the AnnData object.
 
     Parameters
@@ -25,11 +31,11 @@ def store_pf2(X: ad.AnnData, weights: np.ndarray, factors: list[np.ndarray], pro
     projections : list[np.ndarray]
         The projection matrices from the parafac2 decomposition.
     """
-    
+
     unique_idxs = X.obs["disease_unique_idxs"]
 
     # Store the unstructured weights
-    X.uns["pf2_weights"] = weights
+    X.uns["Pf2_weights"] = weights
 
     # Store the factor matrices. Pf2_C lines up with genes
     X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
@@ -41,11 +47,10 @@ def store_pf2(X: ad.AnnData, weights: np.ndarray, factors: list[np.ndarray], pro
     for i, proj in enumerate(projections):
         X.obsm["Pf2_projections"][unique_idxs == i, :] = proj
 
-    X.obsm["weighted_Pf2_projections"] = (
-        X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]
-    )
+    X.obsm["weighted_Pf2_projections"] = X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]
 
     return X
+
 
 def standardize_pf2(
     factors: list[np.ndarray], projections: list[np.ndarray]
@@ -124,9 +129,7 @@ def perform_parafac2(
 
     X = store_pf2(X, weights, factors, projections)
 
-    pcm = PaCMAP(random_state=42)
-    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(
-        X.obsm["weighted_Pf2_projections"]
-    )
+    pcm = PaCMAP()
+    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(X.obsm["weighted_Pf2_projections"])
 
     return X, R2X

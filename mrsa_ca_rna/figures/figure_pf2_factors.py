@@ -30,8 +30,8 @@ def figure_setup():
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (12, 8)
+    layout = {"ncols": 3, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
     X, r2x = figure_setup()
@@ -53,9 +53,6 @@ def genFig():
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
-
-    # put the new genes_df back into the X.varm["Pf2_C"]
-    X.varm["Pf2_C"] = genes_df.values
 
     # tick labels: disease, rank, genes
     disease_labels = [
@@ -108,7 +105,14 @@ def genFig():
     c.set_xlabel(x_ax_label)
     c.set_ylabel(d_ax_labels[2])
 
-    return f
+    d = sns.scatterplot(
+        x=X.obsm["Pf2_PaCMAP"][:, 0],
+        y=X.obsm["Pf2_PaCMAP"][:, 1],
+        hue=X.obs["disease"],
+        ax=ax[3],
+    )
+    d.set_title("PaCMAP Projection of Weighted Projections")
+    d.set_xlabel("PaCMAP 1")
+    d.set_ylabel("PaCMAP 2")
 
-if __name__ == '__main__':
-    genFig()
+    return f

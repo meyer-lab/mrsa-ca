@@ -33,7 +33,9 @@ def figure_setup():
     return factors, r2x, disease_data
 
 
-def plot_gene_matrix_with_datashader(data_df, ax, title=None, cmap="coolwarm"):
+def plot_gene_matrix_with_datashader(
+    data_df, ax, title=None, cmap: str | colors.Colormap = "coolwarm"
+):
     """
     Plot a gene matrix using datashader with proper data display.
     """
@@ -77,7 +79,7 @@ def plot_gene_matrix_with_datashader(data_df, ax, title=None, cmap="coolwarm"):
     norm = colors.Normalize(vmin=-max_abs, vmax=max_abs)
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    cbar = ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
+    _ = ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
 
     # Add labels and title
     ax.set_xlabel("Rank")
@@ -95,7 +97,7 @@ def plot_gene_matrix_with_datashader(data_df, ax, title=None, cmap="coolwarm"):
 
 # Backup function to plot gene matrix using matplotlib's rasterization
 def plot_gene_matrix_with_rasterize(
-    data_df: pd.DataFrame, ax, title=None, cmap="coolwarm"
+    data_df: pd.DataFrame, ax, title=None, cmap: str | colors.Colormap = "coolwarm"
 ):
     """
     Plot a gene matrix using matplotlib's rasterization for efficiency.
@@ -231,7 +233,8 @@ def genFig():
     plot_gene_matrix_with_datashader(
         genes_df,
         ax=ax[3],
-        title=f"Gene Factor Matrix (Datashader)\n{gene_count} genes, {sparsity:.2%} sparsity",
+        title=f"Gene Factor Matrix (Datashader)\n{gene_count} genes, "
+        f"{sparsity:.2%} sparsity",
         cmap=BC_cmap,
     )
 

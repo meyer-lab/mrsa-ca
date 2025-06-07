@@ -43,9 +43,9 @@ def create_model(data: ad.AnnData, gene_list: list[str]) -> tuple:
     if (len(missing_genes) > 0) & (len(missing_genes) < 100):
         print(f"Missing genes: {', '.join(missing_genes)}")
 
-    # Extract features and target
-    X = data[:, genes].to_df()
-    target = data.obs["status"]
+    # Extract features and target. Pyright hates when I subset AnnData objects
+    X = data[:, genes].to_df() # type: ignore
+    target = data.obs["Persistent"].astype(int)
 
     # Create and train model
     score, proba, model = perform_LR(X, target, splits=6)
@@ -57,30 +57,46 @@ def plot_roc_for_tier(ax, targets, proba, model):
     """Plot ROC curves for a specific gene tier."""
     classes = pd.Index(model.classes_)
 
-    # Create a DataFrame to store all ROC curves
-    all_roc_data = []
-
-    # Calculate ROC curves for each class
-    for i, cls in enumerate(classes.to_list()):
-        # Convert targets to binary: 1 for current class, 0 for other classes
-        binary_targets = (targets == cls).astype(int)
-        fpr, tpr, _ = roc_curve(y_true=binary_targets, y_score=proba[:, i])
-
-        # Calculate AUC score
-        auc = roc_auc_score(binary_targets, proba[:, i])
-
-        # Create a DataFrame for this class's ROC curve
-        roc_df = pd.DataFrame(
-            {"FPR": fpr, "TPR": tpr, "Class": f"{cls} (AUC={auc:.2f})"}
+    # Handle binary classification differently
+    if len(classes) == 2:
+        # For binary classification, only plot ROC curve for the positive class
+        positive_class_idx = np.where(classes == 1)[0][0]
+        binary_targets = (targets == 1).astype(int)
+        fpr, tpr, _ = roc_curve(
+            y_true=binary_targets, y_score=proba[:, positive_class_idx]
         )
 
-        all_roc_data.append(roc_df)
+        # Calculate AUC score
+        auc = roc_auc_score(binary_targets, proba[:, positive_class_idx])
 
-    # Combine all ROC data
-    combined_roc_df = pd.concat(all_roc_data, ignore_index=True)
+        # Plot single ROC curve
+        ax.plot(fpr, tpr, label=f"Persistence (AUC={auc:.2f})")
 
-    # Plot all ROC curves
-    sns.lineplot(data=combined_roc_df, x="FPR", y="TPR", hue="Class", ax=ax)
+    else:
+        # Create a DataFrame to store all ROC curves
+        all_roc_data = []
+
+        # Calculate ROC curves for each class
+        for i, cls in enumerate(classes.to_list()):
+            # Convert targets to binary: 1 for current class, 0 for other classes
+            binary_targets = (targets == cls).astype(int)
+            fpr, tpr, _ = roc_curve(y_true=binary_targets, y_score=proba[:, i])
+
+            # Calculate AUC score
+            auc = roc_auc_score(binary_targets, proba[:, i])
+
+            # Create a DataFrame for this class's ROC curve
+            roc_df = pd.DataFrame(
+                {"FPR": fpr, "TPR": tpr, "Class": f"{cls} (AUC={auc:.2f})"}
+            )
+
+            all_roc_data.append(roc_df)
+
+        # Combine all ROC data
+        combined_roc_df = pd.concat(all_roc_data, ignore_index=True)
+
+        # Plot all ROC curves
+        sns.lineplot(data=combined_roc_df, x="FPR", y="TPR", hue="Class", ax=ax)
 
     # Add diagonal line
     ax.plot([0, 1], [0, 1], "k--", label="Random (AUC=0.5)")
@@ -97,43 +113,69 @@ def plot_coefficients_for_tier(ax, X, model, top_n=10):
     """Plot gene coefficients for a specific gene tier."""
     classes = pd.Index(model.classes_)
 
-    # Get coefficients
-    coeffs = pd.DataFrame(model.coef_, columns=X.columns, index=classes)
-    coeffs = coeffs.T
+    # Handle binary classification differently than multinomial
+    if len(classes) == 2 and model.coef_.shape[0] == 1:
+        # For binary classification, only show coefficients for the positive class
+        coef = model.coef_[0]
 
-    # Reset the index to convert gene names to a column
-    coeffs_long = coeffs.reset_index(drop=False, names="Gene")
+        # Create a Series with gene names as index and coefficients as values
+        coeffs_series = pd.Series(coef, index=X.columns)
 
-    # Reshape from wide to long format for seaborn
-    coeffs_long = pd.melt(
-        coeffs_long,
-        id_vars=["Gene"],
-        value_vars=classes.to_list(),
-        var_name="Class",
-        value_name="Coefficient",
-    )
+        # Sort by absolute coefficient values to find most predictive genes
+        top_genes = coeffs_series.abs().sort_values(ascending=False).head(top_n).index
 
-    # Sort genes by their average absolute coefficient
-    # values to find most predictive ones
-    mean_abs_coeffs = coeffs.abs().mean(axis=1)
-
-    # Pyright always complains about taking the mean of a Dataframe
-    if isinstance(mean_abs_coeffs, float | int):
-        raise ValueError(
-            "mean_abs_coeffs should be a Series, not a single value."
-            f" Got {type(mean_abs_coeffs)} instead. Was the input data a single row?"
+        # Filter to only include top genes
+        plot_data = pd.DataFrame(
+            {"Gene": top_genes, "Coefficient": coeffs_series[top_genes]}
         )
 
-    top_genes = mean_abs_coeffs.sort_values(ascending=False).head(top_n).index.tolist()
+        sns.barplot(data=plot_data, x="Gene", y="Coefficient", ax=ax, color="steelblue")
 
-    # Filter to include only top genes
-    plot_data = coeffs_long[coeffs_long["Gene"].isin(top_genes)]
+        # Add a horizontal line at y=0
+        ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5)
 
-    # Ensure plot_data is a DataFrame
-    plot_data_df = pd.DataFrame(plot_data)
+    else:
+        # For multinomial case, use all classes
+        coeffs = pd.DataFrame(model.coef_, columns=X.columns, index=classes)
+        coeffs = coeffs.T
 
-    # Create the bar plot
-    sns.barplot(data=plot_data_df, x="Gene", y="Coefficient", hue="Class", ax=ax)
+        # Reset the index to convert gene names to a column
+        coeffs_long = coeffs.reset_index(drop=False, names="Gene")
+
+        # Reshape from wide to long format for seaborn
+        coeffs_long = pd.melt(
+            coeffs_long,
+            id_vars=["Gene"],
+            value_vars=classes.to_list(),
+            var_name="Class",
+            value_name="Coefficient",
+        )
+
+        # Sort genes by their average absolute coefficient values
+        mean_abs_coeffs = coeffs.abs().mean(axis=1)
+
+        # Pyright always complains about taking the mean of a Dataframe
+        if isinstance(mean_abs_coeffs, float | int):
+            raise ValueError(
+                "mean_abs_coeffs should be a Series, not a single value. "
+                f"Got {type(mean_abs_coeffs)} instead. "
+                "Was the input data a single row? "
+            )
+
+        top_genes = (
+            mean_abs_coeffs.sort_values(ascending=False).head(top_n).index.tolist()
+        )
+
+        # Filter to include only top genes and ensure it's a DataFrame
+        plot_data: pd.DataFrame = coeffs_long.loc[
+            coeffs_long["Gene"].isin(top_genes)
+        ].copy()
+
+        # Create the bar plot with hue for multiple classes
+        sns.barplot(data=plot_data, x="Gene", y="Coefficient", hue="Class", ax=ax)
+
+        # Add legend for multinomial case
+        ax.legend(title="Class", loc="upper right", fontsize="small")
 
     # Set plot labels and title
     ax.set_xlabel("Genes")
@@ -142,16 +184,11 @@ def plot_coefficients_for_tier(ax, X, model, top_n=10):
     # Rotate x-axis labels for better readability
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
-    # Choose consistent legend position
-    ax.legend(title="Class", loc="upper right", fontsize="small")
-
     # Add dividing lines between gene groups
-    # Get the x-tick positions
     xticks = ax.get_xticks()
 
     # Add alternating background for each gene group
     for i in range(len(xticks)):
-        # Calculate the boundaries for each gene group
         if i < len(xticks) - 1:
             left = (xticks[i] + xticks[i + 1]) / 2
             ax.axvline(x=left, color="gray", linestyle="--", alpha=0.5, linewidth=0.7)
@@ -186,9 +223,55 @@ def plot_confusion_matrix(ax, targets, proba, model):
         text.set_fontsize(10)
 
 
+def plot_gender_confusion_matrix(ax, data, proba, model, gender_type="male"):
+    """Plot a confusion matrix for a specific gender."""
+    # Get predicted classes from probabilities
+    y_pred = model.classes_[np.argmax(proba, axis=1)]
+
+    # Get true outcomes and gender information
+    true_outcome = data.obs["Persistent"].astype(int).values
+    gender = data.obs["gender"].values
+
+    # Filter for the specified gender
+    indices = []
+    for i, g in enumerate(gender):
+        is_target_gender = False
+        if isinstance(g, np.integer | int):
+            # Numeric encoding
+            is_target_gender = (g == 0 and gender_type == "male") or (
+                g == 1 and gender_type == "female"
+            )
+        else:
+            # String encoding
+            g_str = str(g).lower()
+            is_target_gender = g_str == gender_type
+
+        if is_target_gender:
+            indices.append(i)
+
+    # Get data for the gender
+    gender_true = true_outcome[indices]
+    gender_pred = y_pred[indices]
+
+    # Create labels
+    labels = ["Resolver", "Persistent"]
+
+    # Create and plot confusion matrix
+    cm = confusion_matrix(gender_true, gender_pred, labels=[0, 1])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+    disp.plot(ax=ax, cmap="Blues", colorbar=False)
+
+    # Set labels
+    ax.set_title(f"{gender_type.capitalize()} Patients")
+    ax.set_xlabel("Predicted Outcome")
+    ax.set_ylabel("True Outcome")
+
+    return cm
+
+
 def genFig():
-    """Generate ROC curves, confusion matrices, and coefficient plots
-    for each gene tier"""
+    """Generate ROC curves, standard confusion matrices, and gender-based confusion
+    matrices for each gene tier. On a separate figure, plot the coefficients"""
     # Get tiers data
     tiers = import_gene_tiers()
 
@@ -199,23 +282,28 @@ def genFig():
     all_genes = data.var.index.tolist()
     tiers["Tier 5"] = all_genes
 
+    # Optionally remove larger tiers for rapid testing
+    # tiers.pop("Tier 4", None)
+    # tiers.pop("Tier 5", None)
+
     num_tiers = len(tiers)
 
-    # Create first figure for ROC curves and confusion matrices
-    roc_cm_fig_size = (8, num_tiers * 4)
-    roc_cm_layout = {"ncols": 2, "nrows": num_tiers}
-    roc_cm_ax, roc_cm_f, _ = setupBase(roc_cm_fig_size, roc_cm_layout)
+    # Create figure with 4 columns: ROC, standard CM, male CM, female CM
+    fig_size = (16, num_tiers * 4)
+    layout = {"ncols": 4, "nrows": num_tiers}
+    ax, fig, _ = setupBase(fig_size, layout)
 
-    # Create second figure for coefficients
-    coef_fig_size = (14, num_tiers * 5)
-    coef_layout = {"ncols": 1, "nrows": num_tiers}
-    coef_ax, coef_f, _ = setupBase(coef_fig_size, coef_layout)
-
-    # Set titles for both figures
-    roc_cm_f.suptitle(
-        "ROC Curves and Confusion Matrices for Gene Tiers in MRSA Prediction",
+    # Set title for the figure
+    fig.suptitle(
+        "MRSA Prediction Analysis: ROC Curves, "
+        "Standard and Gender-Based Confusion Matrices",
         fontsize=16,
     )
+
+    # Create second figure for coefficients
+    coef_fig_size = (14, num_tiers * 4)
+    coef_layout = {"ncols": 1, "nrows": num_tiers}
+    coef_ax, coef_f, _ = setupBase(coef_fig_size, coef_layout)
     coef_f.suptitle("Gene Coefficients by Class for MRSA Prediction", fontsize=16)
 
     # Process each tier, creating a single model for all plots
@@ -225,32 +313,45 @@ def genFig():
         # Create model once
         X, targets, score, proba, model = create_model(data, gene_list)
 
-        # Calculate the indices for ROC curve and confusion matrix
-        roc_idx = i * 2
-        cm_idx = i * 2 + 1
+        # Calculate the indices for each visualization type
+        # i tiers * 4 plots per tier + col_index for that plot
+        roc_idx = i * 4
+        cm_idx = i * 4 + 1
+        male_cm_idx = i * 4 + 2
+        female_cm_idx = i * 4 + 3
 
         # Plot ROC curves in first column
-        plot_roc_for_tier(roc_cm_ax[roc_idx], targets, proba, model)
+        plot_roc_for_tier(ax[roc_idx], targets, proba, model)
 
-        # Plot confusion matrix in second column
-        plot_confusion_matrix(roc_cm_ax[cm_idx], targets, proba, model)
+        # Plot standard confusion matrix in second column
+        plot_confusion_matrix(ax[cm_idx], targets, proba, model)
 
-        # Plot coefficients
+        # Plot gender-specific confusion matrices
+        plot_gender_confusion_matrix(
+            ax[male_cm_idx], data, proba, model, gender_type="male"
+        )
+        plot_gender_confusion_matrix(
+            ax[female_cm_idx], data, proba, model, gender_type="female"
+        )
+
+        # Plot coefficients in separate figure
         plot_coefficients_for_tier(coef_ax[i], X, model)
 
-        # Add tier name to ROC title
-        roc_cm_ax[roc_idx].set_title(
+        # Add titles to each subplot
+        ax[roc_idx].set_title(
             f"ROC Curves - {tier_name} ({len(X.columns)} genes)"
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-        # Add tier name to confusion matrix title
-        roc_cm_ax[cm_idx].set_title(f"Confusion Matrix - {tier_name}")
+        ax[cm_idx].set_title(f"Standard Confusion Matrix - {tier_name}")
 
-        # Add tier name to coefficients title (unchanged)
+        ax[male_cm_idx].set_title(f"Male Confusion Matrix - {tier_name}")
+        ax[female_cm_idx].set_title(f"Female Confusion Matrix - {tier_name}")
+
+        # Add title to coefficients plot
         coef_ax[i].set_title(
             f"Top 10 Predictive Genes - {tier_name} ({len(X.columns)} genes)"
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-    return (roc_cm_f, coef_f)
+    return fig, coef_f

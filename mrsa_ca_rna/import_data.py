@@ -334,6 +334,9 @@ def import_tb():
     )
     tb_adata.obs["dataset_id"] = "GSE89403"
 
+    # Remove all non-TB samples
+    tb_adata = tb_adata[tb_adata.obs["disease"] == "TB Subjects"].copy()
+
     return tb_adata
 
 
@@ -463,10 +466,8 @@ def import_em():
     )
     em_adata.obs["disease"] = em_adata.obs["disease"].str.replace("Control", "Healthy")
 
-    # Take only the Enterovirus and Healthy samples
-    em_adata = em_adata[
-        em_adata.obs["disease"].str.contains("Enterovirus|Healthy"), :
-    ].copy()
+    # Take only the Enterovirus samples
+    em_adata = em_adata[em_adata.obs["disease"] == "Enterovirus"].copy()
 
     return em_adata
 

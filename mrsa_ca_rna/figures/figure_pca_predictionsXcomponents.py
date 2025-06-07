@@ -7,6 +7,7 @@ components used in the PCA transformation.
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
@@ -20,27 +21,20 @@ def figure_setup():
 
     # collect the mrsa and ca data
     datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
-    whole_data = concat_datasets(
-        datasets,
-        diseases,
-        scale=False,
-    )
+    combined = concat_datasets(datasets)
 
-    # split the data into the datasets we want to compare
-    mrsa_split = whole_data[whole_data.obs["disease"] == "MRSA"].copy()
-    # ca_split = whole_data[whole_data.obs["disease"] == "Candidemia"].copy()
-    combined = whole_data.copy()
+    # Subset out the MRSA data
+    mrsa_split = combined[combined.obs["disease"] == "MRSA"].copy()
 
     # convert the datasets to pd.dataframes to hand to perform_pca
     mrsa_df = mrsa_split.to_df()
-    # ca_df = ca_split.to_df()
     combined_df = combined.to_df()
 
-    # get the MRSA outcome data to regress against
-    y_true = whole_data.obs.loc[whole_data.obs["disease"] == "MRSA", "status"].astype(
-        int
-    )
+    # Z-score the now independent mrsa dataset
+    mrsa_df.loc[:, :] = StandardScaler().fit_transform(mrsa_df.to_numpy())
+
+    # Get status targets for regression
+    y_true = mrsa_split.obs["status"].astype(int)
 
     """We only have MRSA outcome data, so we have to leave out the CA data
     and truncate the combined data to MRSA data before performing regression."""
@@ -56,23 +50,19 @@ def figure_setup():
     combined_pc, _, _ = perform_pca(combined_df)
 
     # truncate the combined dataset to MRSA data
-    mrsa_index = whole_data.obs["disease"] == "MRSA"
-    combined_pc = combined_pc.loc[mrsa_index, :]
+    mrsa_index = combined.obs["disease"] == "MRSA"
+    combined_pc = combined_pc.loc[mrsa_index, :].copy()
 
     # perform regression on the datasets in component subsets
     mrsa_performance = [
         perform_LR(mrsa_pc.iloc[:, : i + 1], y_true)[0] for i in range(components)
     ]
-    # ca_performance, _, _ = [
-    # perform_LR(ca_pc.iloc[:, : i + 1], y_true) for i in range(components)
-    # ]
     combined_performance = [
         perform_LR(combined_pc.iloc[:, : i + 1], y_true)[0] for i in range(components)
     ]
 
     # add the performance data to the dataframe
     total_performance["MRSA"] = mrsa_performance
-    # total_performance["CA"] = ca_performance
     total_performance["Combined"] = combined_performance
 
     return total_performance

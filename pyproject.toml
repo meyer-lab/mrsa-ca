@@ -21,6 +21,9 @@ dependencies = [
     "numpy>=2.2.6",
     "cupy-cuda12x>=13.4",
     "tqdm>=4.67.1",
+    "pacmap>=0.8.0",
+    "datashader>=0.18.1",
+    "cupy-cuda12x>=13.4",
 ]
 
 [project.scripts]                                                        

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy import spatial
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from tlviz.factor_tools import factor_match_score
 from tqdm import tqdm
@@ -54,8 +55,7 @@ def matrix_fms(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
 def figure_setup():
     # import and convert the data to pandas for resample
     datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
-    mrsa_ca = concat_datasets(datasets, diseases, scale=True).to_df()
+    mrsa_ca = concat_datasets(datasets).to_df()
 
     n_comp = 15
     # start with a pca decomposition of the true data
@@ -66,6 +66,16 @@ def figure_setup():
     resampled_data: list[pd.DataFrame] = [
         resample(mrsa_ca, replace=True)
         for _ in range(n_resamples)  # type: ignore
+    ]
+
+    # Z-score each resampled dataset
+    resampled_data = [
+        pd.DataFrame(
+            StandardScaler().fit_transform(data.to_numpy()),
+            index=data.index,
+            columns=data.columns,
+        )
+        for data in resampled_data
     ]
 
     # set up dataframes

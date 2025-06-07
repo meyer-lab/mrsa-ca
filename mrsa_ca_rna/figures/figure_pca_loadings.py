@@ -11,24 +11,16 @@ import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.utils import concat_datasets, gene_filter
+from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
     datasets = ["mrsa", "ca"]
-    diseases = ["MRSA", "Candidemia"]
 
-    adata = concat_datasets(
-        datasets,
-        diseases,
-        scale=False,
-    )
+    adata = concat_datasets(datasets)
     df = adata.to_df()
 
     _, loadings, _ = perform_pca(df, components=10)
-
-    # loadings.T.to_csv("output/gene_components.csv")
-    loadings = gene_filter(loadings, threshold=0, method="mean", top_n=500)
 
     return loadings.T
 

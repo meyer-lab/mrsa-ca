@@ -45,7 +45,7 @@ def create_model(data: ad.AnnData, gene_list: list[str]) -> tuple:
 
     # Extract features and target. Pyright hates when I subset AnnData objects
     X = data[:, genes].to_df()  # type: ignore
-    target = data.obs["Persistent"].astype(int)
+    target = data.obs["gender"].astype(int)
 
     # Create and train model
     score, proba, model = perform_LR(X, target, splits=6)
@@ -70,7 +70,7 @@ def plot_roc_for_tier(ax, targets, proba, model):
         auc = roc_auc_score(binary_targets, proba[:, positive_class_idx])
 
         # Plot single ROC curve
-        ax.plot(fpr, tpr, label=f"Persistence (AUC={auc:.2f})")
+        ax.plot(fpr, tpr, label=f"Gender (AUC={auc:.2f})")
 
     else:
         # Create a DataFrame to store all ROC curves
@@ -209,7 +209,7 @@ def plot_confusion_matrix(ax, targets, proba, model):
     # Create display labels with "Resolver" and "Persistent" instead of 0 and 1
     display_labels = np.array(
         [
-            "Resolver" if cls == 0 else "Persistent" if cls == 1 else cls
+            "Male" if cls == 0 else "Female" if cls == 1 else cls
             for cls in model.classes_
         ]
     )
@@ -274,9 +274,95 @@ def plot_gender_confusion_matrix(ax, data, proba, model, gender_type="male"):
     return cm
 
 
+def plot_gene_expression_by_gender(ax, data, gene_list, top_n=10):
+    """
+    Plot boxplots comparing gene expression between males and females
+    for a given gene list.
+    
+    Parameters:
+    -----------
+    ax : matplotlib.axes.Axes
+        The axis on which to plot
+    data : AnnData
+        The AnnData object containing gene expression data
+    gene_list : list
+        List of genes to include in the analysis
+    top_n : int, optional
+        Number of top genes to display (default: 10)
+    """
+    # Get genes that exist in the dataset
+    genes = data.var.index.intersection(gene_list)
+    
+    # Extract expression data for these genes
+    gene_expr = data[:, genes].to_df()
+    
+    # Add gender information
+    gender = data.obs["gender"].values
+    gender_labels = []
+    
+    for g in gender:
+        if isinstance(g, (np.integer, int)):
+            gender_labels.append("Male" if g == 0 else "Female")
+        else:
+            gender_labels.append(str(g).capitalize())
+    
+    # Create a new DataFrame with gene expression and gender
+    gene_expr_with_gender = gene_expr.copy()
+    gene_expr_with_gender["Gender"] = gender_labels
+    
+    # Convert to long format for seaborn
+    gene_expr_long = pd.melt(
+        gene_expr_with_gender,
+        id_vars=["Gender"],
+        value_vars=genes,
+        var_name="Gene",
+        value_name="Expression"
+    )
+    
+    # If there are many genes, select only the top_n with highest variance
+    if len(genes) > top_n:
+        # Calculate variance for each gene
+        gene_variance = gene_expr.var().sort_values(ascending=False)
+        top_genes = gene_variance.head(top_n).index.tolist()
+        
+        # Filter data to include only top genes
+        gene_expr_long = gene_expr_long[gene_expr_long["Gene"].isin(top_genes)]
+    
+    # Create the boxplot
+    sns.boxplot(
+        data=gene_expr_long,
+        x="Gene",
+        y="Expression",
+        hue="Gender",
+        ax=ax,
+        palette=["skyblue", "lightpink"]
+    )
+    
+    # Add individual data points for more detail
+    sns.stripplot(
+        data=gene_expr_long,
+        x="Gene",
+        y="Expression",
+        hue="Gender",
+        dodge=True,
+        alpha=0.3,
+        size=3,
+        ax=ax,
+        palette=["navy", "darkred"]
+    )
+    
+    # Adjust the plot
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+    ax.set_xlabel("Genes")
+    ax.set_ylabel("Expression Level")
+    
+    # Keep only one legend (remove stripplot legend)
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[:2], labels[:2], title="Gender", loc="upper right")
+
+
 def genFig():
-    """Generate ROC curves, standard confusion matrices, and gender-based confusion
-    matrices for each gene tier. On a separate figure, plot the coefficients"""
+    """Generate ROC curves, confusion matrices, gene coefficients, and gene expression boxplots."""
     # Get tiers data
     tiers = import_gene_tiers()
 
@@ -288,8 +374,8 @@ def genFig():
     tiers["Tier 5"] = all_genes
 
     # Optionally remove larger tiers for rapid testing
-    # tiers.pop("Tier 4", None)
-    # tiers.pop("Tier 5", None)
+    tiers.pop("Tier 4", None)
+    tiers.pop("Tier 5", None)
 
     num_tiers = len(tiers)
 
@@ -309,7 +395,12 @@ def genFig():
     coef_fig_size = (14, num_tiers * 4)
     coef_layout = {"ncols": 1, "nrows": num_tiers}
     coef_ax, coef_f, _ = setupBase(coef_fig_size, coef_layout)
-    coef_f.suptitle("Gene Coefficients by Class for MRSA Prediction", fontsize=16)
+    coef_f.suptitle("Gene Coefficients by Class for Gender Prediction", fontsize=16)
+
+    # Create an additional figure for gene expression boxplots
+    expr_fig_size = (12, 6)  # For just tier 1
+    expr_f, expr_ax = plt.subplots(figsize=expr_fig_size)
+    expr_f.suptitle("Gene Expression Comparison by Gender for Tier 1", fontsize=16)
 
     # Process each tier, creating a single model for all plots
     for i, (tier_name, gene_list) in enumerate(tiers.items()):
@@ -342,6 +433,11 @@ def genFig():
         # Plot coefficients in separate figure
         plot_coefficients_for_tier(coef_ax[i], X, model)
 
+        # For tier 1 only, generate gene expression boxplot
+        if tier_name == "Tier 1":
+            gene_list = ["CCL2", "IL27", "CXCL8", "IL6", "GLS2", "IL10", "SELE", "TIRAP", "CCL26", "CEBPB"]
+            plot_gene_expression_by_gender(expr_ax, data, gene_list)
+
         # Add titles to each subplot
         ax[roc_idx].set_title(
             f"ROC Curves - {tier_name} ({len(X.columns)} genes)"
@@ -359,4 +455,5 @@ def genFig():
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-    return fig, coef_f
+    # Return all figures
+    return fig, coef_f, expr_f

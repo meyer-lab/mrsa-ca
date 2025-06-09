@@ -48,7 +48,7 @@ def create_model(data: ad.AnnData, gene_list: list[str]) -> tuple:
     target = data.obs["gender"].astype(int)
 
     # Create and train model
-    score, proba, model = perform_LR(X, target, splits=6)
+    score, proba, model = perform_LR(X, target, splits=10)
 
     return X, target, score, proba, model
 
@@ -398,9 +398,10 @@ def genFig():
     coef_f.suptitle("Gene Coefficients by Class for Gender Prediction", fontsize=16)
 
     # Create an additional figure for gene expression boxplots
-    expr_fig_size = (12, 6)  # For just tier 1
-    expr_f, expr_ax = plt.subplots(figsize=expr_fig_size)
-    expr_f.suptitle("Gene Expression Comparison by Gender for Tier 1", fontsize=16)
+    expr_fig_size = (12, 12)
+    expr_layout = {"ncols": 1, "nrows": 2}
+    expr_ax, expr_f, _ = setupBase(expr_fig_size, expr_layout)
+    expr_f.suptitle("Gene Expression Comparison by Gender for Tiers 1 and 2", fontsize=16)
 
     # Process each tier, creating a single model for all plots
     for i, (tier_name, gene_list) in enumerate(tiers.items()):
@@ -436,11 +437,15 @@ def genFig():
         # For tier 1 only, generate gene expression boxplot
         if tier_name == "Tier 1":
             gene_list = ["CCL2", "IL27", "CXCL8", "IL6", "GLS2", "IL10", "SELE", "TIRAP", "CCL26", "CEBPB"]
-            plot_gene_expression_by_gender(expr_ax, data, gene_list)
+            plot_gene_expression_by_gender(expr_ax[0], data, gene_list)
+
+        if tier_name == "Tier 2":
+            gene_list = ["CXCL10", "GLS2", "CCL2", "TREM1", "SELE", "NOXO1", "G6PD", "TIRAP", "HLA-DQA2", "HLA-DQB2"]
+            plot_gene_expression_by_gender(expr_ax[1], data, gene_list)
 
         # Add titles to each subplot
         ax[roc_idx].set_title(
-            f"ROC Curves - {tier_name} ({len(X.columns)} genes)"
+            f"Gender Prediction - {tier_name} ({len(X.columns)} genes)"
             f"\nBalanced Accuracy: {score:.2f}"
         )
 

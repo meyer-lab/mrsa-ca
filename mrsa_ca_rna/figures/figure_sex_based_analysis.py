@@ -44,7 +44,7 @@ def create_model(data: ad.AnnData, gene_list: list[str]) -> tuple:
         print(f"Missing genes: {', '.join(missing_genes)}")
 
     # Extract features and target. Pyright hates when I subset AnnData objects
-    X = data[:, genes].to_df() # type: ignore
+    X = data[:, genes].to_df()  # type: ignore
     target = data.obs["Persistent"].astype(int)
 
     # Create and train model
@@ -206,17 +206,22 @@ def plot_confusion_matrix(ax, targets, proba, model):
     # Get predicted classes from probabilities
     y_pred = model.classes_[np.argmax(proba, axis=1)]
 
+    # Create display labels with "Resolver" and "Persistent" instead of 0 and 1
+    display_labels = np.array(
+        [
+            "Resolver" if cls == 0 else "Persistent" if cls == 1 else cls
+            for cls in model.classes_
+        ]
+    )
+
     # Create and plot confusion matrix
     cm = confusion_matrix(targets, y_pred, labels=model.classes_)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=display_labels)
     disp.plot(ax=ax, cmap="Blues", colorbar=False)
 
     # Set title and labels
     ax.set_xlabel("Predicted Label")
     ax.set_ylabel("True Label")
-
-    # Rotate x-axis labels for better readability
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
     # Improve formatting
     for text in ax.texts:

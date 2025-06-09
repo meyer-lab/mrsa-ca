@@ -8,21 +8,15 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
-    gene_filter,
 )
 
 
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 20
+    rank = 5
 
-    datasets = "all"
-
-    disease_data = concat_datasets(
-        datasets,
-        scale=True,
-    )
+    disease_data = concat_datasets()
 
     _, factors, _, r2x = perform_parafac2(
         disease_data,
@@ -60,12 +54,6 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # grab the top 300 genes
-    top_n = 300
-    genes_df: pd.DataFrame = gene_filter(
-        genes_df.T, threshold=0, method="mean", top_n=top_n
-    ).T
-
     # put the new genes_df back into the disease_factors[2]
     disease_factors[2] = genes_df.values
 
@@ -75,8 +63,6 @@ def genFig():
         disease_ranks_labels,
         False,
     ]
-
-    # plot heatmap of disease factors with independent cmaps
 
     # Set the A matrix colors
     A_cmap = sns.color_palette("light:#df20df", as_cmap=True)
@@ -118,11 +104,7 @@ def genFig():
         xticklabels=disease_ranks_labels,
         yticklabels=disease_labels[2],
     )
-    c.set_title(
-        f"Gene Factor Matrix\n"
-        f"R2X: {r2x:.2f} | Top {top_n} genes\n"
-        f"Sparsity: {sparsity:.2f}"
-    )
+    c.set_title(f"Gene Factor Matrix\nR2X: {r2x:.2f}\nSparsity: {sparsity:.2f}")
     c.set_xlabel(x_ax_label)
     c.set_ylabel(d_ax_labels[2])
 

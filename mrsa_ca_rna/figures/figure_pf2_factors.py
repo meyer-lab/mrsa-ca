@@ -70,14 +70,14 @@ def plot_gene_matrix_with_datashader(data_df, ax, title=None, cmap="coolwarm"):
         np.array(img),
         aspect="auto",
         extent=(-0.5, len(data_df.columns) - 0.5, len(data_df) - 0.5, -0.5),
-        interpolation="nearest",  # Prevent interpolation between ranks
+        interpolation="nearest",
     )
 
     # Add colorbar
     norm = colors.Normalize(vmin=-max_abs, vmax=max_abs)
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    cbar = ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
+    ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
 
     # Add labels and title
     ax.set_xlabel("Rank")
@@ -230,7 +230,8 @@ def genFig():
     plot_gene_matrix_with_datashader(
         genes_df,
         ax=ax[3],
-        title=f"Gene Factor Matrix (Datashader)\n{gene_count} genes, {sparsity:.2%} sparsity",
+        title="Gene Factor Matrix (Datashader)\n"
+        f"{gene_count} genes, {sparsity:.2%} sparsity",
         cmap=BC_cmap,
     )
 

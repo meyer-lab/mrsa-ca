@@ -234,20 +234,4 @@ def genFig():
         cmap=BC_cmap,
     )
 
-    # New figure for PaCMAP
-    fig_size = (8, 8)
-    layout = {"ncols": 1, "nrows": 1}
-    ax1, g, _ = setupBase(fig_size, layout)
-
-    d = sns.scatterplot(
-        x=X.obsm["Pf2_PaCMAP"][:, 0],
-        y=X.obsm["Pf2_PaCMAP"][:, 1],
-        hue=X.obs["disease"],
-        ax=ax1[0],
-        palette="tab20",
-    )
-    d.set_title("PaCMAP Embedding of Disease Projections")
-    d.set_xlabel("PaCMAP 1")
-    d.set_ylabel("PaCMAP 2")
-
-    return f, g
+    return f

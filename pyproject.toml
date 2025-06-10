@@ -24,6 +24,7 @@ dependencies = [
     "pacmap>=0.8.0",
     "datashader>=0.18.1",
     "cupy-cuda12x>=13.4",
+    "umap-learn>=0.5.7",
 ]
 
 [project.scripts]                                                        

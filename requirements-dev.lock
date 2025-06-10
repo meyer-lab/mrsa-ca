@@ -74,6 +74,7 @@ ipywidgets==8.1.5
 jedi==0.19.1
     # via ipython
 joblib==1.4.2
+    # via pynndescent
     # via scikit-learn
 jupyterlab-widgets==3.0.13
     # via ipywidgets
@@ -81,6 +82,7 @@ kiwisolver==1.4.7
     # via matplotlib
 llvmlite==0.44.0
     # via numba
+    # via pynndescent
 matplotlib==3.10.3
     # via ipympl
     # via mrsa-ca-rna
@@ -97,6 +99,8 @@ nodeenv==1.9.1
 numba==0.61.2
     # via datashader
     # via pacmap
+    # via pynndescent
+    # via umap-learn
 numpy==2.2.6
     # via anndata
     # via contourpy
@@ -116,6 +120,7 @@ numpy==2.2.6
     # via statsmodels
     # via tensorly
     # via tlviz
+    # via umap-learn
     # via xarray
 packaging==24.1
     # via anndata
@@ -168,6 +173,8 @@ pydantic-core==2.27.2
     # via pydantic
 pygments==2.18.0
     # via ipython
+pynndescent==0.5.13
+    # via umap-learn
 pyparsing==3.1.4
     # via matplotlib
 pyright==1.1.382.post0
@@ -188,14 +195,18 @@ requests==2.32.3
 scikit-learn==1.6.1
     # via mrsa-ca-rna
     # via pacmap
+    # via pynndescent
+    # via umap-learn
 scipy==1.15.3
     # via anndata
     # via datashader
     # via mrsa-ca-rna
+    # via pynndescent
     # via scikit-learn
     # via statsmodels
     # via tensorly
     # via tlviz
+    # via umap-learn
 seaborn==0.13.2
     # via mrsa-ca-rna
 sentry-sdk==2.21.0
@@ -224,6 +235,7 @@ toolz==1.0.0
     # via datashader
 tqdm==4.67.1
     # via mrsa-ca-rna
+    # via umap-learn
 traitlets==5.14.3
     # via comm
     # via ipympl
@@ -236,6 +248,8 @@ typing-extensions==4.12.2
     # via pyright
 tzdata==2024.2
     # via pandas
+umap-learn==0.5.7
+    # via mrsa-ca-rna
 urllib3==2.3.0
     # via requests
     # via sentry-sdk

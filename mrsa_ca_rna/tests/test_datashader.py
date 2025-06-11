@@ -62,5 +62,3 @@ def test_datashader_visualization():
     plt.savefig("mrsa_ca_rna/tests/test_datashader.png", dpi=150, bbox_inches="tight")
 
     plt.close(fig)
-
-    return fig

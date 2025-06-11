@@ -1,6 +1,6 @@
 import datashader as ds
 import datashader.transfer_functions as tf
-import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 import pandas as pd
@@ -31,11 +31,18 @@ def get_data():
     return X, r2x
 
 
-def plot_datashader_rasterized(data_df: pd.DataFrame, ax, title=None, cmap="coolwarm"):
+def plot_datashader_rasterized(data_df: pd.DataFrame, ax, title=None, cmap="viridis"):
     """
     Plot a gene matrix using datashader with proper data display.
     """
-
+    # Print debug info
+    print(f"Data shape: {data_df.shape}")
+    vmin, vmax = data_df.values.min(), data_df.values.max()
+    print(f"Data range: [{vmin:.6f}, {vmax:.6f}]")
+    
+    # Use the exact same data range approach as the matplotlib version
+    max_abs = max(abs(vmin), abs(vmax))
+    
     # Create DataArray with numerical coordinates for datashader
     data_array = xr.DataArray(
         data_df.values,
@@ -44,58 +51,70 @@ def plot_datashader_rasterized(data_df: pd.DataFrame, ax, title=None, cmap="cool
             ("rank", np.arange(len(data_df.columns))),
         ],
     )
-
-    # Create canvas with dimensions matching the data
-    cvs = ds.Canvas(
-        plot_width=len(data_df.columns) * 100,
-        plot_height=1000,
-        x_range=(-0.5, len(data_df.columns) - 0.5),
-        y_range=(-0.5, len(data_df) - 0.5),
-    )
-
-    # Render directly as raster with no grid lines
-    agg = cvs.raster(data_array)
-
-    # Get value range for colormap
-    vmin, vmax = np.nanpercentile(data_df.values, [5, 95])
-    max_abs = max(abs(vmin), abs(vmax))
-
-    # Convert matplotlib colormap to datashader format, didn't like 'coolwarm'
-    if isinstance(cmap, str):
-        mpl_cmap = cm.get_cmap(cmap)
-        colors_list = [mpl_cmap(i)[:3] for i in np.linspace(0, 1, 256)]
-        ds_cmap = colors_list
-    else:
-        ds_cmap = cmap
-
-    # Create image with proper colormap and no grid lines
-    img = tf.shade(agg, cmap=ds_cmap, how="linear", span=[-max_abs, max_abs])
-
-    # Plot the image with proper extent
+    
+    # Create a separate canvas for each column to prevent interpolation between them
+    n_columns = len(data_df.columns)
+    height = min(1000, max(500, len(data_df) // 50))
+    # Final composite image will be assembled from individual column images
+    images = []
+    
+    for col_idx in range(n_columns):
+        # Create a canvas for just this column
+        width = 100  # Fixed width for each column
+        
+        cvs = ds.Canvas(
+            plot_width=width,
+            plot_height=height,
+            x_range=(col_idx-0.5, col_idx+0.5),  # Just this column
+            y_range=(-0.5, len(data_df)-0.5),
+        )
+        
+        # Render just this column
+        agg = cvs.raster(data_array)
+        
+        # Apply colormap to this column
+        img = tf.shade(agg, how='linear', span=[-max_abs, max_abs])
+        
+        # Store this column's image
+        images.append(img.data)
+    
+    # Combine all column images horizontally
+    combined_img = np.hstack(images)
+    
+    # Plot with correct extent
     artist = ax.imshow(
-        np.array(img),
+        combined_img,
+        cmap=cmap,
         aspect="auto",
         extent=(-0.5, len(data_df.columns) - 0.5, len(data_df) - 0.5, -0.5),
         interpolation="nearest",
     )
-
-    # Add colorbar
+    
+    # Add colorbar with the same scaling as the matplotlib version
     norm = colors.Normalize(vmin=-max_abs, vmax=max_abs)
-    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
-
+    cbar = ax.figure.colorbar(sm, ax=ax, orientation="vertical", shrink=0.8, pad=0.01)
+    cbar.ax.tick_params(labelsize=8)
+    
+    # Add zero line to colorbar
+    cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
+    
+    # Add grid lines between columns for visual separation
+    for col_idx in range(n_columns-1):
+        ax.axvline(x=col_idx+0.5, color='black', linewidth=0.5, alpha=0.2)
+    
     # Add labels and title
     ax.set_xlabel("Rank")
     ax.set_ylabel("Genes")
     if title:
         ax.set_title(title)
-
-    # Set tick positions centered on ranks
+    
+    # Set tick positions
     ax.set_xticks(range(len(data_df.columns)))
     ax.set_xticklabels(data_df.columns)
     ax.set_yticks([])
-
+    
     return artist
 
 

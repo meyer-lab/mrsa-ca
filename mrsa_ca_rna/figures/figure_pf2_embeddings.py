@@ -24,7 +24,7 @@ def genFig():
     """Generate the figure with PaCMAP and UMAP embeddings"""
     X, r2x = get_data()
 
-    layout, fig_size = calculate_layout(num_plots=2, scale_factor=4)
+    layout, fig_size = calculate_layout(num_plots=3, scale_factor=5)
     ax, f, _ = setupBase(fig_size, layout)
 
     a = sns.scatterplot(
@@ -38,8 +38,9 @@ def genFig():
     a.set_title("PaCMAP Embedding organized by Disease")
     a.set_xlabel("PaCMAP 1")
     a.set_ylabel("PaCMAP 2")
+    a.legend(markerscale=2)
 
-    # Make a centered normalized value for the hue
+    # Make a centered normalized value for the hue of the second plot
     vmin = X.obsm["Pf2_projections"][:, 0].min()
     vmax = X.obsm["Pf2_projections"][:, 0].max()
     abs_max = max(abs(vmin), abs(vmax))
@@ -60,9 +61,24 @@ def genFig():
     b.set_title("PaCMAP Embedding organized by Eigen-1 Value")
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
+    b.legend(markerscale=2)
+
+    c = sns.scatterplot(
+        x=X.obsm["weighted_Pf2_projections"][:, 0],
+        y=X.obsm["weighted_Pf2_projections"][:, 1],
+        hue=X.obs["disease"],
+        ax=ax[2],
+        palette="tab20",
+        s=10,
+    )
+    c.set_title("Patients described by Pf2 components")
+    c.set_xlabel("Pf2 Component 1")
+    c.set_ylabel("Pf2 Component 2")
+    c.legend(markerscale=2)
 
     f.suptitle(
-        f"Pf2 Factorization with R2X: {r2x:.3f}\nEmbeddings of Disease Projections",
+        f"Pf2 Factorization with R2X: {r2x:.3f}\n"
+        "Dimentionality Reduction of Disease Projections",
         fontsize=16,
     )
 

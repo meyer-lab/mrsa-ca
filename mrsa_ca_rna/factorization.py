@@ -8,9 +8,47 @@ import anndata as ad
 import cupy as cp
 import numpy as np
 import tensorly as tl
+from pacmap import PaCMAP
 from scipy.optimize import linear_sum_assignment
 from tensorly.cp_tensor import cp_flip_sign, cp_normalize
 from tensorly.decomposition import parafac2
+
+
+def store_pf2(
+    X: ad.AnnData,
+    weights: np.ndarray,
+    factors: list[np.ndarray],
+    projections: list[np.ndarray],
+) -> ad.AnnData:
+    """Store the parafac2 factors and projections in the AnnData object.
+    Parameters
+    ----------
+    X : ad.AnnData
+        The AnnData object to store the factors and projections in.
+    factors : list[np.ndarray]
+        The factor matrices from the parafac2 decomposition.
+    projections : list[np.ndarray]
+        The projection matrices from the parafac2 decomposition.
+    """
+
+    unique_idxs = X.obs["disease_unique_idxs"]
+
+    # Store the unstructured weights
+    X.uns["Pf2_weights"] = weights
+
+    # Store the factor matrices. Pf2_C lines up with genes
+    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
+
+    # Store the projections as they line up with the unique disease indices
+    X.obsm["Pf2_projections"] = np.zeros((X.shape[0], len(X.uns["Pf2_weights"])))
+
+    # Go through each unique index and store the projections
+    for i, proj in enumerate(projections):
+        X.obsm["Pf2_projections"][unique_idxs == i, :] = proj
+
+    X.obsm["weighted_Pf2_projections"] = X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]
+
+    return X
 
 
 def standardize_pf2(
@@ -37,7 +75,7 @@ def standardize_pf2(
 
 def perform_parafac2(
     X: ad.AnnData,
-    condition_name: str = "disease",
+    slice_col: str = "disease",
     rank: int = 10,
 ):
     """Performs the parafac2 tensor factorization on the data by calling our custom
@@ -59,9 +97,9 @@ def perform_parafac2(
     """
 
     # Get the indices for subsetting the data
-    _, sgIndex = np.unique(X.obs_vector(condition_name), return_inverse=True)
-    X.obs["condition_unique_idxs"] = sgIndex
-    X.obs["condition_unique_idxs"] = X.obs["condition_unique_idxs"].astype("category")
+    _, sgIndex = np.unique(X.obs_vector(slice_col), return_inverse=True)
+    X.obs["disease_unique_idxs"] = sgIndex
+    X.obs["disease_unique_idxs"] = X.obs["disease_unique_idxs"].astype("category")
 
     # convert to list
     X_list = [cp.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
@@ -88,4 +126,9 @@ def perform_parafac2(
     factors = [cp.asnumpy(f.get()) for f in pf2[1]]
     projections = [cp.asnumpy(p.get()) for p in pf2[2]]
 
-    return weights, factors, projections, R2X
+    X = store_pf2(X, weights, factors, projections)
+
+    pcm = PaCMAP()
+    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(X.obsm["Pf2_projections"])
+
+    return X, R2X

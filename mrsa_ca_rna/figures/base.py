@@ -43,6 +43,7 @@ matplotlib.rcParams["xtick.minor.pad"] = 0.9
 matplotlib.rcParams["ytick.major.pad"] = 1.0
 matplotlib.rcParams["ytick.minor.pad"] = 0.9
 
+
 def calculate_layout(num_plots, scale_factor=4):
     """
     Calculate appropriate layout and figure size based on number of plots.

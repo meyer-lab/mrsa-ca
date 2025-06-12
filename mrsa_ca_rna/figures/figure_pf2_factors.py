@@ -63,7 +63,7 @@ def genFig():
         cmap=A_cmap,
         vmin=0,
         xticklabels=ranks_labels,
-        yticklabels=X.obs["disease"].unique(),
+        yticklabels=list(X.obs["disease"].unique().astype(str)),
     )
     a.set_title(f"Disease Factor Matrix\nR2X: {r2x:.2f}")
     a.set_xlabel("Rank")
@@ -84,7 +84,7 @@ def genFig():
 
     # plot the gene factor matrix using diverging cmap
     c = sns.heatmap(
-        X.varm["Pf2_C"],
+        np.asarray(X.varm["Pf2_C"]),
         ax=ax[2],
         cmap="coolwarm",
         center=0,

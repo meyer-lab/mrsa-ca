@@ -25,6 +25,8 @@ def store_pf2(
     ----------
     X : ad.AnnData
         The AnnData object to store the factors and projections in.
+    weights : np.ndarray
+        The weights from the parafac2 decomposition.
     factors : list[np.ndarray]
         The factor matrices from the parafac2 decomposition.
     projections : list[np.ndarray]
@@ -34,19 +36,23 @@ def store_pf2(
     unique_idxs = X.obs["disease_unique_idxs"]
 
     # Store the unstructured weights
-    X.uns["Pf2_weights"] = weights
+    X.uns["Pf2_weights"] = np.asarray(weights)
 
     # Store the factor matrices. Pf2_C lines up with genes
-    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = factors
+    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = [
+        np.asarray(f) for f in factors
+    ]
 
     # Store the projections as they line up with the unique disease indices
-    X.obsm["Pf2_projections"] = np.zeros((X.shape[0], len(X.uns["Pf2_weights"])))
+    X.obsm["Pf2_projections"] = np.zeros((X.shape[0], len(X.uns["Pf2_weights"])), dtype=np.float64)
 
     # Go through each unique index and store the projections
     for i, proj in enumerate(projections):
-        X.obsm["Pf2_projections"][unique_idxs == i, :] = proj
+        X.obsm["Pf2_projections"][unique_idxs == i, :] = np.asarray(proj)
 
-    X.obsm["weighted_Pf2_projections"] = X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]
+    X.obsm["weighted_Pf2_projections"] = np.asarray(
+        X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]
+    )
 
     return X
 
@@ -129,6 +135,6 @@ def perform_parafac2(
     X = store_pf2(X, weights, factors, projections)
 
     pcm = PaCMAP()
-    X.obsm["Pf2_PaCMAP"] = pcm.fit_transform(X.obsm["Pf2_projections"])
+    X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
 
     return X, R2X

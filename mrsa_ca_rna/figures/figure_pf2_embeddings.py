@@ -42,8 +42,8 @@ def genFig():
     a.legend(markerscale=2)
 
     # Make a centered normalized value for the hue of the second plot
-    vmin = X.obsm["Pf2_projections"][:, 0].min()
-    vmax = X.obsm["Pf2_projections"][:, 0].max()
+    vmin = float(X.obsm["Pf2_projections"][:, 0].min())
+    vmax = float(X.obsm["Pf2_projections"][:, 0].max())
     abs_max = max(abs(vmin), abs(vmax))
     norm = plt.Normalize(-abs_max, abs_max)
     sm = plt.cm.ScalarMappable(cmap="coolwarm", norm=norm)

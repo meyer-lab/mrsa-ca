@@ -10,7 +10,9 @@ To-do:
         Rgression file and functions must be written.
 """
 
+import importlib
 import logging
+import math
 import sys
 import time
 
@@ -60,8 +62,12 @@ def calculate_layout(num_plots, scale_factor=4):
     fig_size : tuple
         Figure size (width, height)
     """
-    import math
 
+    if num_plots <= 0:
+        raise ValueError("Number of plots must be a positive integer.")
+    if scale_factor <= 0:
+        raise ValueError("Scale factor must be a positive number.")
+    
     # Calculate number of rows and columns (aim for square-ish layout)
     # Prefer more columns than rows if not perfectly square
     cols = math.ceil(math.sqrt(num_plots))
@@ -126,8 +132,12 @@ def genFigure():
     start = time.time()
     nameOut = "figure" + sys.argv[1]
 
-    exec("from mrsa_ca_rna.figures import " + nameOut)
-    figures = eval(nameOut + ".genFig()")
+    # Dynamically import the figure module based on the name provided
+    module_name = f"mrsa_ca_rna.figures.{nameOut}"
+    figure_module = importlib.import_module(module_name)
+
+    # Run the figure generation function from the imported module
+    figures = figure_module.genFig()
 
     # Check if multiple figures were returned
     if isinstance(figures, list | tuple):

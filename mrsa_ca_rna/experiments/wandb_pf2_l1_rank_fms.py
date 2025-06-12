@@ -32,13 +32,13 @@ def objective(config):
 
     _, factors_true, _, _ = perform_parafac2(
         X,
-        condition_name="disease",
+        slice_col="disease",
         rank=rank,
     )
 
     _, factors_resampled, _, _ = perform_parafac2(
         X_resampled,
-        condition_name="disease",
+        slice_col="disease",
         rank=rank,
     )
 

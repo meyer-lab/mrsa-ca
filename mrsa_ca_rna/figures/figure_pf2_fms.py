@@ -20,8 +20,8 @@ def factorize(X_in: ad.AnnData, rank: int):
 
     X, r2x = perform_parafac2(X_in, slice_col="disease", rank=rank)
 
-    factors = list(X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"])
-    cp_factors = (X.uns["weights"], factors)
+    factors = list([X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]])
+    cp_factors = (X.uns["Pf2_weights"], factors)
 
     return cp_factors, r2x
 

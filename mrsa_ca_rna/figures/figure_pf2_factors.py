@@ -38,7 +38,7 @@ def genFig():
 
     X, r2x = figure_setup()
 
-    ranks_labels = [str(x) for x in range(1, X.uns["Pf2_a"].shape[1] + 1)]
+    ranks_labels = [str(x) for x in range(1, X.uns["Pf2_A"].shape[1] + 1)]
 
     # Export gene factor matrix for external analysis
     genes_df = pd.DataFrame(

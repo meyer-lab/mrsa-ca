@@ -1,3 +1,6 @@
+import logging
+from os.path import join
+
 import anndata as ad
 import gseapy as gp
 import pandas as pd
@@ -34,7 +37,7 @@ def gsea_analysis_per_cmp(
     tuple[plt.Figure, plt.Figure]
         gsea plot and dotplot figures (do not play well with DIY plotting)
     """
-    term_ranks = slice(0, 5)
+    term_ranks = slice(0, term_ranks)
 
     # make a two column dataframe for prerank
     df = pd.DataFrame([])
@@ -57,8 +60,10 @@ def gsea_analysis_per_cmp(
     # Generate titles with component info
     dotplot_title = f"Component {cmp} Dotplot"
 
-    gsea_ofname = out_dir + f"gsea_{cmp}.svg" if out_dir is not None else None
-    dotplot_ofname = out_dir + f"dotplot_{cmp}.svg" if out_dir is not None else None
+    gsea_ofname = join(out_dir, f"gsea_{cmp}.svg") if out_dir is not None else None
+    dotplot_ofname = (
+        join(out_dir, f"dotplot_{cmp}.svg") if out_dir is not None else None
+    )
 
     fig_g = gseaplot2(
         terms=terms,
@@ -80,7 +85,7 @@ def gsea_analysis_per_cmp(
         )
     except ValueError:
         # make a dotplot with no cutoff with title indicating it failed
-        print("Dotplot failed to generate. No genes within cutoff.")
+        logging.warning("Dotplot failed to generate. No genes within cutoff.")
         fig_d = dotplot(
             pre_res.res2d,
             column="FDR q-val",

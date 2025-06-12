@@ -22,7 +22,6 @@ dependencies = [
     "numpy>=2.2.6",
     "cupy-cuda12x>=13.4",
     "tqdm>=4.67.1",
-    "scipy>=1.15.3",
     "numpy>=2.2.6",
     "cupy-cuda12x>=13.4",
     "tqdm>=4.67.1",

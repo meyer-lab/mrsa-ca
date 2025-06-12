@@ -77,7 +77,7 @@ def perform_parafac2(
     X: ad.AnnData,
     slice_col: str = "disease",
     rank: int = 10,
-):
+) -> tuple[ad.AnnData, float]:
     """Performs the parafac2 tensor factorization on the data by calling our custom
     parafac2_nd function.
 

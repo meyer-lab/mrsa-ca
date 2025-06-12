@@ -67,7 +67,7 @@ def calculate_layout(num_plots, scale_factor=4):
         raise ValueError("Number of plots must be a positive integer.")
     if scale_factor <= 0:
         raise ValueError("Scale factor must be a positive number.")
-    
+
     # Calculate number of rows and columns (aim for square-ish layout)
     # Prefer more columns than rows if not perfectly square
     cols = math.ceil(math.sqrt(num_plots))

@@ -23,6 +23,7 @@ dependencies = [
     "cupy-cuda12x>=13.4",
     "tqdm>=4.67.1",
     "ortools>=8.0.0,<10.0.0"
+    "pacmap>=0.8.0",
 ]
 
 [project.scripts]                                                        

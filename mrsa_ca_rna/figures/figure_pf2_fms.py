@@ -18,12 +18,12 @@ from mrsa_ca_rna.utils import concat_datasets, resample_adata
 def factorize(X_in: ad.AnnData, rank: int):
     X_in.X = StandardScaler().fit_transform(X_in.X)
 
-    weights, factors, _, R2X = perform_parafac2(
-        X_in, condition_name="disease", rank=rank
-    )
-    factors = (weights, factors)
+    X, r2x = perform_parafac2(X_in, slice_col="disease", rank=rank)
 
-    return factors, R2X
+    factors = list([X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]])
+    cp_factors = (X.uns["Pf2_weights"], factors)
+
+    return cp_factors, r2x
 
 
 def bootstrap_fms(X, rank, target_trials=30):

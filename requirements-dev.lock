@@ -16,6 +16,8 @@ anndata==0.11.3
     # via mrsa-ca-rna
 annotated-types==0.7.0
     # via pydantic
+annoy==1.17.3
+    # via pacmap
 array-api-compat==1.8
     # via anndata
 asttokens==2.4.1
@@ -79,6 +81,8 @@ jupyterlab-widgets==3.0.13
     # via ipywidgets
 kiwisolver==1.4.7
     # via matplotlib
+llvmlite==0.44.0
+    # via numba
 matplotlib==3.10.3
     # via gseapy
     # via ipympl
@@ -91,6 +95,8 @@ natsort==8.4.0
     # via anndata
 nodeenv==1.9.1
     # via pyright
+numba==0.61.2
+    # via pacmap
 numpy==2.2.6
     # via anndata
     # via contourpy
@@ -101,6 +107,8 @@ numpy==2.2.6
     # via matplotlib
     # via mrsa-ca-rna
     # via ortools
+    # via numba
+    # via pacmap
     # via pandas
     # via patsy
     # via scikit-learn
@@ -118,6 +126,8 @@ packaging==24.1
     # via pytest
     # via statsmodels
     # via xarray
+pacmap==0.8.0
+    # via mrsa-ca-rna
 pandas==2.2.3
     # via anndata
     # via gseapy
@@ -176,6 +186,7 @@ requests==2.32.3
     # via wandb
 scikit-learn==1.6.1
     # via mrsa-ca-rna
+    # via pacmap
 scipy==1.15.3
     # via anndata
     # via gseapy

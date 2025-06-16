@@ -1,0 +1,80 @@
+"""This file contains helper functions for plotting pf2 factor matrices"""
+
+import anndata as ad
+import numpy as np
+import pandas as pd
+from matplotlib.axes import Axes
+from scipy.cluster.hierarchy import leaves_list, linkage
+from scipy.spatial.distance import pdist
+
+
+def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coolwarm"):
+    # Find min/max values for colormap
+    vmin, vmax = data_df.values.min(), data_df.values.max()
+    max_abs = max(abs(vmin), abs(vmax))
+
+    # Plot directly with imshow (rasterized)
+    artist = ax.imshow(
+        data_df.values,
+        aspect="auto",
+        cmap=cmap,
+        vmin=-max_abs,
+        vmax=max_abs,
+        interpolation="nearest",
+    )
+
+    # Add colorbar
+    cbar = ax.figure.colorbar(
+        artist, ax=ax, orientation="vertical", shrink=0.8, pad=0.01
+    )
+    cbar.ax.tick_params(labelsize=8)
+
+    # Add zero line to colorbar for emphasis
+    cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
+
+    ax.set_xlabel("Rank")
+    ax.set_ylabel("Genes")
+    if title:
+        ax.set_title(title)
+    ax.set_xticks(range(len(data_df.columns)))
+    ax.set_xticklabels(data_df.columns)
+    ax.set_yticks([])
+
+    return artist
+
+
+def plot_gene_matrix(data: ad.AnnData, ax: Axes):
+    """Plots Pf2 gene factors"""
+    rank = data.varm["Pf2_C"].shape[1]
+    X = np.array(data.varm["Pf2_C"])
+    yt = data.var.index.values
+
+    ind = reorder_table(X)
+    X = X[ind]
+    X = X / np.max(np.abs(X))
+    yt = [yt[ii] for ii in ind]
+    xticks = np.arange(1, rank + 1)
+
+    artist = plot_table_rasterized(
+        pd.DataFrame(X, index=yt, columns=xticks), ax, title="Pf2 Gene Factors"
+    )
+
+    return artist
+
+
+def reorder_table(X, method="seriate"):
+    """Reorders a table's rows using heirarchical clustering."""
+    try:
+        if method == "scipy":
+            # Perform hierarchical clustering
+            Z = linkage(X, method="ward")
+            ind = leaves_list(Z)
+        elif method == "seriate":
+            from seriate import seriate
+
+            # Perform seriation
+            ind = seriate(pdist(X))
+        return ind
+    except Exception as e:
+        print(f"Clustering failed: {e}. Returning original order.")
+        return np.arange(X.shape[0])

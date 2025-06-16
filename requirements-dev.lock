@@ -106,8 +106,8 @@ numpy==2.2.6
     # via ipympl
     # via matplotlib
     # via mrsa-ca-rna
-    # via ortools
     # via numba
+    # via ortools
     # via pacmap
     # via pandas
     # via patsy

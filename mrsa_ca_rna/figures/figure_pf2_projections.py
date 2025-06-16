@@ -43,7 +43,7 @@ def genFig():
     # For each disease, plot the weighted projections
     for i, disease in enumerate(weighted_projections["disease"].unique()):
         # Subset the DataFrame for the current disease
-        projection = weighted_projections[
+        projection: pd.DataFrame = weighted_projections.loc[
             weighted_projections["disease"] == disease
         ].drop(columns=["disease"])
 
@@ -53,7 +53,7 @@ def genFig():
             cmap=cmap,
             center=0,
             cbar=True,
-            xticklabels=weighted_projections.columns.to_list(),
+            xticklabels=projection.columns.to_list(),
             yticklabels=False,
         )
         a.set_title(f"Weighted Projections for {disease}")

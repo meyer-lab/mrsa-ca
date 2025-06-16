@@ -30,22 +30,30 @@ def objective(config):
     X_resampled = resample_adata(X_resampled)
     X_resampled.X = StandardScaler().fit_transform(X_resampled.X)
 
-    _, factors_true, _, _ = perform_parafac2(
+    X, _ = perform_parafac2(
         X,
         slice_col="disease",
         rank=rank,
     )
+    cp_true = (
+        X.uns["Pf2_weights"],
+        [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]],
+    )
 
-    _, factors_resampled, _, _ = perform_parafac2(
+    X, _ = perform_parafac2(
         X_resampled,
         slice_col="disease",
         rank=rank,
     )
+    cp_resampled = (
+        X.uns["Pf2_weights"],
+        [X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]],
+    )
 
     """calculate the factor match score for different ranks and L1 strengths."""
     fms = factor_match_score(
-        (None, factors_true),
-        (None, factors_resampled),
+        cp_true,
+        cp_resampled,
         consider_weights=False,
         skip_mode=1,
     )

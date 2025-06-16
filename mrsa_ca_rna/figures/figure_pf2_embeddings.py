@@ -1,8 +1,10 @@
 """This file will plot embeddings of the pf2 factorization for the disease datasets"""
 
 import anndata as ad
+import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
+from matplotlib.colors import Normalize
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
@@ -28,9 +30,14 @@ def genFig():
     fig_size = (12, 4)
     ax, f, _ = setupBase(fig_size, layout)
 
+    # Explicitly cast the data to avoid spmatrix issues
+    pacmap_coords: np.ndarray = np.asarray(X.obsm["Pf2_PaCMAP"])
+    projections: np.ndarray = np.asarray(X.obsm["Pf2_projections"])
+    weighted_proj: np.ndarray = np.asarray(X.obsm["weighted_Pf2_projections"])
+
     a = sns.scatterplot(
-        x=X.obsm["Pf2_PaCMAP"][:, 0],
-        y=X.obsm["Pf2_PaCMAP"][:, 1],
+        x=pacmap_coords[:, 0],
+        y=pacmap_coords[:, 1],
         hue=X.obs["disease"],
         ax=ax[0],
         palette="tab20",
@@ -42,18 +49,18 @@ def genFig():
     a.legend(markerscale=2)
 
     # Make a centered normalized value for the hue of the second plot
-    vmin = float(X.obsm["Pf2_projections"][:, 0].min())
-    vmax = float(X.obsm["Pf2_projections"][:, 0].max())
+    vmin = float(projections[:, 0].min())
+    vmax = float(projections[:, 0].max())
     abs_max = max(abs(vmin), abs(vmax))
-    norm = plt.Normalize(-abs_max, abs_max)
+    norm = Normalize(-abs_max, abs_max)
     sm = plt.cm.ScalarMappable(cmap="coolwarm", norm=norm)
     sm.set_array([])
     plt.colorbar(sm, ax=ax[1], label="Eigen-1 Value")
 
     b = sns.scatterplot(
-        x=X.obsm["Pf2_PaCMAP"][:, 0],
-        y=X.obsm["Pf2_PaCMAP"][:, 1],
-        hue=X.obsm["Pf2_projections"][:, 0],
+        x=pacmap_coords[:, 0],
+        y=pacmap_coords[:, 1],
+        hue=projections[:, 0],
         ax=ax[1],
         hue_norm=norm,
         palette="coolwarm",
@@ -65,8 +72,8 @@ def genFig():
     b.legend(markerscale=2)
 
     c = sns.scatterplot(
-        x=X.obsm["weighted_Pf2_projections"][:, 0],
-        y=X.obsm["weighted_Pf2_projections"][:, 1],
+        x=weighted_proj[:, 0],
+        y=weighted_proj[:, 1],
         hue=X.obs["disease"],
         ax=ax[2],
         palette="tab20",

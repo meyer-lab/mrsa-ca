@@ -39,16 +39,19 @@ def store_pf2(
     X.uns["Pf2_weights"] = np.asarray(weights)
 
     # Store the factor matrices. Pf2_C lines up with genes
-    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = [
-        np.asarray(f) for f in factors
-    ]
+    X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"] = [np.asarray(f) for f in factors]
 
-    # Store the projections as they line up with the unique disease indices
-    X.obsm["Pf2_projections"] = np.zeros((X.shape[0], len(X.uns["Pf2_weights"])), dtype=np.float64)
+    # Set up empty projections matrix in the obsm slot to store the projections
+    pf2_proj: np.ndarray = np.zeros(
+        (X.shape[0], len(X.uns["Pf2_weights"])), dtype=np.float64
+    )
 
     # Go through each unique index and store the projections
     for i, proj in enumerate(projections):
-        X.obsm["Pf2_projections"][unique_idxs == i, :] = np.asarray(proj)
+        pf2_proj[unique_idxs == i, :] = np.asarray(proj)
+
+    # Store the projections in the obsm slot
+    X.obsm["Pf2_projections"] = pf2_proj
 
     X.obsm["weighted_Pf2_projections"] = np.asarray(
         X.obsm["Pf2_projections"] @ X.uns["Pf2_B"]

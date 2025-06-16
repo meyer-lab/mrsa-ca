@@ -15,6 +15,7 @@ import logging
 import math
 import sys
 import time
+from os.path import join
 
 import matplotlib
 import matplotlib.figure
@@ -143,11 +144,15 @@ def genFigure():
     if isinstance(figures, list | tuple):
         for i, fig in enumerate(figures):
             fig_name = f"{nameOut}_{i + 1}"
-            fig.savefig(f"{fdir}{fig_name}.svg", bbox_inches="tight", pad_inches=0.1)
+            fig.savefig(
+                join(fdir, f"{fig_name}.svg"), bbox_inches="tight", pad_inches=0.1
+            )
             logging.info(f"Saved figure {i + 1} as {fig_name}.svg")
     else:
         # Single figure returned
-        figures.savefig(f"{fdir}{nameOut}.svg", bbox_inches="tight", pad_inches=0.1)
+        figures.savefig(
+            join(fdir, f"{nameOut}.svg"), bbox_inches="tight", pad_inches=0.1
+        )
         logging.info(f"Saved figure as {nameOut}.svg")
 
     logging.info("%s is done after %s seconds.", nameOut, time.time() - start)

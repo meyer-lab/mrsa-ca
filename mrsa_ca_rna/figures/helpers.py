@@ -70,10 +70,10 @@ def reorder_table(X, method="seriate"):
             Z = linkage(X, method="ward")
             ind = leaves_list(Z)
         elif method == "seriate":
-            from seriate import seriate
+            from mrsa_ca_rna.figures.seriate import seriate
 
             # Perform seriation
-            ind = seriate(pdist(X))
+            ind = seriate(pdist(X), timeout=0)
         return ind
     except Exception as e:
         print(f"Clustering failed: {e}. Returning original order.")

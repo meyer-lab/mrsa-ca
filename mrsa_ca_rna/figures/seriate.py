@@ -38,7 +38,9 @@ def _validate_data(dists: numpy.ndarray):
 
 
 def seriate(
-    dists: numpy.ndarray, approximation_multiplier: int = 1000, timeout: float = 2.0,
+    dists: numpy.ndarray,
+    approximation_multiplier: int = 1000,
+    timeout: float = 2.0,
 ) -> list[int]:
     """
     Order the elements of a set so that the sum of sequential pairwise distances is minimal.

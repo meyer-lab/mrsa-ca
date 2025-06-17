@@ -1,10 +1,13 @@
 """This file contains helper functions for plotting pf2 factor matrices"""
 
+import time
+
 import anndata as ad
 import numpy as np
 import pandas as pd
+from fastcluster import linkage
 from matplotlib.axes import Axes
-from scipy.cluster.hierarchy import leaves_list, linkage
+from scipy.cluster.hierarchy import leaves_list
 from scipy.spatial.distance import pdist
 
 
@@ -49,7 +52,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes):
     X = np.array(data.varm["Pf2_C"])
     yt = data.var.index.values
 
-    ind = reorder_table(X)
+    ind = reorder_table(X, method="scipy")
     X = X[ind]
     X = X / np.max(np.abs(X))
     yt = [yt[ii] for ii in ind]
@@ -64,6 +67,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes):
 
 def reorder_table(X, method="seriate"):
     """Reorders a table's rows using heirarchical clustering."""
+    start_time = time.time()
     try:
         if method == "scipy":
             # Perform hierarchical clustering
@@ -74,7 +78,9 @@ def reorder_table(X, method="seriate"):
 
             # Perform seriation
             ind = seriate(pdist(X), timeout=0)
+
+        print(f"Clustering completed in {time.time() - start_time:.2f} seconds.")
         return ind
     except Exception as e:
-        print(f"Clustering failed: {e}. Returning original order.")
+        print(f"Clustering failed after {time.time() - start_time:.2f} seconds: {e}")
         return np.arange(X.shape[0])

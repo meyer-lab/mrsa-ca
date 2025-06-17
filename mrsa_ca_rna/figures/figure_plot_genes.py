@@ -26,7 +26,7 @@ def genFig():
 
     # Set up the figure
     layout = {"ncols": 1, "nrows": 1}
-    fig_size = (8, 6)
+    fig_size = (8, 8)
     ax, f, _ = setupBase(fig_size, layout)
 
     plot_gene_matrix(X, ax[0])

@@ -1,5 +1,8 @@
 """This file plots the pf2 factor matrices for the disease datasets"""
 
+import os
+
+import anndata as ad
 import matplotlib.colors as colors
 import numpy as np
 import pandas as pd
@@ -7,6 +10,8 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.helpers import plot_gene_matrix
+from mrsa_ca_rna.gsea import gsea_analysis_per_cmp
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
@@ -16,7 +21,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 5
+    rank = 10
 
     X = concat_datasets()
 
@@ -27,6 +32,22 @@ def figure_setup():
     )
 
     return X, r2x
+
+
+def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
+    out_dir = os.path.join("output", "gsea", gene_set)
+    os.makedirs(out_dir, exist_ok=True)
+
+    # Plot GSEA results for each component
+    for i in range(X.varm["Pf2_C"].shape[1]):
+        gsea_analysis_per_cmp(
+            X,
+            cmp=i + 1,
+            term_ranks=5,
+            gene_set=gene_set,
+            figsize=(6, 4),
+            out_dir=out_dir,
+        )
 
 
 def genFig():
@@ -83,16 +104,9 @@ def genFig():
     b.set_ylabel("Eigenstate")
 
     # plot the gene factor matrix using diverging cmap
-    c = sns.heatmap(
-        np.asarray(X.varm["Pf2_C"]),
-        ax=ax[2],
-        cmap="coolwarm",
-        center=0,
-        xticklabels=ranks_labels,
-        yticklabels=False,
-    )
-    c.set_title(f"Gene Factor Matrix\nR2X: {r2x:.2f}\nSparsity: {sparsity:.2f}")
-    c.set_xlabel("Rank")
-    c.set_ylabel("Genes")
+    plot_gene_matrix(X, ax=ax[2])
+
+    # Plot the GSEA results for KEGG 2021 Human
+    plot_gsea(X, gene_set="KEGG_2021_Human")
 
     return f

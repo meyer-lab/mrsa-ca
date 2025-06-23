@@ -121,6 +121,7 @@ def perform_parafac2(
         verbose=True,
         init="svd",
         tol=1e-5,
+        nn_modes=[0],
         n_iter_max=100,
         return_errors=True,
     )

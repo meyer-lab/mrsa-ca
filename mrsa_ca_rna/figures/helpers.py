@@ -46,7 +46,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
     return artist
 
 
-def plot_gene_matrix(data: ad.AnnData, ax: Axes):
+def plot_gene_matrix(data: ad.AnnData, ax: Axes, title=None):
     """Plots Pf2 gene factors"""
     rank = data.varm["Pf2_C"].shape[1]
     X = np.array(data.varm["Pf2_C"])
@@ -59,7 +59,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes):
     xticks = np.arange(1, rank + 1)
 
     artist = plot_table_rasterized(
-        pd.DataFrame(X, index=yt, columns=xticks), ax, title="Pf2 Gene Factors"
+        pd.DataFrame(X, index=yt, columns=xticks), ax, title=title
     )
 
     return artist

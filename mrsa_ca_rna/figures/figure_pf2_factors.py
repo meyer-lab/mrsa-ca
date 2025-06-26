@@ -3,8 +3,6 @@
 import os
 
 import anndata as ad
-import matplotlib.colors as colors
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -21,7 +19,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 10
+    rank = 50
 
     X = concat_datasets()
 
@@ -72,17 +70,12 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # Use diverging coolwarm palette for B and C matrices, match A with one-way color
-    cmap = sns.color_palette("coolwarm", as_cmap=True)
-    warm_half = cmap(np.linspace(0.5, 1, 256))
-    A_cmap = colors.ListedColormap(warm_half)
-
-    # plot the disease factor matrix using non-negative cmap
+    # plot the disease factor matrix using coolwarm cmap
     a = sns.heatmap(
         X.uns["Pf2_A"],
         ax=ax[0],
-        cmap=A_cmap,
-        vmin=0,
+        cmap="coolwarm",
+        center=0,
         xticklabels=ranks_labels,
         yticklabels=list(X.obs["disease"].unique().astype(str)),
     )
@@ -104,9 +97,9 @@ def genFig():
     b.set_ylabel("Eigenstate")
 
     # plot the gene factor matrix using diverging cmap
-    plot_gene_matrix(X, ax=ax[2])
+    plot_gene_matrix(X, ax=ax[2], title=f"Gene Factor Matrix\nSparsity: {sparsity:.2f}")
 
-    # Plot the GSEA results for KEGG 2021 Human
-    plot_gsea(X, gene_set="KEGG_2021_Human")
+    # Plot the GSEA results for HDSigDB Human 2021
+    plot_gsea(X, gene_set="WikiPathways_2024_Human")
 
     return f

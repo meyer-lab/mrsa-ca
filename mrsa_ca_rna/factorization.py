@@ -120,9 +120,10 @@ def perform_parafac2(
         rank=rank,
         verbose=True,
         init="svd",
-        tol=1e-5,
-        n_iter_max=100,
+        tol=1e-6,
+        n_iter_max=1000,
         return_errors=True,
+        normalize_factors=True,
     )
 
     # calculate R2X

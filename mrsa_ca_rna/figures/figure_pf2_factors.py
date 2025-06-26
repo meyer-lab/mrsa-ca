@@ -1,12 +1,15 @@
 """This file plots the pf2 factor matrices for the disease datasets"""
 
-import matplotlib.colors as colors
-import numpy as np
+import os
+
+import anndata as ad
 import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.helpers import plot_gene_matrix
+from mrsa_ca_rna.gsea import gsea_analysis_per_cmp
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
@@ -16,7 +19,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 5
+    rank = 50
 
     X = concat_datasets()
 
@@ -27,6 +30,22 @@ def figure_setup():
     )
 
     return X, r2x
+
+
+def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
+    out_dir = os.path.join("output", "gsea", gene_set)
+    os.makedirs(out_dir, exist_ok=True)
+
+    # Plot GSEA results for each component
+    for i in range(X.varm["Pf2_C"].shape[1]):
+        gsea_analysis_per_cmp(
+            X,
+            cmp=i + 1,
+            term_ranks=5,
+            gene_set=gene_set,
+            figsize=(6, 4),
+            out_dir=out_dir,
+        )
 
 
 def genFig():
@@ -51,17 +70,12 @@ def genFig():
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
-    # Use diverging coolwarm palette for B and C matrices, match A with one-way color
-    cmap = sns.color_palette("coolwarm", as_cmap=True)
-    warm_half = cmap(np.linspace(0.5, 1, 256))
-    A_cmap = colors.ListedColormap(warm_half)
-
-    # plot the disease factor matrix using non-negative cmap
+    # plot the disease factor matrix using coolwarm cmap
     a = sns.heatmap(
         X.uns["Pf2_A"],
         ax=ax[0],
-        cmap=A_cmap,
-        vmin=0,
+        cmap="coolwarm",
+        center=0,
         xticklabels=ranks_labels,
         yticklabels=list(X.obs["disease"].unique().astype(str)),
     )
@@ -83,16 +97,9 @@ def genFig():
     b.set_ylabel("Eigenstate")
 
     # plot the gene factor matrix using diverging cmap
-    c = sns.heatmap(
-        np.asarray(X.varm["Pf2_C"]),
-        ax=ax[2],
-        cmap="coolwarm",
-        center=0,
-        xticklabels=ranks_labels,
-        yticklabels=False,
-    )
-    c.set_title(f"Gene Factor Matrix\nR2X: {r2x:.2f}\nSparsity: {sparsity:.2f}")
-    c.set_xlabel("Rank")
-    c.set_ylabel("Genes")
+    plot_gene_matrix(X, ax=ax[2], title=f"Gene Factor Matrix\nSparsity: {sparsity:.2f}")
+
+    # Plot the GSEA results for HDSigDB Human 2021
+    plot_gsea(X, gene_set="WikiPathways_2024_Human")
 
     return f

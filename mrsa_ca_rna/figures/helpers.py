@@ -8,7 +8,6 @@ import pandas as pd
 from fastcluster import linkage
 from matplotlib.axes import Axes
 from scipy.cluster.hierarchy import leaves_list
-from scipy.spatial.distance import pdist
 
 
 def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coolwarm"):
@@ -65,19 +64,13 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes, title=None):
     return artist
 
 
-def reorder_table(X, method="seriate"):
+def reorder_table(X):
     """Reorders a table's rows using heirarchical clustering."""
     start_time = time.time()
     try:
-        if method == "scipy":
-            # Perform hierarchical clustering
-            Z = linkage(X, method="ward")
-            ind = leaves_list(Z)
-        elif method == "seriate":
-            from mrsa_ca_rna.figures.seriate import seriate
-
-            # Perform seriation
-            ind = seriate(pdist(X), timeout=0)
+        # Perform hierarchical clustering
+        Z = linkage(X, method="ward")
+        ind = leaves_list(Z)
 
         print(f"Clustering completed in {time.time() - start_time:.2f} seconds.")
         return ind

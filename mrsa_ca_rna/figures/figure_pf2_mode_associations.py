@@ -85,14 +85,14 @@ def analyze_mode_associations(X: ad.AnnData, threshold_pct=0.25):
 
     return results
 
-def summarize_results(results: dict) -> pd.DataFrame:
 
+def summarize_results(results: dict) -> pd.DataFrame:
     summary_rows = []
     for comp_num, comp_data in results.items():
         top_diseases = ", ".join(
             [f"{d[0]} ({d[1]:.2f})" for d in comp_data["diseases"][:5]]
         )
-        top_genes = ", ".join([f"{g[0]}" for g in comp_data["genes"][:25]])
+        top_genes = ", ".join([f"{g[0]}" for g in comp_data["genes"][:300]])
 
         summary_rows.append(
             {
@@ -170,7 +170,7 @@ def create_component_heatmap(X: ad.AnnData, component, top_n=10) -> Figure:
 
 def figure_setup():
     """Set up the data for analysis"""
-    rank = 50
+    rank = 80
     X = concat_datasets()
 
     # Remove COVID_marine and Healhy_heme datasets
@@ -197,7 +197,7 @@ def genFig():
     summary_df.to_csv(os.path.join(output_dir, "component_summary.csv"), index=False)
 
     # Create a multi-panel figure with A matrix + component details
-    components_to_show = [1, 2, 4, 5, 6, 12, 29, 31, 33, 42, 44, 48]
+    components_to_show = [1, 3, 4, 5, 20, 21, 41, 67]
 
     nrows = ceil(len(components_to_show) / 2) + 1  # +1 for the A matrix row
     layout = {"ncols": 2, "nrows": nrows}

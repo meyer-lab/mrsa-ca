@@ -19,7 +19,7 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 50
+    rank = 80
 
     X = concat_datasets()
 
@@ -41,9 +41,9 @@ def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
         gsea_analysis_per_cmp(
             X,
             cmp=i + 1,
-            term_ranks=5,
+            term_ranks=10,
             gene_set=gene_set,
-            figsize=(6, 4),
+            figsize=(6, 8),
             out_dir=out_dir,
         )
 
@@ -51,8 +51,8 @@ def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
-    layout = {"ncols": 3, "nrows": 1}
+    fig_size = (8, 12)
+    layout = {"ncols": 1, "nrows": 3}
     ax, f, _ = setupBase(fig_size, layout)
 
     X, r2x = figure_setup()
@@ -83,6 +83,11 @@ def genFig():
     a.set_xlabel("Rank")
     a.set_ylabel("Disease")
 
+    # Add vertical lines every 5 components
+    n_components = X.uns["Pf2_A"].shape[1]
+    for i in range(5, n_components, 5):
+        a.axvline(i, color="black", linestyle="--", linewidth=0.8)
+
     # plot the eigenstate factor matrix using diverging cmap
     b = sns.heatmap(
         X.uns["Pf2_B"],
@@ -99,7 +104,7 @@ def genFig():
     # plot the gene factor matrix using diverging cmap
     plot_gene_matrix(X, ax=ax[2], title=f"Gene Factor Matrix\nSparsity: {sparsity:.2f}")
 
-    # Plot the GSEA results for HDSigDB Human 2021
-    plot_gsea(X, gene_set="WikiPathways_2024_Human")
+    # Plot the GSEA results for desired gene set
+    plot_gsea(X, gene_set="KEGG_2021_Human")
 
     return f

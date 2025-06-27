@@ -33,6 +33,11 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
 
     # Add zero line to colorbar for emphasis
     cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
+    
+    # Add vertical lines every 5th column
+    n_columns = len(data_df.columns)
+    for i in range(4, n_columns, 5):  # Starting at 4 (5th column, 0-indexed)
+        ax.axvline(i + 0.5, color="black", linestyle="-", linewidth=0.8)
 
     ax.set_xlabel("Rank")
     ax.set_ylabel("Genes")
@@ -51,7 +56,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes, title=None):
     X = np.array(data.varm["Pf2_C"])
     yt = data.var.index.values
 
-    ind = reorder_table(X, method="scipy")
+    ind = reorder_table(X)
     X = X[ind]
     X = X / np.max(np.abs(X))
     yt = [yt[ii] for ii in ind]

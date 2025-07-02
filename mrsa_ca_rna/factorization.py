@@ -51,7 +51,7 @@ def store_pf2(
         # Get the number of samples for this disease in the original data
         mask = unique_idxs == i
         n_samples = mask.sum()
-        
+
         # Take only the relevant rows from the projection matrix
         # (discarding any rows that correspond to padding)
         proj_to_store = np.asarray(proj[:n_samples, :])
@@ -119,7 +119,7 @@ def perform_parafac2(
 
     # convert to list
     X_list = [cp.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
-    
+
     # Check if any arrays are smaller than the requested rank
     for i, arr in enumerate(X_list):
         if arr.shape[0] < rank:
@@ -141,7 +141,7 @@ def perform_parafac2(
         tol=1e-6,
         n_iter_max=1000,
         return_errors=True,
-        normalize_factors=True,
+        normalize_factors=False,
     )
 
     # calculate R2X
@@ -154,9 +154,15 @@ def perform_parafac2(
     factors = [cp.asnumpy(f.get()) for f in pf2[1]]
     projections = [cp.asnumpy(p.get()) for p in pf2[2]]
 
+    # Standardize the factors and projections
+    weights, factors, projections = standardize_pf2(factors, projections)
     X = store_pf2(X, weights, factors, projections)
 
-    pcm = PaCMAP()
-    X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
+    if rank > 1:
+        pcm = PaCMAP()
+        X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
+    else:
+        print("Rank is 1, skipping PaCMAP projection.")
+        X.obsm["Pf2_PaCMAP"] = np.zeros((X.shape[0], 2))
 
     return X, R2X

@@ -19,9 +19,14 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 80
+    rank = 10
 
     X = concat_datasets()
+
+    # Remove Breast Cancer TCR data and reZ
+    X = X[X.obs["disease"] != "Breast Cancer TCR"].copy()
+    from sklearn.preprocessing import StandardScaler
+    X.X = StandardScaler().fit_transform(X.X)
 
     X, r2x = perform_parafac2(
         X,
@@ -51,7 +56,7 @@ def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (8, 12)
+    fig_size = (10, 10)
     layout = {"ncols": 1, "nrows": 3}
     ax, f, _ = setupBase(fig_size, layout)
 
@@ -105,6 +110,6 @@ def genFig():
     plot_gene_matrix(X, ax=ax[2], title=f"Gene Factor Matrix\nSparsity: {sparsity:.2f}")
 
     # Plot the GSEA results for desired gene set
-    plot_gsea(X, gene_set="KEGG_2021_Human")
+    # plot_gsea(X, gene_set="KEGG_2021_Human")
 
     return f

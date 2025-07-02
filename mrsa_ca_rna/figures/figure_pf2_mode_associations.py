@@ -170,11 +170,13 @@ def create_component_heatmap(X: ad.AnnData, component, top_n=10) -> Figure:
 
 def figure_setup():
     """Set up the data for analysis"""
-    rank = 80
+    rank = 1
     X = concat_datasets()
 
     # Remove COVID_marine and Healhy_heme datasets
-    # X = X[X.obs["disease"].isin(["Healthy_heme", "COVID_marine"]) == False].copy()
+    # X = X[X.obs["disease"].isin(["Breast Cancer TCR"]) == False].copy()
+    # from sklearn.preprocessing import StandardScaler
+    # X.X = StandardScaler().fit_transform(X.X)
 
     X, r2x = perform_parafac2(X, slice_col="disease", rank=rank)
 
@@ -197,7 +199,7 @@ def genFig():
     summary_df.to_csv(os.path.join(output_dir, "component_summary.csv"), index=False)
 
     # Create a multi-panel figure with A matrix + component details
-    components_to_show = [1, 3, 4, 5, 20, 21, 41, 67]
+    components_to_show = [1]
 
     nrows = ceil(len(components_to_show) / 2) + 1  # +1 for the A matrix row
     layout = {"ncols": 2, "nrows": nrows}

@@ -699,3 +699,6 @@ def import_sepsis():
     sepsis_adata = sepsis_adata[sepsis_adata.obs["disease"] == "sepsis"].copy()
 
     return sepsis_adata
+
+# TODO: HSV dataset from PBMCs: GSE185341
+# Likely contains associations with enterovirus, HIV_CM datasets

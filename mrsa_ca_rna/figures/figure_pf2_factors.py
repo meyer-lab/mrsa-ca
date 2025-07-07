@@ -23,10 +23,18 @@ def figure_setup():
 
     X = concat_datasets()
 
-    # Remove Breast Cancer TCR data and reZ
-    X = X[X.obs["disease"] != "Breast Cancer TCR"].copy()
-    from sklearn.preprocessing import StandardScaler
-    X.X = StandardScaler().fit_transform(X.X)
+    # outliers = [
+    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058", 
+    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810", 
+    #     "GSM3926774", "GSM3926857", "GSM7677818"
+    # ]
+
+    # # Remove cancer datasets to avoid chemotherapy bias?
+    # X = X[~X.obs.index.isin(outliers)].copy()
+    
+    # # Re-Z
+    # from sklearn.preprocessing import StandardScaler
+    # X.X = StandardScaler().fit_transform(X.X)
 
     X, r2x = perform_parafac2(
         X,
@@ -56,8 +64,8 @@ def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (10, 10)
-    layout = {"ncols": 1, "nrows": 3}
+    fig_size = (12, 4)
+    layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
     X, r2x = figure_setup()

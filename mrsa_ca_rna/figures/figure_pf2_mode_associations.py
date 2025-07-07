@@ -171,10 +171,18 @@ def create_component_heatmap(X: ad.AnnData, component, top_n=10) -> Figure:
 def figure_setup():
     """Set up the data for analysis"""
     rank = 1
-    X = concat_datasets()
+    X = concat_datasets(filter_threshold=100)
 
-    # Remove COVID_marine and Healhy_heme datasets
-    # X = X[X.obs["disease"].isin(["Breast Cancer TCR"]) == False].copy()
+    # outliers = [
+    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058", 
+    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810", 
+    #     "GSM3926774", "GSM3926857", "GSM7677818"
+    # ]
+
+    # # Remove cancer datasets to avoid chemotherapy bias?
+    # X = X[~X.obs.index.isin(outliers)].copy()
+    
+    # # Re-Z
     # from sklearn.preprocessing import StandardScaler
     # X.X = StandardScaler().fit_transform(X.X)
 
@@ -248,19 +256,27 @@ def genFig():
         top_diseases = diseases_df.head(5)
         top_genes = genes_df.head(15)
 
-        # Split the subplot area
+        # Split the subplot area with diseases on the left and genes on the right
         divider = make_axes_locatable(ax_i)
         ax_disease = ax_i
-        ax_gene = divider.append_axes("right", size="100%", pad=1.5)
+        ax_gene = divider.append_axes("right", size="100%", pad=1.75)
 
         # Plot diseases
         sns.barplot(x="Score", y="Disease", data=top_diseases, ax=ax_disease)
         ax_disease.set_title(f"Component {comp_num}: Top Diseases")
         ax_disease.axvline(x=0, color="gray", linestyle="--")
 
-        # Plot genes with reversed direction (extend to the left)
+        
+        # Calculate the number of significant genes at 50% threshold
+        gene_scores = np.array([g[1] for g in results[comp_num]["genes"]])
+        max_abs_gene = np.max(np.abs(gene_scores))
+        threshold_50pct = max_abs_gene * 0.5
+        genes_above_threshold = np.sum(np.abs(gene_scores) >= threshold_50pct)
+
+        # Plot genes
         sns.barplot(x="Score", y="Gene", data=top_genes, ax=ax_gene)
-        ax_gene.set_title(f"Component {comp_num}: Top Genes")
+        ax_gene.set_title(f"Component {comp_num}\n"
+                          f"Top Genes (n={genes_above_threshold} at >50% max)")
         ax_gene.axvline(x=0, color="gray", linestyle="--")
 
         # Consistently plot 0 centered gene scores

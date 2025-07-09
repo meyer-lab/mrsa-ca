@@ -21,17 +21,17 @@ def figure_setup():
 
     rank = 10
 
-    X = concat_datasets()
+    X = concat_datasets(filter_threshold=1)
 
     # outliers = [
-    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058", 
-    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810", 
+    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058",
+    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810",
     #     "GSM3926774", "GSM3926857", "GSM7677818"
     # ]
 
     # # Remove cancer datasets to avoid chemotherapy bias?
     # X = X[~X.obs.index.isin(outliers)].copy()
-    
+
     # # Re-Z
     # from sklearn.preprocessing import StandardScaler
     # X.X = StandardScaler().fit_transform(X.X)
@@ -78,7 +78,7 @@ def genFig():
         index=X.var.index,
         columns=pd.Index(ranks_labels),
     )
-    genes_df.to_csv("output/pf2_genes.csv")
+    genes_df.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())

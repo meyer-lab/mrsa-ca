@@ -15,7 +15,7 @@ from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.utils import concat_datasets
 
 
@@ -171,17 +171,17 @@ def create_component_heatmap(X: ad.AnnData, component, top_n=10) -> Figure:
 def figure_setup():
     """Set up the data for analysis"""
     rank = 1
-    X = concat_datasets(filter_threshold=100)
+    X = concat_datasets(filter_threshold=1)
 
     # outliers = [
-    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058", 
-    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810", 
+    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058",
+    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810",
     #     "GSM3926774", "GSM3926857", "GSM7677818"
     # ]
 
     # # Remove cancer datasets to avoid chemotherapy bias?
     # X = X[~X.obs.index.isin(outliers)].copy()
-    
+
     # # Re-Z
     # from sklearn.preprocessing import StandardScaler
     # X.X = StandardScaler().fit_transform(X.X)
@@ -192,6 +192,27 @@ def figure_setup():
     results = analyze_mode_associations(X, threshold_pct=0.25)
 
     return X, results, r2x
+
+
+def plot_raw_kde(X: ad.AnnData, cmp, genes):
+    layout, fig_size = calculate_layout(len(genes), scale_factor=4)
+    ax, f, gs = setupBase(fig_size, layout)
+
+    X_raw = X.layers["raw"]
+
+    for i, gene in enumerate(genes):
+        ax_i = ax[i]
+        gene_data = X_raw[:, X.var.index == gene].flatten()
+
+        # Plot KDE for this gene
+        sns.kdeplot(gene_data, ax=ax_i, fill=True, color="blue", alpha=0.5)
+        ax_i.set_title(f"Raw Data KDE for {gene}")
+        ax_i.set_xlabel("Expression Level")
+        ax_i.set_ylabel("Density")
+
+    f.suptitle(f"Raw Data KDEs for Component {cmp}", fontsize=16)
+
+    return f
 
 
 def genFig():
@@ -266,17 +287,17 @@ def genFig():
         ax_disease.set_title(f"Component {comp_num}: Top Diseases")
         ax_disease.axvline(x=0, color="gray", linestyle="--")
 
-        
         # Calculate the number of significant genes at 50% threshold
         gene_scores = np.array([g[1] for g in results[comp_num]["genes"]])
         max_abs_gene = np.max(np.abs(gene_scores))
         threshold_50pct = max_abs_gene * 0.5
         genes_above_threshold = np.sum(np.abs(gene_scores) >= threshold_50pct)
 
-        # Plot genes
+        # Plot gene barplot
         sns.barplot(x="Score", y="Gene", data=top_genes, ax=ax_gene)
-        ax_gene.set_title(f"Component {comp_num}\n"
-                          f"Top Genes (n={genes_above_threshold} at >50% max)")
+        ax_gene.set_title(
+            f"Component {comp_num}\nTop Genes (n={genes_above_threshold} at >50% max)"
+        )
         ax_gene.axvline(x=0, color="gray", linestyle="--")
 
         # Consistently plot 0 centered gene scores
@@ -285,6 +306,9 @@ def genFig():
         ax_gene.set_xlim(-max_abs, max_abs)
 
         ax_gene.tick_params(axis="y", which="major", pad=10)
+
+        # Plot KDEs for raw data of top genes
+        g = plot_raw_kde(X, comp_num, top_genes["Gene"])
 
         # Highlight this component in the A matrix
         rect = plt.Rectangle(
@@ -300,4 +324,4 @@ def genFig():
 
     f.suptitle("PARAFAC2 Component Analysis", fontsize=16)
 
-    return f
+    return f, g

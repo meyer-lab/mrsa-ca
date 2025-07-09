@@ -33,7 +33,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
 
     # Add zero line to colorbar for emphasis
     cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
-    
+
     # Add vertical lines every 5th column
     n_columns = len(data_df.columns)
     for i in range(4, n_columns, 5):  # Starting at 4 (5th column, 0-indexed)

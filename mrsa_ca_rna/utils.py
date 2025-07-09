@@ -29,6 +29,7 @@ from mrsa_ca_rna.import_data import (
 def concat_datasets(
     ad_list: list[str] | None = None,
     filter_threshold: float = 0.1,
+    min_pct: float = 0.25,
 ) -> ad.AnnData:
     """Concatenate multiple AnnData objects from different datasets into
     a single AnnData object. Perform filtering of genes based on a threshold,
@@ -39,7 +40,10 @@ def concat_datasets(
     ad_list : list[str], optional
         list of datasets to include, by default None = All datasets
     filter_threshold : float, optional
-        mean gene expression cutoff, by default 0.1
+        CPM threshold for filtering genes, by default 0.1
+    min_pct : float, optional
+        Minimum fraction of samples required to express gene
+        above threshold, by default 0.25
 
     Returns
     -------
@@ -97,38 +101,88 @@ def concat_datasets(
     adata = ad.concat(adata_list, join="inner")
 
     # Filter low expression genes
-    filtered_genes = gene_filter(adata.to_df(), threshold=filter_threshold)
+    filtered_genes = gene_filter(
+        adata.to_df(), threshold=filter_threshold, min_pct=min_pct
+    )
     var_mask = adata.var_names.isin(filtered_genes.columns)
     adata_filtered = adata[:, var_mask].copy()
 
-    # RPM normalize and z-score the data
-    norm_counts = normalize_counts(counts=np.asarray(adata_filtered.X))
+    # Print out percentage of genes removed
+    num_genes_before = adata.shape[1]
+    num_genes_after = adata_filtered.shape[1]
+    pct_removed = 100 * (num_genes_before - num_genes_after) / num_genes_before
+    print(
+        f"Filtered genes: {num_genes_before - num_genes_after} removed ({pct_removed:.2f}%)"
+    )
 
-    # Preserve the raw counts in a new layer and add the norm counts to the adata object
+    # Preserve the raw counts in a new layer
     adata_filtered.layers["raw"] = np.asarray(adata_filtered.X).copy()
+
+    # Normalize the filtered data
+    norm_counts = normalize_counts(np.asarray(adata_filtered.X))
     adata_filtered.X = norm_counts
 
     return adata_filtered
 
 
-def gene_filter(genes: pd.DataFrame, threshold: float = 0.1) -> pd.DataFrame:
-    """Generate a filter for genes based on a threshold. Dataframe is expected
-    to have genes as columns and samples as rows. The filter will keep only those
-    genes that have a mean expression above the threshold across all samples.
+def calculate_cpm(counts: np.ndarray) -> np.ndarray:
+    """Calculate counts per million (CPM) for gene expression data.
+
+    Parameters
+    ----------
+    counts : np.ndarray
+        Gene expression counts with samples as rows and genes as columns
+
+    Returns
+    -------
+    np.ndarray
+        CPM values as a numpy array
+    """
+    # Calculate library sizes
+    total_counts = np.sum(counts, axis=1, keepdims=True)
+
+    # Avoid division by zero
+    total_counts = np.maximum(total_counts, 1)
+
+    # CPM normalization
+    return (counts / total_counts * 1e6).astype(np.float64)
+
+
+def gene_filter(
+    genes: pd.DataFrame, threshold: float = 1.0, min_pct: float = 0.25
+) -> pd.DataFrame:
+    """Filter genes based on CPM threshold in a minimum percentage of samples.
+    Keeps genes with CPM > threshold in at least min_pct of samples.
 
     Parameters
     ----------
     genes : pd.DataFrame
-        DataFrame containing gene expression data
+        DataFrame with samples as rows and genes as columns (raw counts)
     threshold : float
-        Threshold for filtering genes | default=0.1
+        CPM threshold for filtering genes | default=1.0
+    min_pct : float
+        Minimum fraction of samples required to express gene
+        above threshold | default=0.25
 
     Returns
     -------
     pd.DataFrame
-        Filtered DataFrame with genes that have mean expression above the threshold
+        Filtered DataFrame with genes passing the CPM filter
     """
-    return genes.loc[:, genes.abs().mean(axis=0) > threshold]
+    # Convert to numpy array for CPM calculation
+    genes_array = genes.values
+
+    # Calculate CPM
+    cpm_array = calculate_cpm(genes_array)
+
+    # Calculate fraction of samples above threshold for each gene
+    frac_above = np.mean(cpm_array > threshold, axis=0)
+
+    # Create mask for genes to keep
+    keep_genes = frac_above >= min_pct
+
+    # Apply filter to original DataFrame
+    return genes.iloc[:, keep_genes]
 
 
 def normalize_counts(counts: np.ndarray) -> np.ndarray:
@@ -144,12 +198,8 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     np.ndarray
         normalized gene count matrix
     """
-
-    # Convert to numpy array if not already
-    counts_array = np.asarray(counts)
-
-    # Perform RPM normalization
-    norm_exp = rpm_norm(counts_array)
+    # Perform CPM normalization
+    norm_exp = calculate_cpm(counts)
 
     # Log transform the data
     trans_exp = np.log2(norm_exp + 1).astype(np.float64)
@@ -158,19 +208,6 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     scaled_exp = StandardScaler().fit_transform(trans_exp)
 
     return scaled_exp.astype(np.float64)
-
-
-def rpm_norm(exp):
-    # Calculate the library size
-    total_counts = np.sum(exp, axis=1, keepdims=True)
-
-    # Avoid division by zero (should not happen due to previous filtering)
-    total_counts = np.maximum(total_counts, 1)
-
-    # RPM normalization
-    rpm_normalized = exp / total_counts * 1e6
-
-    return rpm_normalized.astype(np.float64)
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
@@ -219,3 +256,91 @@ def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     )
 
     return X_in_resampled
+
+
+def find_top_genes_by_threshold(
+    genes_df: pd.DataFrame, threshold_fraction: float = 0.5
+) -> pd.DataFrame:
+    """Find top genes in each component that exceed a threshold of the max value,
+    treating positive and negative loadings separately.
+
+    Parameters
+    ----------
+    genes_df : pd.DataFrame
+        DataFrame with genes as index and components as columns
+    threshold_fraction : float, default=0.5
+        Fraction of max/min value to use as threshold for positive/negative loadings
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns:
+        - gene: Gene name
+        - component: Component identifier
+        - value: Loading value of gene in component
+        - abs_value: Absolute value of the loading
+        - direction: "positive" or "negative" loading
+        - rank: Rank of gene within its component and direction (by absolute value)
+    """
+    # DataFrame format with gene, component, value columns
+    result_data = []
+    for cmp in genes_df.columns:
+        # Handle positive loadings
+        pos_vals = genes_df[cmp][genes_df[cmp] > 0]
+        if not pos_vals.empty:
+            max_pos = pos_vals.max()
+            pos_mask = genes_df[cmp] >= threshold_fraction * max_pos
+
+            # Get the genes and their values
+            pos_genes = genes_df.index[pos_mask].tolist()
+            pos_values = genes_df.loc[pos_mask, cmp].tolist()
+
+            # Add to result data
+            for gene, value in zip(pos_genes, pos_values, strict=False):
+                result_data.append(
+                    {
+                        "gene": gene,
+                        "component": cmp,
+                        "value": value,
+                        "abs_value": abs(value),
+                        "direction": "positive",
+                    }
+                )
+
+        # Handle negative loadings
+        neg_vals = genes_df[cmp][genes_df[cmp] < 0]
+        if not neg_vals.empty:
+            min_neg = neg_vals.min()
+            neg_mask = genes_df[cmp] <= threshold_fraction * min_neg
+
+            # Get the genes and their values
+            neg_genes = genes_df.index[neg_mask].tolist()
+            neg_values = genes_df.loc[neg_mask, cmp].tolist()
+
+            # Add to result data
+            for gene, value in zip(neg_genes, neg_values, strict=False):
+                result_data.append(
+                    {
+                        "gene": gene,
+                        "component": cmp,
+                        "value": value,
+                        "abs_value": abs(value),
+                        "direction": "negative",
+                    }
+                )
+
+    # Convert to DataFrame
+    result_df = pd.DataFrame(result_data)
+
+    # Add rank within each component and direction (by absolute value)
+    if not result_df.empty:
+        result_df["rank"] = result_df.groupby(["component", "direction"])[
+            "abs_value"
+        ].rank(ascending=False)
+        result_df = result_df.sort_values(["component", "direction", "rank"])
+
+        return result_df
+    else:
+        return pd.DataFrame(
+            columns=["gene", "component", "value", "abs_value", "direction", "rank"]
+        )

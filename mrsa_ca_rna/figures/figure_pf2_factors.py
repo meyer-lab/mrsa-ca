@@ -19,9 +19,9 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 10
+    rank = 5
 
-    X = concat_datasets(filter_threshold=1)
+    X = concat_datasets(filter_threshold=5, min_pct=.9)
 
     # outliers = [
     #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058",

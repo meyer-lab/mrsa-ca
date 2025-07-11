@@ -119,7 +119,7 @@ def prepare_plot_dataframe(mean_genes, top_genes_df):
 
 def get_data():
     """Get the data for plotting the gene factor matrix."""
-    X = concat_datasets(filter_threshold=5)
+    X = concat_datasets(filter_threshold=5, min_pct=.5)
 
     # Perform PARAFAC2 factorization
     X, _ = perform_parafac2(X, slice_col="disease", rank=1)
@@ -197,7 +197,7 @@ def genFig():
     a.set_title(
         "Distribution of top genes by component across gene space\n"
         f"{coverage_report}\n"
-        "Filtering: CPM>5 in at least 25% of samples\n"
+        "Filtering: CPM>5 in at least 50% of samples\n"
         f"{n_comps} Component model"
     )
 

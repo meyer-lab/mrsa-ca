@@ -40,7 +40,7 @@ def concat_datasets(
     ad_list : list[str], optional
         list of datasets to include, by default None = All datasets
     filter_threshold : float, optional
-        CPM threshold for filtering genes, by default 0.1
+        CPM threshold for filtering genes, -1 to disable, by default 0.1
     min_pct : float, optional
         Minimum fraction of samples required to express gene
         above threshold, by default 0.25
@@ -100,20 +100,24 @@ def concat_datasets(
     # Concat all anndata objects together keeping only the vars and obs in common
     adata = ad.concat(adata_list, join="inner")
 
-    # Filter low expression genes
-    filtered_genes = gene_filter(
-        adata.to_df(), threshold=filter_threshold, min_pct=min_pct
-    )
-    var_mask = adata.var_names.isin(filtered_genes.columns)
-    adata_filtered = adata[:, var_mask].copy()
+    # Filtering now optional if filter_threshold is set to -1
+    if filter_threshold >= 0:
+        # Filter low expression genes
+        filtered_genes = gene_filter(
+            adata.to_df(), threshold=filter_threshold, min_pct=min_pct
+        )
+        var_mask = adata.var_names.isin(filtered_genes.columns)
+        adata_filtered = adata[:, var_mask].copy()
 
-    # Print out percentage of genes removed
-    num_genes_before = adata.shape[1]
-    num_genes_after = adata_filtered.shape[1]
-    pct_removed = 100 * (num_genes_before - num_genes_after) / num_genes_before
-    print(
-        f"Filtered genes: {num_genes_before - num_genes_after} removed ({pct_removed:.2f}%)"
-    )
+        # Print out percentage of genes removed
+        num_genes_before = adata.shape[1]
+        num_genes_after = adata_filtered.shape[1]
+        pct_removed = 100 * (num_genes_before - num_genes_after) / num_genes_before
+        print(
+            f"Filtered genes: {num_genes_before - num_genes_after} removed ({pct_removed:.2f}%)"
+        )
+    else:
+        adata_filtered = adata.copy()
 
     # Preserve the raw counts in a new layer
     adata_filtered.layers["raw"] = np.asarray(adata_filtered.X).copy()

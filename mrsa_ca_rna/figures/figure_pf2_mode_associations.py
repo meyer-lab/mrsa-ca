@@ -16,7 +16,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import concat_datasets, find_top_genes_by_threshold, calculate_cpm
 
 
 def analyze_mode_associations(X: ad.AnnData, threshold_pct=0.25):
@@ -27,8 +27,6 @@ def analyze_mode_associations(X: ad.AnnData, threshold_pct=0.25):
     ----------
     X : ad.AnnData
         AnnData object with PARAFAC2 results
-    top_n : int
-        Number of top genes/diseases to report
     threshold_pct : float
         Threshold as percentage of max value to consider significant
 
@@ -86,159 +84,48 @@ def analyze_mode_associations(X: ad.AnnData, threshold_pct=0.25):
     return results
 
 
-def summarize_results(results: dict) -> pd.DataFrame:
-    summary_rows = []
-    for comp_num, comp_data in results.items():
-        top_diseases = ", ".join(
-            [f"{d[0]} ({d[1]:.2f})" for d in comp_data["diseases"][:5]]
-        )
-        top_genes = ", ".join([f"{g[0]}" for g in comp_data["genes"][:300]])
-
-        summary_rows.append(
-            {
-                "Component": comp_num,
-                "Top Diseases": top_diseases,
-                "Top Genes": top_genes,
-                "# Sig. Diseases": len(comp_data["diseases"]),
-            }
-        )
-
-    summary_df = pd.DataFrame(summary_rows)
-
-    return summary_df
-
-
-def create_component_heatmap(X: ad.AnnData, component, top_n=10) -> Figure:
-    """
-    Create a heatmap visualization showing how top genes relat
-    to top diseases for a component.
-
-    Parameters
-    ----------
-    X : ad.AnnData
-        AnnData object with PARAFAC2 results
-    component : int
-        Component index (1-based)
-    top_n : int
-        Number of top genes/diseases to include
-
-    Returns
-    -------
-    Figure
-        Matplotlib figure with the heatmap
-    """
-    # Adjust to 0-based indexing
-    k = component - 1
-
-    # Get factors for this component
-    disease_factor = X.uns["Pf2_A"][:, k]
-    gene_factor = X.varm["Pf2_C"][:, k]
-
-    # Get disease and gene names
-    disease_names = np.array(X.obs["disease"].unique())
-    gene_names = np.array(X.var.index)
-
-    # Get indices of top diseases and genes by absolute value
-    top_disease_idx = np.argsort(np.abs(disease_factor))[::-1][:top_n]
-    top_gene_idx = np.argsort(np.abs(gene_factor))[::-1][:top_n]
-
-    # Get names and values
-    top_diseases = [(disease_names[i], disease_factor[i]) for i in top_disease_idx]
-    top_genes = [(gene_names[i], gene_factor[i]) for i in top_gene_idx]
-
-    # Create association matrix (outer product of factors)
-    disease_values = np.array([d[1] for d in top_diseases])
-    gene_values = np.array([g[1] for g in top_genes])
-    association_matrix = np.outer(disease_values, gene_values)
-
-    # Create DataFrame for heatmap
-    disease_labels = [f"{d[0]} ({d[1]:.2f})" for d in top_diseases]
-    gene_labels = [f"{g[0]} ({g[1]:.2f})" for g in top_genes]
-
-    assoc_df = pd.DataFrame(
-        association_matrix, index=disease_labels, columns=gene_labels
-    )
-
-    # Create heatmap
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(assoc_df, cmap="coolwarm", center=0, linewidths=0.5, ax=ax)
-    ax.set_title(f"Component {component}: Disease-Gene Associations")
-    plt.tight_layout()
-
-    return fig
-
-
 def figure_setup():
     """Set up the data for analysis"""
-    rank = 1
-    X = concat_datasets(filter_threshold=1)
-
-    # outliers = [
-    #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058",
-    #     "GSM5361028", "GSM3534389", "GSM3926766", "GSM3926810",
-    #     "GSM3926774", "GSM3926857", "GSM7677818"
-    # ]
-
-    # # Remove cancer datasets to avoid chemotherapy bias?
-    # X = X[~X.obs.index.isin(outliers)].copy()
-
-    # # Re-Z
-    # from sklearn.preprocessing import StandardScaler
-    # X.X = StandardScaler().fit_transform(X.X)
+    rank = 5
+    X = concat_datasets(filter_threshold=5, min_pct=.9)
 
     X, r2x = perform_parafac2(X, slice_col="disease", rank=rank)
 
-    # Analyze associations between diseases and genes
+    # Use the new function to get top genes by threshold
+    gene_factors_df = pd.DataFrame(
+        X.varm["Pf2_C"], 
+        index=X.var_names,
+        columns=[f"Component_{i+1}" for i in range(X.uns["Pf2_A"].shape[1])]
+    )
+    
+    # Get top genes by threshold, separated by positive and negative loadings
+    top_genes_df = find_top_genes_by_threshold(gene_factors_df, threshold_fraction=0.5)
+    
+    # Traditional analysis for diseases
     results = analyze_mode_associations(X, threshold_pct=0.25)
 
-    return X, results, r2x
-
-
-def plot_raw_kde(X: ad.AnnData, cmp, genes):
-    layout, fig_size = calculate_layout(len(genes), scale_factor=4)
-    ax, f, gs = setupBase(fig_size, layout)
-
-    X_raw = X.layers["raw"]
-
-    for i, gene in enumerate(genes):
-        ax_i = ax[i]
-        gene_data = X_raw[:, X.var.index == gene].flatten()
-
-        # Plot KDE for this gene
-        sns.kdeplot(gene_data, ax=ax_i, fill=True, color="blue", alpha=0.5)
-        ax_i.set_title(f"Raw Data KDE for {gene}")
-        ax_i.set_xlabel("Expression Level")
-        ax_i.set_ylabel("Density")
-
-    f.suptitle(f"Raw Data KDEs for Component {cmp}", fontsize=16)
-
-    return f
+    return X, results, r2x, top_genes_df
 
 
 def genFig():
     """Generate figures showing the associations between diseases and genes"""
-    X, results, r2x = figure_setup()
+    X, results, r2x, top_genes_df = figure_setup()
 
     # Create output directory
     output_dir = "output/pf2_associations"
     os.makedirs(output_dir, exist_ok=True)
 
-    # Create summary DataFrame and save to CSV
-    summary_df = summarize_results(results)
-    summary_df.to_csv(os.path.join(output_dir, "component_summary.csv"), index=False)
-
     # Create a multi-panel figure with A matrix + component details
-    components_to_show = [1]
+    components_to_show = [1, 2, 3, 4, 5]
 
-    nrows = ceil(len(components_to_show) / 2) + 1  # +1 for the A matrix row
-    layout = {"ncols": 2, "nrows": nrows}
-    fig_size = (15, nrows * 4)
+    # Single column layout - one row for A matrix, one row per component
+    nrows = len(components_to_show) + 1
+    layout = {"ncols": 1, "nrows": nrows}
+    fig_size = (18, nrows * 5)  # Wider to accommodate the three panels side by side
     ax, f, gs = setupBase(fig_size, layout)
 
-    # Delete the first two axes to make space for the A matrix
-    f.delaxes(ax[0])
-    f.delaxes(ax[1])
-    ax[0] = f.add_subplot(gs[0, :])
+    # A matrix at the top spanning the full width
+    ax_heatmap = ax[0]
 
     # Get components and disease labels
     ranks_labels = [str(x) for x in range(1, X.uns["Pf2_A"].shape[1] + 1)]
@@ -246,70 +133,76 @@ def genFig():
 
     sns.heatmap(
         X.uns["Pf2_A"],
-        ax=ax[0],
+        ax=ax_heatmap,
         cmap="coolwarm",
         center=0,
         xticklabels=ranks_labels,
         yticklabels=disease_labels,
     )
-    ax[0].set_title(f"Disease Factor Matrix (A) - R2X: {r2x:.2f}")
-    ax[0].set_xlabel("Component")
-    ax[0].set_ylabel("Disease")
+    ax_heatmap.set_title(f"Disease Factor Matrix (A) - R2X: {r2x:.2f}")
+    ax_heatmap.set_xlabel("Component")
+    ax_heatmap.set_ylabel("Disease")
 
     for i, comp_num in enumerate(components_to_show):
-        # Create and save detailed heatmap for this component
-        heatmap_fig = create_component_heatmap(X, comp_num, top_n=25)
-        heatmap_fig.savefig(
-            os.path.join(output_dir, f"component_{comp_num}_heatmap.png"), dpi=300
-        )
-        plt.close(heatmap_fig)
-
-        # Make dataframes for diseases and genes of a component
+        # Each component gets its own row
+        ax_i = ax[i + 1]
+        
+        # Split the subplot area for diseases, positive genes, and negative genes
+        divider = make_axes_locatable(ax_i)
+        ax_disease = ax_i
+        ax_pos_gene = divider.append_axes("right", size="100%", pad=1.5)
+        ax_neg_gene = divider.append_axes("right", size="100%", pad=1.5)
+        
+        # Filter the top_genes_df for the current component
+        comp_key = f"Component_{comp_num}"
+        comp_genes = top_genes_df[top_genes_df["component"] == comp_key]
+        
+        # Get the total count of genes in each direction
+        total_pos_genes = len(comp_genes[comp_genes["direction"] == "positive"])
+        total_neg_genes = len(comp_genes[comp_genes["direction"] == "negative"])
+        
+        # Separate positive and negative genes for display
+        pos_genes = comp_genes[comp_genes["direction"] == "positive"].head(10)
+        neg_genes = comp_genes[comp_genes["direction"] == "negative"].head(10)
+        
+        # Make dataframe for diseases of this component
         diseases_df = pd.DataFrame(
             results[comp_num]["diseases"], columns=["Disease", "Score"]
         )
-        genes_df = pd.DataFrame(results[comp_num]["genes"], columns=["Gene", "Score"])
-
-        # Determine axis index for this component (offset by 2 to account for first row)
-        ax_i = ax[i + 2]
-
-        # Create a horizontal bar plot for top 5 diseases and genes
         top_diseases = diseases_df.head(5)
-        top_genes = genes_df.head(15)
-
-        # Split the subplot area with diseases on the left and genes on the right
-        divider = make_axes_locatable(ax_i)
-        ax_disease = ax_i
-        ax_gene = divider.append_axes("right", size="100%", pad=1.75)
-
+        
         # Plot diseases
         sns.barplot(x="Score", y="Disease", data=top_diseases, ax=ax_disease)
         ax_disease.set_title(f"Component {comp_num}: Top Diseases")
         ax_disease.axvline(x=0, color="gray", linestyle="--")
-
-        # Calculate the number of significant genes at 50% threshold
-        gene_scores = np.array([g[1] for g in results[comp_num]["genes"]])
-        max_abs_gene = np.max(np.abs(gene_scores))
-        threshold_50pct = max_abs_gene * 0.5
-        genes_above_threshold = np.sum(np.abs(gene_scores) >= threshold_50pct)
-
-        # Plot gene barplot
-        sns.barplot(x="Score", y="Gene", data=top_genes, ax=ax_gene)
-        ax_gene.set_title(
-            f"Component {comp_num}\nTop Genes (n={genes_above_threshold} at >50% max)"
-        )
-        ax_gene.axvline(x=0, color="gray", linestyle="--")
-
-        # Consistently plot 0 centered gene scores
-        x_min, x_max = ax_gene.get_xlim()
-        max_abs = max(abs(x_min), abs(x_max))
-        ax_gene.set_xlim(-max_abs, max_abs)
-
-        ax_gene.tick_params(axis="y", which="major", pad=10)
-
-        # Plot KDEs for raw data of top genes
-        g = plot_raw_kde(X, comp_num, top_genes["Gene"])
-
+        
+        # Plot positive genes
+        if not pos_genes.empty:
+            sns.barplot(x="value", y="gene", data=pos_genes, ax=ax_pos_gene, color="red")
+            ax_pos_gene.set_title(f"Positive Genes (n={total_pos_genes})")
+            ax_pos_gene.axvline(x=0, color="gray", linestyle="--")
+        else:
+            ax_pos_gene.text(0.5, 0.5, "No positive genes found", 
+                             ha='center', va='center', transform=ax_pos_gene.transAxes)
+            ax_pos_gene.set_title("Positive Genes")
+        
+        # Plot negative genes
+        if not neg_genes.empty:
+            sns.barplot(x="value", y="gene", data=neg_genes, ax=ax_neg_gene, color="blue")
+            ax_neg_gene.set_title(f"Negative Genes (n={total_neg_genes})")
+            ax_neg_gene.axvline(x=0, color="gray", linestyle="--")
+        else:
+            ax_neg_gene.text(0.5, 0.5, "No negative genes found", 
+                             ha='center', va='center', transform=ax_neg_gene.transAxes)
+            ax_neg_gene.set_title("Negative Genes")
+        
+        # Ensure the axis limits are well-balanced
+        for axis in [ax_pos_gene, ax_neg_gene]:
+            if not axis.lines:  # Skip if no data plotted
+                continue
+            xlim = max(abs(min(axis.get_xlim()[0], 0)), abs(max(axis.get_xlim()[1], 0)))
+            axis.set_xlim(-xlim, xlim)
+        
         # Highlight this component in the A matrix
         rect = plt.Rectangle(
             (comp_num - 1, 0),
@@ -318,10 +211,109 @@ def genFig():
             fill=False,
             edgecolor="black",
             linewidth=2,
-            transform=ax[0].transData,
+            transform=ax_heatmap.transData,
         )
-        ax[0].add_patch(rect)
+        ax_heatmap.add_patch(rect)
 
     f.suptitle("PARAFAC2 Component Analysis", fontsize=16)
 
+    # Create a separate figure for the histograms, clearly separating positive and negative genes
+    if not pos_genes.empty or not neg_genes.empty:
+        # Get top 5 genes from each direction to plot
+        pos_genes_to_plot = pos_genes.head(10) if not pos_genes.empty else None
+        neg_genes_to_plot = neg_genes.head(10) if not neg_genes.empty else None
+        
+        # Combine gene names for plotting
+        genes_to_plot = []
+        if pos_genes_to_plot is not None:
+            genes_to_plot.extend(pos_genes_to_plot["gene"].tolist())
+        if neg_genes_to_plot is not None:
+            genes_to_plot.extend(neg_genes_to_plot["gene"].tolist())
+        
+        if genes_to_plot:
+            g = plot_raw_kde(
+                X, 
+                comp_num, 
+                genes_to_plot, 
+                pos_genes_df=pos_genes_to_plot, 
+                neg_genes_df=neg_genes_to_plot
+            )
+        else:
+            g = None
+    else:
+        g = None
+
     return f, g
+
+
+def plot_raw_kde(X: ad.AnnData, cmp, genes, pos_genes_df=None, neg_genes_df=None):
+    """Plot histograms for raw expression data of selected genes, 
+    distinguishing between positive and negative loading genes.
+    
+    Parameters
+    ----------
+    X : ad.AnnData
+        AnnData object with expression data
+    cmp : int
+        Component number
+    genes : list
+        List of gene names to plot
+    pos_genes_df : pd.DataFrame, optional
+        DataFrame with positive loading genes
+    neg_genes_df : pd.DataFrame, optional
+        DataFrame with negative loading genes
+    """
+    if not genes:
+        return None
+        
+    layout, fig_size = calculate_layout(len(genes), scale_factor=4)
+    ax, f, gs = setupBase(fig_size, layout)
+
+    exp = X.layers["raw"]
+    exp = calculate_cpm(exp)
+    
+    # Create sets of positive and negative genes for quick lookup
+    pos_genes_set = set(pos_genes_df["gene"].values) if pos_genes_df is not None else set()
+    neg_genes_set = set(neg_genes_df["gene"].values) if neg_genes_df is not None else set()
+
+    for i, gene in enumerate(genes):
+        if i >= len(ax):
+            break
+            
+        ax_i = ax[i]
+        gene_idx = np.where(X.var.index == gene)[0]
+        
+        if len(gene_idx) == 0:
+            ax_i.text(0.5, 0.5, f"Gene {gene} not found", ha='center', va='center')
+            continue
+            
+        gene_data = exp[:, gene_idx].flatten()
+        
+        # Determine if the gene is positive or negative loading
+        if gene in pos_genes_set:
+            color = "red"
+            direction = "Positive"
+        elif gene in neg_genes_set:
+            color = "blue"
+            direction = "Negative"
+        else:
+            color = "gray"
+            direction = "Unknown"
+
+        # Plot histogram instead of KDE
+        sns.histplot(
+            gene_data, 
+            ax=ax_i, 
+            color=color, 
+            alpha=0.7, 
+            kde=False,
+            bins=50,
+            element="bars"
+        )
+        ax_i.set_title(f"{direction} Gene: {gene}")
+        ax_i.set_xlabel("Expression Level (CPM)")
+        ax_i.set_ylabel("Count")
+
+    f.suptitle(f"Expression Histograms for Component {cmp}", fontsize=16)
+
+    return f

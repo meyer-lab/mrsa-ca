@@ -700,5 +700,26 @@ def import_sepsis():
 
     return sepsis_adata
 
-# TODO: HSV dataset from PBMCs: GSE185341
-# Likely contains associations with enterovirus, HIV_CM datasets
+
+def import_mpn():
+    mpn_adata = load_archs4("GSE277354")
+
+    # Separate sex_disease in "genotype" column into two new columns
+    mpn_adata.obs[["sex", "disease"]] = mpn_adata.obs["genotype"].str.split(
+        "_", expand=True
+    )
+
+    # Trim to just blood samples. Peripheral blood is whole blood
+    mpn_adata = mpn_adata[mpn_adata.obs["tissue"] == "peripheral blood"].copy()
+
+    # Keep only relevant columns
+    mpn_adata.obs = mpn_adata.obs.loc[:, ["sex", "disease"]]
+
+    # Rename all disease names to superset MPN
+    mpn_adata.obs["disease"] = "MPN"
+
+    # Add standardized columns
+    mpn_adata.obs["status"] = "Diagnosed"
+    mpn_adata.obs["dataset_id"] = "GSE277354"
+
+    mpn_adata.obs = mpn_adata.obs

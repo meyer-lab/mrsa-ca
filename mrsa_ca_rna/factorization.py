@@ -68,9 +68,9 @@ def store_pf2(
 
 
 def standardize_pf2(
-    factors: list[np.ndarray], projections: list[np.ndarray]
+    weights: np.ndarray, factors: list[np.ndarray], projections: list[np.ndarray]
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
-    weights, factors = cp_flip_sign(cp_normalize((None, factors)), mode=1)
+    weights, factors = cp_flip_sign(cp_normalize((weights, factors)), mode=1)
 
     # Order components by weight
     w_idx = np.argsort(weights)
@@ -155,7 +155,7 @@ def perform_parafac2(
     projections = [cp.asnumpy(p.get()) for p in pf2[2]]
 
     # Standardize the factors and projections
-    weights, factors, projections = standardize_pf2(factors, projections)
+    weights, factors, projections = standardize_pf2(weights, factors, projections)
     X = store_pf2(X, weights, factors, projections)
 
     if rank > 1:

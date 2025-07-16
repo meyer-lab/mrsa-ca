@@ -92,6 +92,7 @@ def concat_datasets(
         if ad_key not in data_dict:
             raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
         else:
+            print(f"Importing dataset: {ad_key}")
             adata_list.append(data_dict[ad_key]())
 
     if not adata_list:
@@ -262,48 +263,52 @@ def resample_adata(X_in: ad.AnnData, random_state=None) -> ad.AnnData:
     return X_in_resampled
 
 
-def find_top_genes_by_threshold(
-    genes_df: pd.DataFrame, threshold_fraction: float = 0.5
+def find_top_features(
+    features_df: pd.DataFrame, 
+    threshold_fraction: float = 0.5,
+    feature_name: str = "feature"
 ) -> pd.DataFrame:
-    """Find top genes in each component that exceed a threshold of the max value,
+    """Find top features in each component that exceed a threshold of the max value,
     treating positive and negative loadings separately.
 
     Parameters
     ----------
-    genes_df : pd.DataFrame
-        DataFrame with genes as index and components as columns
+    features_df : pd.DataFrame
+        DataFrame with features as index and components as columns
     threshold_fraction : float, default=0.5
         Fraction of max/min value to use as threshold for positive/negative loadings
+    feature_name : str, default="feature"
+        Name to use for the feature column in output (e.g., "gene", "disease")
 
     Returns
     -------
     pd.DataFrame
         DataFrame with columns:
-        - gene: Gene name
+        - {feature_name}: Feature name
         - component: Component identifier
-        - value: Loading value of gene in component
+        - value: Loading value of feature in component
         - abs_value: Absolute value of the loading
         - direction: "positive" or "negative" loading
-        - rank: Rank of gene within its component and direction (by absolute value)
+        - rank: Rank of feature within its component and direction (by absolute value)
     """
-    # DataFrame format with gene, component, value columns
+    # DataFrame format with feature, component, value columns
     result_data = []
-    for cmp in genes_df.columns:
+    for cmp in features_df.columns:
         # Handle positive loadings
-        pos_vals = genes_df[cmp][genes_df[cmp] > 0]
+        pos_vals = features_df[cmp][features_df[cmp] > 0]
         if not pos_vals.empty:
             max_pos = pos_vals.max()
-            pos_mask = genes_df[cmp] >= threshold_fraction * max_pos
+            pos_mask = features_df[cmp] >= threshold_fraction * max_pos
 
-            # Get the genes and their values
-            pos_genes = genes_df.index[pos_mask].tolist()
-            pos_values = genes_df.loc[pos_mask, cmp].tolist()
+            # Get the features and their values
+            pos_features = features_df.index[pos_mask].tolist()
+            pos_values = features_df.loc[pos_mask, cmp].tolist()
 
             # Add to result data
-            for gene, value in zip(pos_genes, pos_values, strict=False):
+            for feature, value in zip(pos_features, pos_values, strict=False):
                 result_data.append(
                     {
-                        "gene": gene,
+                        feature_name: feature,
                         "component": cmp,
                         "value": value,
                         "abs_value": abs(value),
@@ -312,20 +317,20 @@ def find_top_genes_by_threshold(
                 )
 
         # Handle negative loadings
-        neg_vals = genes_df[cmp][genes_df[cmp] < 0]
+        neg_vals = features_df[cmp][features_df[cmp] < 0]
         if not neg_vals.empty:
             min_neg = neg_vals.min()
-            neg_mask = genes_df[cmp] <= threshold_fraction * min_neg
+            neg_mask = features_df[cmp] <= threshold_fraction * min_neg
 
-            # Get the genes and their values
-            neg_genes = genes_df.index[neg_mask].tolist()
-            neg_values = genes_df.loc[neg_mask, cmp].tolist()
+            # Get the features and their values
+            neg_features = features_df.index[neg_mask].tolist()
+            neg_values = features_df.loc[neg_mask, cmp].tolist()
 
             # Add to result data
-            for gene, value in zip(neg_genes, neg_values, strict=False):
+            for feature, value in zip(neg_features, neg_values, strict=False):
                 result_data.append(
                     {
-                        "gene": gene,
+                        feature_name: feature,
                         "component": cmp,
                         "value": value,
                         "abs_value": abs(value),
@@ -346,5 +351,5 @@ def find_top_genes_by_threshold(
         return result_df
     else:
         return pd.DataFrame(
-            columns=["gene", "component", "value", "abs_value", "direction", "rank"]
+            columns=[feature_name, "component", "value", "abs_value", "direction", "rank"]
         )

@@ -16,17 +16,18 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.figures.helpers import plot_gene_matrix
 from mrsa_ca_rna.utils import (
     concat_datasets,
     find_top_features,
     calculate_cpm,
+    check_sparsity,
 )
 
 
-def get_data():
+def get_data(filter_threshold=5, min_pct=0.9, rank=5):
     """Set up the data for analysis"""
-    rank = 1
-    X = concat_datasets(filter_threshold=5, min_pct=0.9)
+    X = concat_datasets(filter_threshold=filter_threshold, min_pct=min_pct)
 
     X, r2x = perform_parafac2(X, slice_col="disease", rank=rank)
 
@@ -53,7 +54,7 @@ def get_data():
     return X, r2x, top_genes_df, top_diseases_df
 
 
-def highlight_heatmap_columns(ax_heatmap, column_indices, **rect_kwargs):
+def highlight_heatmap_columns(ax_heatmap, column_indices, data_shape=None, **rect_kwargs):
     """
     Add rectangular highlights over specified columns in a heatmap.
     
@@ -90,10 +91,23 @@ def highlight_heatmap_columns(ax_heatmap, column_indices, **rect_kwargs):
     rectangles = []
     
     # Get the number of rows in the heatmap
-    # This assumes the heatmap data shape can be inferred from axis limits
-    ylim = ax_heatmap.get_ylim()
-    num_rows = ylim[1] - ylim[0]
-    
+    if data_shape is not None:
+        num_rows = data_shape[0]
+    else:
+        # Infer from axes properties
+        yticks = ax_heatmap.get_yticks()
+        if len(yticks) > 0:
+            num_rows = len(yticks)
+        else:
+            # Try to extract from image data
+            images = ax_heatmap.get_images()
+            if images:
+                num_rows = images[0].get_array().shape[0]
+            else:
+                # Try to use the current axes size
+                ylim = ax_heatmap.get_ylim()
+                num_rows = ceil(ylim[1] - ylim[0])
+
     for col_idx in column_indices:
         rect = plt.Rectangle(
             (col_idx, 0),  # x, y position
@@ -199,60 +213,72 @@ def plot_component_details(
 
 def genFig():
     """Generate figures showing the associations between diseases and genes"""
-    X, r2x, top_genes_df, top_diseases_df = get_data()
+    X, r2x, top_genes_df, top_diseases_df = get_data(filter_threshold=5, min_pct=0.9, rank=1)
 
-    # Create a multi-panel figure with A matrix + component details
-    components_to_show = [1, 2, 3, 4, 5]
+    # Create a multi-panel figure with A and C matrices + component details
+    components_to_show = [1]
     n_genes_to_plot = 10
     n_diseases_to_plot = 5
 
-    # Single column layout - one row for A matrix, one row per component
+    # Two column layout - first row for matrices, subsequent rows for components
     nrows = len(components_to_show) + 1
-    layout = {"ncols": 1, "nrows": nrows}
-    fig_size = (18, nrows * 5)
+    layout = {"ncols": 2, "nrows": nrows}
+    fig_size = (8, nrows * 5)
     ax, f, gs = setupBase(fig_size, layout)
 
-    # A matrix at the top spanning the full width
-    ax_heatmap = ax[0]
+    # First row: A matrix (diseases) and C matrix (genes) side by side
+    ax_a_matrix = ax[0]  # Top left
+    ax_c_matrix = ax[1]  # Top right
 
     # Get components and disease labels
     ranks_labels = [str(x) for x in range(1, X.uns["Pf2_A"].shape[1] + 1)]
     disease_labels = list(X.obs["disease"].unique().astype(str))
 
+    # Plot A matrix (diseases)
     sns.heatmap(
         X.uns["Pf2_A"],
-        ax=ax_heatmap,
+        ax=ax_a_matrix,
         cmap="coolwarm",
         center=0,
         xticklabels=ranks_labels,
         yticklabels=disease_labels,
     )
-    ax_heatmap.set_title(f"Disease Factor Matrix (A) - R2X: {r2x:.2f}")
-    ax_heatmap.set_xlabel("Component")
-    ax_heatmap.set_ylabel("Disease")
+    ax_a_matrix.set_title(f"Disease Factor Matrix (A) - R2X: {r2x:.2f}")
+    ax_a_matrix.set_xlabel("Component")
+    ax_a_matrix.set_ylabel("Disease")
 
-    # Plot each selected component's diseases and genes
+    # Plot C matrix (genes) using the rasterized plotter
+    sparsity = check_sparsity(X.varm["Pf2_C"])
+    plot_gene_matrix(X, ax=ax_c_matrix, title=f"Gene Factor Matrix (C)\nSparsity: {sparsity:.2f}")
+
+    # Plot each selected component's details
     for i, comp_num in enumerate(components_to_show):
-        # Each component gets its own row
-        ax_i = ax[i + 1]
+        # Calculate row index for this component (skip first row which has matrices)
+        row_idx = i + 1
+        
+        # Left column: diseases
+        ax_disease = ax[row_idx * 2]  # Left column of current row
+        
+        # Right column: split for positive and negative genes
+        ax_genes = ax[row_idx * 2 + 1]  # Right column of current row
+        
+        # Split the right column for positive and negative genes
+        divider = make_axes_locatable(ax_genes)
+        ax_pos_gene = ax_genes
+        ax_neg_gene = divider.append_axes("bottom", size="100%", pad=0.6)
 
-        # Split the subplot area for diseases, positive genes, and negative genes
-        divider = make_axes_locatable(ax_i)
-        ax_disease = ax_i
-        ax_pos_gene = divider.append_axes("right", size="100%", pad=1.5)
-        ax_neg_gene = divider.append_axes("right", size="100%", pad=1.5)
-
-        # Use the new plotting function
+        # Use the existing plotting function
         plot_component_details(
             ax_disease, ax_pos_gene, ax_neg_gene,
             comp_num, top_diseases_df, top_genes_df,
             n_genes=n_genes_to_plot, n_diseases=n_diseases_to_plot
         )
 
-        # Highlight this component in the A matrix
-        highlight_heatmap_columns(ax_heatmap, comp_num - 1)
+        # Highlight this component in both matrices
+        highlight_heatmap_columns(ax_a_matrix, comp_num - 1)
+        highlight_heatmap_columns(ax_c_matrix, comp_num - 1)
 
-    f.suptitle("PARAFAC2 Component Analysis", fontsize=16)
+    f.suptitle("PARAFAC2 Component Analysis: Disease-Gene Associations", fontsize=16)
 
     # Create histogram figure using the overall top genes from all components
     pos_genes_all = top_genes_df[top_genes_df["direction"] == "positive"]

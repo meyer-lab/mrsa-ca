@@ -15,7 +15,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
     vmin, vmax = data_df.values.min(), data_df.values.max()
     max_abs = max(abs(vmin), abs(vmax))
 
-    # Plot directly with imshow (rasterized)
+    # Plot directly with imshow (rasterized) but align with seaborn coordinate system
     artist = ax.imshow(
         data_df.values,
         aspect="auto",
@@ -23,6 +23,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
         vmin=-max_abs,
         vmax=max_abs,
         interpolation="nearest",
+        extent=[0, len(data_df.columns), 0, len(data_df.index)],  # Align with seaborn
     )
 
     # Add colorbar
@@ -34,16 +35,18 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
     # Add zero line to colorbar for emphasis
     cbar.ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5, alpha=0.5)
 
-    # Add vertical lines every 5th column
+    # Add vertical lines every 5th column - now aligned with seaborn coordinates
     n_columns = len(data_df.columns)
-    for i in range(4, n_columns, 5):  # Starting at 4 (5th column, 0-indexed)
-        ax.axvline(i + 0.5, color="black", linestyle="-", linewidth=0.8)
+    for i in range(5, n_columns + 1, 5):  # Every 5th column boundary
+        ax.axvline(i, color="black", linestyle="-", linewidth=0.8)
 
     ax.set_xlabel("Rank")
     ax.set_ylabel("Genes")
     if title:
         ax.set_title(title)
-    ax.set_xticks(range(len(data_df.columns)))
+
+    # Set ticks to match seaborn heatmap style
+    ax.set_xticks(np.arange(len(data_df.columns)) + 0.5)  # Center ticks on columns
     ax.set_xticklabels(data_df.columns)
     ax.set_yticks([])
 

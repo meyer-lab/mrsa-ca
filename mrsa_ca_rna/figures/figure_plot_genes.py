@@ -119,7 +119,7 @@ def prepare_plot_dataframe(mean_genes, top_genes_df):
 
 def get_data():
     """Get the data for plotting the gene factor matrix."""
-    X = concat_datasets(filter_threshold=5, min_pct=.5)
+    X = concat_datasets(filter_threshold=5, min_pct=0.5)
 
     # Perform PARAFAC2 factorization
     X, _ = perform_parafac2(X, slice_col="disease", rank=1)
@@ -204,38 +204,63 @@ def genFig():
     # Combine mean expression and component weights
     df = genes_df.copy()
     df["mean_expression"] = mean_genes["mean_expression"]
-    df = df.reset_index().melt(
-        id_vars=["index", "mean_expression"],
-        var_name="component",
-        value_name="component_weight"
-    ).rename(columns={"index": "gene"})
+    df = (
+        df.reset_index()
+        .melt(
+            id_vars=["index", "mean_expression"],
+            var_name="component",
+            value_name="component_weight",
+        )
+        .rename(columns={"index": "gene"})
+    )
 
     # Calculate correlation metrics for each component
     corr_text = []
-    for comp in df['component'].unique():
-        comp_data: pd.DataFrame = df[df['component'] == comp]
-        
+    for comp in df["component"].unique():
+        comp_data: pd.DataFrame = df[df["component"] == comp]
+
         # Calculate linear correlation (Pearson)
-        pearson_r = comp_data['component_weight'].corr(comp_data['mean_expression'], method='pearson')
-        
+        pearson_r = comp_data["component_weight"].corr(
+            comp_data["mean_expression"], method="pearson"
+        )
+
         # Calculate non-linear correlations
-        spearman_r = comp_data['component_weight'].corr(comp_data['mean_expression'], method='spearman')
-        kendall_tau = comp_data['component_weight'].corr(comp_data['mean_expression'], method='kendall')
-        
-        corr_text.append(f"Component {comp}:\n"
-                         f"Pearson r: {pearson_r:.3f} (linear)\n"
-                         f"Spearman ρ: {spearman_r:.3f} (monotonic)\n"
-                         f"Kendall τ: {kendall_tau:.3f} (ordinal)")
+        spearman_r = comp_data["component_weight"].corr(
+            comp_data["mean_expression"], method="spearman"
+        )
+        kendall_tau = comp_data["component_weight"].corr(
+            comp_data["mean_expression"], method="kendall"
+        )
+
+        corr_text.append(
+            f"Component {comp}:\n"
+            f"Pearson r: {pearson_r:.3f} (linear)\n"
+            f"Spearman ρ: {spearman_r:.3f} (monotonic)\n"
+            f"Kendall τ: {kendall_tau:.3f} (ordinal)"
+        )
 
     # Plot a scatter of all the components
-    b = sns.scatterplot(data=df, x="component_weight", y="mean_expression",
-                        hue="component", palette=colors, ax=ax[1])
+    b = sns.scatterplot(
+        data=df,
+        x="component_weight",
+        y="mean_expression",
+        hue="component",
+        palette=colors,
+        ax=ax[1],
+    )
 
     # Add correlation metrics as text
     corr_info = "\n\n".join(corr_text)
-    props = dict(boxstyle='round', facecolor='white', alpha=0.7)
-    ax[1].text(0.05, 0.95, corr_info, transform=ax[1].transAxes, 
-               fontsize=9, verticalalignment='top', bbox=props)
+    props = dict(boxstyle="round", facecolor="white", alpha=0.7)
+    ax[1].text(
+        0.05,
+        0.95,
+        corr_info,
+        transform=ax[1].transAxes,
+        fontsize=9,
+        verticalalignment="top",
+        bbox=props,
+    )
 
     b.set_yscale("log")
     b.set_xlabel("Component Weight")

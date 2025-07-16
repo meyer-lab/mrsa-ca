@@ -10,7 +10,7 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase, calculate_layout
-from mrsa_ca_rna.utils import concat_datasets, find_top_genes_by_threshold, calculate_cpm
+from mrsa_ca_rna.utils import concat_datasets, find_top_features, calculate_cpm
 
 
 def get_data() -> ad.AnnData:
@@ -52,8 +52,8 @@ def prepare_weighted_genes(X: ad.AnnData) -> pd.DataFrame:
     )
 
     # Find top genes by threshold
-    top_genes = find_top_genes_by_threshold(weighted_genes_df, threshold_fraction=0.5)
-    top_genes.to_csv("eigen_genes.csv", index=True)
+    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.5)
+    top_genes.to_csv("output/eigen_genes.csv", index=True)
 
     return top_genes
 

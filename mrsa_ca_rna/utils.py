@@ -63,18 +63,18 @@ def concat_datasets(
         "ca": import_ca,
         "bc": import_bc,
         "tb": import_tb,
-        "uc": import_uc,
+        # "uc": import_uc,
         "t1dm": import_t1dm,
         "covid": import_covid,
         "lupus": import_lupus,
         "hiv": import_hiv,
-        "em": import_em,
-        "zika": import_zika,
-        "heme": import_heme,
+        # "em": import_em,
+        # "zika": import_zika,
+        # "heme": import_heme,
         "ra": import_ra,
         "hbv": import_hbv,
         "covid_marine": import_covid_marine,
-        "bc_tcr": import_bc_tcr,
+        # "bc_tcr": import_bc_tcr,
     }
 
     # If no list is provided or "all" is specified, use all available datasets

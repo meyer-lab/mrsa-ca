@@ -13,6 +13,7 @@ from mrsa_ca_rna.gsea import gsea_analysis_per_cmp
 from mrsa_ca_rna.utils import (
     check_sparsity,
     concat_datasets,
+    find_top_genes_by_threshold,
 )
 
 
@@ -21,7 +22,7 @@ def figure_setup():
 
     rank = 5
 
-    X = concat_datasets(filter_threshold=5, min_pct=.9)
+    X = concat_datasets(filter_threshold=5, min_pct=0.9)
 
     # outliers = [
     #     "SRR22854005", "SRR22854037", "SRR22854038", "SRR22854058",
@@ -78,7 +79,8 @@ def genFig():
         index=X.var.index,
         columns=pd.Index(ranks_labels),
     )
-    genes_df.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
+    top_genes = find_top_genes_by_threshold(genes_df, threshold_fraction=0.5)
+    top_genes.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())

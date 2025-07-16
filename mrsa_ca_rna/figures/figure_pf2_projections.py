@@ -12,7 +12,7 @@ from mrsa_ca_rna.utils import concat_datasets
 
 
 def figure_setup():
-    X = concat_datasets()
+    X = concat_datasets(filter_threshold=5, min_pct=0.9)
 
     # # Define outlier samples to remove
     # outlier_samples = [
@@ -28,7 +28,7 @@ def figure_setup():
     # from sklearn.preprocessing import StandardScaler
     # X.X = StandardScaler().fit_transform(X.X)
 
-    rank = 10
+    rank = 5
 
     X, _ = perform_parafac2(X, slice_col="disease", rank=rank)
 
@@ -89,7 +89,7 @@ def genFig():
     ax, g, _ = setupBase(fig_size, layout)
 
     # Calculate the percentiles based on absolute values from zero
-    column_name = projections.columns[0]
+    column_name = projections.columns[1]
     abs_values = projections[column_name].abs()
     p50 = abs_values.quantile(0.5)
     p75 = abs_values.quantile(0.75)
@@ -130,7 +130,7 @@ def genFig():
     b.set_title("Distribution of Samples Across Diseases")
     b.set_xlabel("Disease")
     b.set_ylabel("Projection Value")
-    
+
     # Identify outliers within each disease
     column_name = projections.columns[0]  # The first projection column
     outliers = identify_disease_specific_outliers(projections, column_name)

@@ -50,11 +50,11 @@ def bootstrap_fms(X, rank, target_trials=30):
     return fms_list, R2X_diff_list
 
 
-def get_data(rank=5, trails=30):
-    disease_data = concat_datasets()
+def get_data(rank=5, trials=30):
+    disease_data = concat_datasets(filter_threshold=5, min_pct=0.9)
 
     fms_list, r2x_list = bootstrap_fms(
-        disease_data.copy(), rank=rank, target_trials=trails
+        disease_data.copy(), rank=rank, target_trials=trials
     )
 
     metrics = {"fms": fms_list, "R2X_diff": r2x_list}
@@ -70,38 +70,26 @@ def genFig():
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    trails = 10
+    trials = 30
 
     # Generate data for different ranks
-    rank_5 = get_data(5, trails)
-    rank_10 = get_data(10, trails)
-    rank_50 = get_data(50, trails)
-    rank_80 = get_data(80, trails)
+    trial_data = get_data(5, trials)
 
     # Create scatter plot and KDE plot
-    a = sns.scatterplot(data=rank_5, x="fms", y="R2X_diff", ax=ax[0])
-    a = sns.scatterplot(data=rank_10, x="fms", y="R2X_diff", ax=ax[0])
-    a = sns.scatterplot(data=rank_50, x="fms", y="R2X_diff", ax=ax[0])
-    a = sns.scatterplot(data=rank_80, x="fms", y="R2X_diff", ax=ax[0])
+    a = sns.scatterplot(data=trial_data, x="fms", y="R2X_diff", ax=ax[0])
     a.set_xlabel("Factor Match Score")
     a.set_ylabel("R2X Difference (%)")
     a.set_title("FMS and R2X percent difference of PF2 factor matrices")
-    a.legend(
-        title="Rank",
-        labels=["5", "10", "50", "80"],
-    )
 
-    b = sns.kdeplot(data=rank_5, x="fms", clip=(0, 1), ax=ax[1])
-    b = sns.kdeplot(data=rank_10, x="fms", clip=(0, 1), ax=ax[1])
-    b = sns.kdeplot(data=rank_50, x="fms", clip=(0, 1), ax=ax[1])
-    b = sns.kdeplot(data=rank_80, x="fms", clip=(0, 1), ax=ax[1])
+    b = sns.kdeplot(data=trial_data, x="fms", clip=(0, 1), ax=ax[1])
     b.set_xlabel("Factor Match Score")
     b.set_ylabel("Density")
     b.set_xlim(0, 1)
     b.set_title("Distribution of Factor Match Scores")
-    b.legend(
-        title="Rank",
-        labels=["5", "10", "50", "80"],
-    )
+
+    f.suptitle(
+        "Pf2 Factor Match Score and R2X Difference w/Resampled data\n"
+        "Data filtering: CPM > 5 in 90% of samples"
+        )
 
     return f

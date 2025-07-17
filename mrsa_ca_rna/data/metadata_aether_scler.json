@@ -1,0 +1,1957 @@
+{
+  "GSM6890327": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890328": {
+    "characteristics": "tissue: WBS,gender: Female,age: 45,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890329": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890330": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890331": {
+    "characteristics": "tissue: WBS,gender: Female,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890332": {
+    "characteristics": "tissue: WBS,gender: Female,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890333": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890334": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890335": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890336": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890337": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890338": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890339": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890340": {
+    "characteristics": "tissue: WBS,gender: Female,age: 40,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890341": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890342": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890343": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890344": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890345": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890346": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890347": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890348": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890349": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890350": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890351": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890352": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890353": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890354": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890355": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890356": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890357": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890358": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890359": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890360": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890361": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890362": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890363": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890364": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890365": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890366": {
+    "characteristics": "tissue: WBS,gender: Male,age: 55,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890367": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890368": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890369": {
+    "characteristics": "tissue: WBS,gender: Female,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890370": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890371": {
+    "characteristics": "tissue: WBS,gender: Female,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890372": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890373": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890374": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890375": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890376": {
+    "characteristics": "tissue: WBS,gender: Female,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890377": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890378": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890379": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890380": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890381": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890382": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890383": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890384": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890385": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890386": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890387": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890388": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890389": {
+    "characteristics": "tissue: WBS,gender: Female,age: 45,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890390": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890391": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890392": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890393": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890394": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890395": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890396": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890397": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890398": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890399": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890400": {
+    "characteristics": "tissue: WBS,gender: Female,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890401": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890402": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890403": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890404": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890405": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890406": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890407": {
+    "characteristics": "tissue: WBS,gender: Female,age: 41,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890408": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890409": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890410": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890411": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890412": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890413": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890414": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890415": {
+    "characteristics": "tissue: WBS,gender: Female,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890416": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890417": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890418": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890419": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890420": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890421": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890422": {
+    "characteristics": "tissue: WBS,gender: Female,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890423": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890424": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890425": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890426": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890427": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890428": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890429": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890430": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890431": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890432": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890433": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890434": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890435": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890436": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890437": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890438": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890439": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890440": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890441": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890442": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890443": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890444": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890445": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890446": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890447": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890448": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890449": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890450": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890451": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890452": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890453": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890454": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890455": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890456": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890457": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890458": {
+    "characteristics": "tissue: WBS,gender: Female,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890459": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890460": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890461": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890462": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890463": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890464": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890465": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890466": {
+    "characteristics": "tissue: WBS,gender: Female,age: 45,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890467": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890468": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890469": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890470": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890471": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890472": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890473": {
+    "characteristics": "tissue: WBS,gender: Female,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890474": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890475": {
+    "characteristics": "tissue: WBS,gender: Female,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890476": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890477": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890478": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890479": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890480": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890481": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890482": {
+    "characteristics": "tissue: WBS,gender: Female,age: 47,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890483": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890484": {
+    "characteristics": "tissue: WBS,gender: Female,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890485": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890486": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890487": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890488": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890489": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890490": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890491": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890492": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890493": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890494": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890495": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890496": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890497": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890498": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890499": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890500": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890501": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890502": {
+    "characteristics": "tissue: WBS,gender: Female,age: 40,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890503": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890504": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890505": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890506": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890507": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890508": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890509": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890510": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890511": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890512": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890513": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890514": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890515": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890516": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890517": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890518": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890519": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890520": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890521": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890522": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890523": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890524": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890525": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890526": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890527": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890528": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890529": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890530": {
+    "characteristics": "tissue: WBS,gender: Female,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890531": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890532": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890533": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890534": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890535": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890536": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890537": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890538": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890539": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890540": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890541": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890542": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890543": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890544": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890545": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890546": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890547": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890548": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890549": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890550": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890551": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890552": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890553": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890554": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890555": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890556": {
+    "characteristics": "tissue: WBS,gender: Female,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890557": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890558": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890559": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890560": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890561": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890562": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890563": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890564": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890565": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890566": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890567": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890568": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890569": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890570": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890571": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890572": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890573": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890574": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890575": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890576": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890577": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890578": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890579": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890580": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890581": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890582": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890583": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890584": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890585": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890586": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890587": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890588": {
+    "characteristics": "tissue: WBS,gender: Female,age: 54,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890589": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890590": {
+    "characteristics": "tissue: WBS,gender: Female,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890591": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890592": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890593": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890594": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890595": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890596": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890597": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890598": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890599": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890600": {
+    "characteristics": "tissue: WBS,gender: Female,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890601": {
+    "characteristics": "tissue: WBS,gender: Male,age: 45,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890602": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890603": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890604": {
+    "characteristics": "tissue: WBS,gender: Female,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890605": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890606": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890607": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890608": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890609": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890610": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890611": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890612": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890613": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890614": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890615": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890616": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890617": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890618": {
+    "characteristics": "tissue: WBS,gender: Female,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890619": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890620": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890621": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890622": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890623": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890624": {
+    "characteristics": "tissue: WBS,gender: Female,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890625": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890626": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890627": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890628": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890629": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890630": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890631": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890632": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890633": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890634": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890635": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890636": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890637": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890638": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890639": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890640": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890641": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890642": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890643": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890644": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890645": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890646": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890647": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890648": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890649": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890650": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890651": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890652": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890653": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890654": {
+    "characteristics": "tissue: WBS,gender: Male,age: 43,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890655": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890656": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890657": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890658": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890659": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890660": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890661": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890662": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890663": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890664": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890665": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890666": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890667": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890668": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890669": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890670": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890671": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890672": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890673": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890674": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890675": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890676": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890677": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890678": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890679": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890680": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890681": {
+    "characteristics": "tissue: WBS,gender: Male,age: 46,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890682": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890683": {
+    "characteristics": "tissue: WBS,gender: Male,age: 50,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890684": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890685": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890686": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890687": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890688": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890689": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890690": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890691": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890692": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890693": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890694": {
+    "characteristics": "tissue: WBS,gender: Male,age: 42,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890695": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890696": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890697": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890698": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890699": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890700": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890701": {
+    "characteristics": "tissue: WBS,gender: Male,age: 47,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890702": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890703": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890704": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890705": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Focal",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890706": {
+    "characteristics": "tissue: WBS,gender: Male,age: 49,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890707": {
+    "characteristics": "tissue: WBS,gender: Male,age: 52,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890708": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890709": {
+    "characteristics": "tissue: WBS,gender: Male,age: 53,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890710": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890711": {
+    "characteristics": "tissue: WBS,gender: Male,age: 54,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890712": {
+    "characteristics": "tissue: WBS,gender: Male,age: 40,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890713": {
+    "characteristics": "tissue: WBS,gender: Male,age: 41,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890714": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Generalized",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890715": {
+    "characteristics": "tissue: WBS,gender: Male,age: 44,pesa score: No",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890716": {
+    "characteristics": "tissue: WBS,gender: Male,age: 51,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  },
+  "GSM6890717": {
+    "characteristics": "tissue: WBS,gender: Male,age: 48,pesa score: Intermediate",
+    "series": "GSE221615,GSE224624",
+    "source": "WBS"
+  }
+}

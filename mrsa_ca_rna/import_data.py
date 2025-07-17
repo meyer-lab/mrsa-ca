@@ -723,3 +723,31 @@ def import_mpn():
     mpn_adata.obs["dataset_id"] = "GSE277354"
 
     mpn_adata.obs = mpn_adata.obs
+
+def import_covid_sinai():
+    covid_sinai_adata = load_archs4("GSE215865")
+
+    # TODO: Finish import process for Sinai COVID dataset
+
+    return covid_sinai_adata
+
+def import_asthma():
+    asthma_adata = load_archs4("GSE115823")
+
+    # TODO: Manually import the data as it is not in the h5 file
+
+    return asthma_adata
+
+def import_ibd():
+    ibd_adata = load_archs4("GSE186507")
+
+    # TODO: Finish import process for IBD dataset
+
+    return ibd_adata
+
+def import_as():
+    as_adata = load_archs4("GSE221615")
+
+    # TODO: Manually import the data as it is not in the h5 file
+
+    return as_adata

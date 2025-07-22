@@ -188,6 +188,42 @@ def import_mrsa():
 
     return mrsa_adata
 
+def import_mrsa_tfac():
+
+    # Grab Jackson's count data from the TFAC-MRSA project
+    counts_tfac_mrsa = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_mrsa_tfac.zip"),
+        index_col=0,
+        delimiter=",",
+    )
+
+    # Combine the two parts of the tfac metadata for complete status
+    metadata_tfac = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    metadata_aux = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_tfac_validation.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    val_idx = metadata_aux.index
+    metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
+
+    # Take indices from the metadata that match the counts
+    common_idx = metadata_tfac.index.intersection(counts_tfac_mrsa.index)
+    metadata_tfac = metadata_tfac.loc[common_idx]
+
+    # Combine the count data and metadata to create an AnnData object
+    mrsa_tfac_adata = ad.AnnData(
+        X=counts_tfac_mrsa,
+        obs=metadata_tfac,
+        var=pd.DataFrame(index=counts_tfac_mrsa.columns),
+    )
+
+    return mrsa_tfac_adata
+
 
 def import_ca():
     # Read in ca counts

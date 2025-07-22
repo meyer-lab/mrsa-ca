@@ -3,7 +3,10 @@ These functions will be used throughout the project to perform various common ta
 
 import anndata as ad
 import numpy as np
+import os
 import pandas as pd
+import re
+import gzip
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.import_data import (
@@ -353,3 +356,138 @@ def find_top_features(
         return pd.DataFrame(
             columns=[feature_name, "component", "value", "abs_value", "direction", "rank"]
         )
+
+def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
+    """Parse a GTF file and extract gene ID to symbol mappings.
+
+    Parameters
+    ----------
+    gtf_path : str, optional
+        Path to the GTF file. If None, looks for common GTF file locations.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns 'ensembl_id' and 'gene_name'
+    """
+    
+    # Check if file exists
+    if not os.path.exists(gtf_path):
+        print(f"GTF file not found at: {gtf_path}")
+        return pd.DataFrame(columns=["ensembl_id", "gene_name"])
+    
+    gene_mappings = {}
+    
+    # Determine if file is gzipped
+    open_func = gzip.open if gtf_path.endswith('.gz') else open
+    mode = 'rt' if gtf_path.endswith('.gz') else 'r'
+    
+    try:
+        with open_func(gtf_path, mode) as f:
+            for line in f:
+                # Skip comment lines
+                if line.startswith('#'):
+                    continue
+                
+                # Split the line by tabs
+                fields = line.strip().split('\t')
+                
+                # We need at least 9 fields for a valid GTF line
+                if len(fields) < 9:
+                    continue
+                
+                # Only process gene entries
+                feature_type = fields[2]
+                if feature_type != 'gene':
+                    continue
+                
+                # Parse the attributes field (9th column)
+                attributes = fields[8]
+                
+                # Extract gene_id and gene_name using regex
+                gene_id_match = re.search(r'gene_id\s+"([^"]+)"', attributes)
+                gene_name_match = re.search(r'gene_name\s+"([^"]+)"', attributes)
+                
+                if gene_id_match:
+                    gene_id = gene_id_match.group(1)
+                    # Remove version number from Ensembl ID (e.g., ENSG00000139618.2 -> ENSG00000139618)
+                    gene_id_base = gene_id.split('.')[0]
+                    
+                    # Use gene_name if available, otherwise use gene_id
+                    gene_name = gene_name_match.group(1) if gene_name_match else gene_id_base
+                    gene_mappings[gene_id_base] = gene_name
+    
+    except Exception as e:
+        print(f"Error reading GTF file: {e}")
+        return pd.DataFrame(columns=["ensembl_id", "gene_name"])
+    
+    # Convert to DataFrame
+    if gene_mappings:
+        df = pd.DataFrame([
+            {"ensembl_id": ensembl_id, "gene_name": gene_name}
+            for ensembl_id, gene_name in gene_mappings.items()
+        ])
+        print(f"Loaded {len(df)} gene mappings from GTF file")
+        return df
+    else:
+        print("No gene mappings found in GTF file")
+        return pd.DataFrame(columns=["ensembl_id", "gene_name"])
+
+
+def map_genes(gene_list: list[str], gtf_path: str | None = None, 
+              from_type: str = "ensembl", to_type: str = "symbol") -> dict[str, str]:
+    """Map between Ensembl IDs and gene symbols using GTF file.
+
+    Parameters
+    ----------
+    gene_list : list[str]
+        List of gene identifiers to map
+    gtf_path : str, optional
+        Path to the GTF file
+    from_type : str, default="ensembl"
+        Type of input identifiers ("ensembl" or "symbol")
+    to_type : str, default="symbol"
+        Type of output identifiers ("ensembl" or "symbol")
+
+    Returns
+    -------
+    dict[str, str]
+        Dictionary mapping from input to output gene identifiers
+    """
+    # Get the gene mapping
+    gene_df = get_gene_mapping(gtf_path)
+    
+    if gene_df.empty:
+        return {}
+    
+    # Create appropriate mapping dictionary
+    if from_type == "ensembl" and to_type == "symbol":
+        mapping_dict = dict(zip(gene_df["ensembl_id"], gene_df["gene_name"], strict=False))
+    elif from_type == "symbol" and to_type == "ensembl":
+        mapping_dict = dict(zip(gene_df["gene_name"], gene_df["ensembl_id"], strict=False))
+    elif from_type == to_type:
+        # Return identity mapping
+        mapping_dict = {gene: gene for gene in gene_list}
+    else:
+        raise ValueError("Invalid from_type or to_type. Use 'ensembl' or 'symbol'")
+    
+    # Map the genes
+    result = {}
+    for gene in gene_list:
+        # If mapping from Ensembl, strip version number for lookup
+        if from_type == "ensembl":
+            gene_base = gene.split('.')[0]  # Remove version number
+            if gene_base in mapping_dict:
+                result[gene] = mapping_dict[gene_base]  # Use original gene as key
+            else:
+                # Keep original if no mapping found
+                result[gene] = gene
+        else:
+            # For symbol to ensembl mapping, use gene directly
+            if gene in mapping_dict:
+                result[gene] = mapping_dict[gene]
+            else:
+                # Keep original if no mapping found
+                result[gene] = gene
+    
+    return result

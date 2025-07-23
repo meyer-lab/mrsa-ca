@@ -1,0 +1,2752 @@
+{
+  "GSM5372630": {
+    "characteristics": "disease: Control,age: 57,sequencing plate number (used for batch correction): 10",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5372634": {
+    "characteristics": "disease: Control,age: 49,sequencing plate number (used for batch correction): 8",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5372639": {
+    "characteristics": "disease: Control,age: 55,sequencing plate number (used for batch correction): 9",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5372689": {
+    "characteristics": "disease: Control,age: 40,sequencing plate number (used for batch correction): 9",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5372793": {
+    "characteristics": "disease: Control,age: 49,sequencing plate number (used for batch correction): 7",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5372904": {
+    "characteristics": "disease: UC,age: 44,sequencing plate number (used for batch correction): 13",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM5373042": {
+    "characteristics": "disease: UC,sequencing plate number (used for batch correction): 13",
+    "series": "GSE177044",
+    "source": "Whole Blood"
+  },
+  "GSM7763825": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 58,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763826": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 19,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763827": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 32,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763828": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 57,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763829": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 38,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763830": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763831": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 43,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763832": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763833": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 47,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763834": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 25,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763835": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 44,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763836": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 45,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763837": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 78,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763838": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763839": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763840": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 15,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763841": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 50,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763842": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763843": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763844": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763845": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 36,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763846": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 48,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763847": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 71,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763848": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763849": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763850": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 31,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763851": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 34,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763852": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 24,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763853": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 52,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763854": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763855": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 47,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763856": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 50,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763857": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 58,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763858": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763859": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763860": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 56,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763861": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 74,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763862": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 52,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763863": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 34,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763864": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 33,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763865": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 40,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763866": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763867": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 54,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763868": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 20,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763869": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 43,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763870": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763871": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 28,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763872": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 65,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763873": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763874": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763875": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 24,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763876": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763877": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 36,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763878": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 50,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763879": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 53,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763880": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763881": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763882": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 29,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763883": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 20,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763884": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 73,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763885": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 55,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763886": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763887": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763888": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763889": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 74,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763890": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 21,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763891": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763892": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763893": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763894": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 65,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763895": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763896": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 46,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763897": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 59,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763898": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763899": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763900": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763901": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763902": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 34,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763903": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 42,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763904": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763905": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763906": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763907": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763908": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 49,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763909": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 45,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763910": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763911": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763912": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763913": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 36,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763914": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 33,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763915": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763916": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 44,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763917": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 37,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763918": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 23,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763919": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763920": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 24,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763921": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 30,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763922": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763923": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 39,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763924": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 70,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763925": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763926": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 38,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763927": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763928": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 54,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763929": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 34,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763930": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 28,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763931": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763932": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763933": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 62,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763934": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 43,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763935": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 31,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763936": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 27,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763937": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763938": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 30,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763939": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 23,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763940": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 49,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763941": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 38,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763942": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 34,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763943": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 42,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763944": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 44,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763945": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763946": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763947": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 38,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763948": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 41,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763949": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763950": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763951": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 41,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763952": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 45,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763953": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 31,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763954": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 47,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763955": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 43,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763956": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 38,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763957": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 61,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763958": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 19,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763959": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 45,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763960": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763961": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763962": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763963": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 28,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763964": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 41,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763965": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 38,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763966": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763967": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 77,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763968": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763969": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 31,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763970": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 53,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763971": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 56,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763972": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 52,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763973": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763974": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763975": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 41,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763976": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763977": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 36,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763978": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763979": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763980": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 62,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763981": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763982": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763983": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763984": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 56,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763985": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 23,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763986": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763987": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763988": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763989": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 54,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763990": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 20,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763991": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763992": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763993": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 45,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763994": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 34,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763995": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 26,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763996": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 47,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763997": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 52,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763998": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 32,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7763999": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 55,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764000": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 56,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764001": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 61,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764002": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 20,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764003": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 33,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764004": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764005": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 53,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764006": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764007": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764008": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 21,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764009": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 31,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764010": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 19,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764011": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764012": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 32,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764013": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764014": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 55,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764015": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 33,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764016": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 35,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764017": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764018": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 33,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764019": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764020": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 64,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764021": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 46,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764022": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764023": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 31,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764024": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 49,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764025": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 24,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764026": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 47,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764027": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 34,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764028": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 50,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764029": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 53,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764030": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 67,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764031": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 28,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764032": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 21,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764033": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 41,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764034": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 64,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764035": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 68,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764036": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 42,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764037": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 51,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764038": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764039": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 49,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764040": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764041": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764042": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764043": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 22,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764044": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764045": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764046": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764047": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 37,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764048": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 27,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764049": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 32,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764050": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 71,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764051": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764052": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 54,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764053": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764054": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 48,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764055": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 37,sequencing plate: 9",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764056": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764057": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 41,sequencing plate: 7",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764058": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 10",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764059": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764060": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 52,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764061": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 60,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764062": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764063": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,age: 36,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764064": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 40,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764065": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 40,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764066": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 52,sequencing plate: 8",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764067": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,sequencing plate: 12",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764068": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 47,sequencing plate: 11",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764069": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: male,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764070": {
+    "characteristics": "tissue: Whole blood,disease: UC,Sex: female,age: 20,sequencing plate: 13",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764071": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 44,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764072": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 58,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764073": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 25,age: 57,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764074": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 26,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764075": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 27,age: 53,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764076": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 32,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764077": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 38,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764078": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 33,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764079": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 40,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764080": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 43,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764081": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 34,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764082": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 36,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764083": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 38,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764084": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 45,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764085": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 47,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764086": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 55,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764087": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 38,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764088": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 49,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764089": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 39,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764090": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 31,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764091": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 31,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764092": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 42,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764093": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764094": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 56,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764095": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 54,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764096": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 26,age: 58,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764097": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 42,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764098": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 21,age: 54,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764099": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 25,age: 62,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764100": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 8,age: 37,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764101": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 43,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764102": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 10,age: 64,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764103": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 19,age: 58,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764104": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 55,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764105": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 5,age: 46,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764106": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 42,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764107": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 55,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764108": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 24,age: 79,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764109": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 8,age: 23,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764110": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 69,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764111": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 0,age: 34,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764112": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 9,age: 55,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764113": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 8,age: 40,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764114": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 7,age: 28,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764115": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 35,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764116": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 7,age: 38,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764117": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 15,age: 49,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764118": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 29,age: 52,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764119": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 63,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764120": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 33,age: 47,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764121": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 64,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764122": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 31,age: 64,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764123": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 13,age: 48,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764124": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 18,age: 44,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764125": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 40,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764126": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 34,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764127": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 16,age: 45,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764128": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 7,age: 40,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764129": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 59,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764130": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 31,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764131": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 14,age: 43,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764132": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,age: 53,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764133": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 21,age: 53,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764134": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 47,sequencing plate: PS449",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764135": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 66,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764136": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 21,age: 59,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764137": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 23,age: 42,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764138": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 23,age: 39,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764139": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 36,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764140": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 14,age: 53,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764141": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 67,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764142": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 54,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764143": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 38,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764144": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764145": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 59,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764146": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 57,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764147": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 43,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764148": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 52,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764149": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 45,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764150": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764151": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 40,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764152": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 38,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764153": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 37,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764154": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 15,age: 68,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764155": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 47,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764156": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 22,age: 65,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764157": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 21,age: 52,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764158": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 42,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764159": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 5,age: 62,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764160": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 8,age: 49,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764161": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 8,age: 34,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764162": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 3,age: 57,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764163": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 50,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764164": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 6,age: 54,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764165": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 28,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764166": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 1,age: 43,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764167": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 45,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764168": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 3,age: 30,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764169": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 53,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764170": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 20,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764171": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 14,age: 50,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764172": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 16,age: 66,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764173": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 62,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764174": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 3,age: 50,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764175": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 22,age: 62,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764176": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 47,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764177": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 39,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764178": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 4,age: 61,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764179": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 10,age: 35,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764180": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 23,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764181": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 7,age: 39,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764182": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 33,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764183": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 2,age: 38,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764184": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 45,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764185": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 27,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764186": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 16,age: 32,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764187": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 67,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764188": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 9,age: 35,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764189": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 23,age: 57,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764190": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 15,age: 44,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764191": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 2,age: 17,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764192": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 17,age: 43,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764193": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 3,age: 29,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764194": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 18,age: 55,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764195": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 34,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764196": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 72,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764197": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 20,age: 37,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764198": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 23,age: 49,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764199": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 24,age: 47,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764200": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 0,age: 43,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764201": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 23,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764202": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 62,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764203": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 71,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764204": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 57,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764205": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 64,sequencing plate: PS450",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764206": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 21,age: 55,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764207": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 8,age: 41,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764208": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 14,age: 27,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764209": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 38,age: 73,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764210": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 35,age: 66,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764211": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 31,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764212": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 46,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764213": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 44,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764214": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 50,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764215": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 36,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764216": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 36,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764217": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 52,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764218": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 38,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764219": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 34,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764220": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764221": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764222": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 43,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764223": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 41,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764224": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764225": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 21,age: 58,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764226": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 15,age: 38,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764227": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 34,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764228": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 7,age: 59,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764229": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 24,age: 49,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764230": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 15,age: 35,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764231": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 11,age: 48,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764232": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 29,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764233": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 11,age: 39,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764234": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 4,age: 39,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764235": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 32,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764236": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 4,age: 21,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764237": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 1,age: 54,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764238": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 1,age: 55,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764239": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 7,age: 47,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764240": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 1,age: 54,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764241": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 5,age: 35,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764242": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 8,age: 55,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764243": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 32,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764244": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 37,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764245": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 16,age: 43,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764246": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 17,age: 49,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764247": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 7,age: 31,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764248": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 24,age: 67,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764249": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 4,age: 36,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764250": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 16,age: 42,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764251": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764252": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 40,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764253": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764254": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 44,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764255": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 31,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764256": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 45,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764257": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764258": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 58,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764259": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 3,age: 29,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764260": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 41,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764261": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 45,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764262": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 37,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764263": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 38,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764264": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 50,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764265": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 27,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764266": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 33,age: 58,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764267": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 43,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764268": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 30,age: 59,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764269": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 29,age: 47,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764270": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 20,age: 44,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764271": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 19,age: 41,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764272": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 50,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764273": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 26,age: 58,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764274": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 9,age: 30,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764275": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 13,age: 26,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764276": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 7,age: 46,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764277": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 38,age: 73,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764278": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 2,age: 74,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764279": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 7,age: 54,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764280": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 9,age: 69,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764281": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 1,age: 53,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764282": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 1,age: 25,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764283": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 45,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764284": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,age: 44,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764285": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 14,age: 45,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764286": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 46,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764287": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 26,age: 57,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764288": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 30,age: 68,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764289": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 24,age: 60,sequencing plate: PS451",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764290": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 14,age: 41,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764291": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 13,age: 54,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764292": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 10,age: 50,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764293": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 19,age: 43,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764294": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 33,age: 59,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764295": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 41,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764296": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 52,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764297": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764298": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 49,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764299": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 32,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764300": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 58,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764301": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 26,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764302": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,age: 59,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764303": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 25,age: 57,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764304": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 26,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764305": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 19,age: 53,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764306": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 3,age: 26,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764307": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 32,age: 52,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764308": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 28,age: 52,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764309": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 20,age: 71,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764310": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 15,age: 78,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764311": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 10,age: 58,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764312": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 21,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764313": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 67,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764314": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 44,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764315": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 11,age: 47,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764316": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 14,age: 49,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764317": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 8,age: 26,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764318": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 6,age: 21,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764319": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 0,age: 71,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764320": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 30,age: 59,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764321": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 4,age: 65,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764322": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 5,age: 61,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764323": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 35,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764324": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 40,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764325": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 53,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764326": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 35,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764327": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 36,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764328": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 39,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764329": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 49,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764330": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 36,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764331": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 8,age: 45,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764332": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 26,age: 57,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764333": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 15,age: 77,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764334": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 10,age: 68,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764335": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 4,age: 50,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764336": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 1,age: 34,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764337": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 10,age: 55,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764338": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,age: 66,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764339": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,age: 33,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764340": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 37,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764341": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 20,age: 63,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764342": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 58,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764343": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 21,age: 42,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764344": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 70,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764345": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 2,age: 48,sequencing plate: PS452",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764346": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 63,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764347": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 39,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764348": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: female,years since_psc_diagnosis: 17,age: 73,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764349": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 17,age: 44,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764350": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 4,age: 65,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764351": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 43,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764352": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: female,age: 51,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764353": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 43,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764354": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 48,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764355": {
+    "characteristics": "tissue: Whole blood,disease: Control,Sex: male,age: 44,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764356": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 36,age: 71,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764357": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 15,age: 38,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764358": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 2,age: 47,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764359": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 18,age: 55,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764360": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 33,age: 53,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764361": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 7,age: 47,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764362": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 5,age: 51,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764363": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 12,age: 43,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764364": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,age: 33,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764365": {
+    "characteristics": "tissue: Whole blood,disease: PSCUC,Sex: male,years since_psc_diagnosis: 20,age: 51,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764366": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: male,years since_psc_diagnosis: 0,age: 31,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  },
+  "GSM7764367": {
+    "characteristics": "tissue: Whole blood,disease: PSC,Sex: female,years since_psc_diagnosis: 1,age: 50,sequencing plate: PS453",
+    "series": "GSE177044",
+    "source": "Whole blood"
+  }
+}

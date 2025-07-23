@@ -188,6 +188,42 @@ def import_mrsa():
 
     return mrsa_adata
 
+def import_mrsa_tfac():
+
+    # Grab Jackson's count data from the TFAC-MRSA project
+    counts_tfac_mrsa = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_mrsa_tfac.zip"),
+        index_col=0,
+        delimiter=",",
+    )
+
+    # Combine the two parts of the tfac metadata for complete status
+    metadata_tfac = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    metadata_aux = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_tfac_validation.txt"),
+        index_col=0,
+        delimiter=",",
+    )
+    val_idx = metadata_aux.index
+    metadata_tfac.loc[val_idx, "status"] = metadata_aux.loc[val_idx, "status"]
+
+    # Take indices from the metadata that match the counts
+    common_idx = metadata_tfac.index.intersection(counts_tfac_mrsa.index)
+    metadata_tfac = metadata_tfac.loc[common_idx]
+
+    # Combine the count data and metadata to create an AnnData object
+    mrsa_tfac_adata = ad.AnnData(
+        X=counts_tfac_mrsa,
+        obs=metadata_tfac,
+        var=pd.DataFrame(index=counts_tfac_mrsa.columns),
+    )
+
+    return mrsa_tfac_adata
+
 
 def import_ca():
     # Read in ca counts
@@ -280,6 +316,88 @@ def import_uc():
 
     # Remove all non-UC samples
     uc_adata = uc_adata[uc_adata.obs["disease"] == "Ulcerative Colitis"].copy()
+
+    return uc_adata
+
+def import_uc_geo():
+
+    counts_uc = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_UC_GEO.csv.gz"),
+        index_col=0,
+        delimiter=",",
+    )
+    counts_uc = counts_uc.set_index("gene_name", drop=True)
+    counts_uc = aggregate_duplicate_genes(counts_uc)
+    counts_uc = counts_uc.T
+
+    # Make a placeholder for the metadata
+    metadata_uc = pd.DataFrame(
+        data={
+            "subject_id": counts_uc.index,
+            "disease": "UC_GEO",
+            "status": "Unknown",
+            "dataset_id": "GSE177044",
+        },
+        index=counts_uc.index,
+    )
+
+    uc_adata = ad.AnnData(
+        X=counts_uc,
+        obs=metadata_uc,
+        var=pd.DataFrame(index=counts_uc.columns),
+    )
+
+    return uc_adata
+
+def import_uc_exp():
+    counts = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_uc_exp.tsv.zip"),
+        index_col=0,
+        delimiter="\t",
+    )
+    counts = aggregate_duplicate_genes(counts)
+    counts = counts.T
+
+    # Make a placeholder for the metadata
+    metadata = pd.read_json(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_uc_exp.json")
+    )
+    # Transpose and rename the metadata to fit parser
+    metadata = metadata.T
+    metadata = metadata.rename(
+        columns={
+            "characteristics": "characteristics_ch1",
+        }
+    )
+    metadata = parse_metadata(metadata)
+
+    uc_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+
+    uc_adata.obs = uc_adata.obs.loc[:, ["Sex", "age", "disease"]]
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bControl\b", "Healthy", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bUC\b", "UC_EXP", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bPSC\b", "Primary Sclerosing Cholangitis", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bPSCUC\b", "PSC/UC", regex=True
+    )
+
+    # Add standardized columns
+    uc_adata.obs["status"] = "Unknown"
+    uc_adata.obs["dataset_id"] = "GSE177044"
+
+    # Remove all non-UC samples
+    uc_adata = uc_adata[uc_adata.obs["disease"] == "UC_EXP"].copy()
+
 
     return uc_adata
 

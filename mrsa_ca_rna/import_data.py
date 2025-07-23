@@ -319,6 +319,88 @@ def import_uc():
 
     return uc_adata
 
+def import_uc_geo():
+
+    counts_uc = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_UC_GEO.csv.gz"),
+        index_col=0,
+        delimiter=",",
+    )
+    counts_uc = counts_uc.set_index("gene_name", drop=True)
+    counts_uc = aggregate_duplicate_genes(counts_uc)
+    counts_uc = counts_uc.T
+
+    # Make a placeholder for the metadata
+    metadata_uc = pd.DataFrame(
+        data={
+            "subject_id": counts_uc.index,
+            "disease": "UC_GEO",
+            "status": "Unknown",
+            "dataset_id": "GSE177044",
+        },
+        index=counts_uc.index,
+    )
+
+    uc_adata = ad.AnnData(
+        X=counts_uc,
+        obs=metadata_uc,
+        var=pd.DataFrame(index=counts_uc.columns),
+    )
+
+    return uc_adata
+
+def import_uc_exp():
+    counts = pd.read_csv(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "counts_uc_exp.tsv.zip"),
+        index_col=0,
+        delimiter="\t",
+    )
+    counts = aggregate_duplicate_genes(counts)
+    counts = counts.T
+
+    # Make a placeholder for the metadata
+    metadata = pd.read_json(
+        join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_uc_exp.json")
+    )
+    # Transpose and rename the metadata to fit parser
+    metadata = metadata.T
+    metadata = metadata.rename(
+        columns={
+            "characteristics": "characteristics_ch1",
+        }
+    )
+    metadata = parse_metadata(metadata)
+
+    uc_adata = ad.AnnData(
+        X=counts,
+        obs=metadata,
+        var=pd.DataFrame(index=counts.columns),
+    )
+
+    uc_adata.obs = uc_adata.obs.loc[:, ["Sex", "age", "disease"]]
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bControl\b", "Healthy", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bUC\b", "UC_EXP", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bPSC\b", "Primary Sclerosing Cholangitis", regex=True
+    )
+    uc_adata.obs["disease"] = uc_adata.obs["disease"].str.replace(
+        r"\bPSCUC\b", "PSC/UC", regex=True
+    )
+
+    # Add standardized columns
+    uc_adata.obs["status"] = "Unknown"
+    uc_adata.obs["dataset_id"] = "GSE177044"
+
+    # Remove all non-UC samples
+    uc_adata = uc_adata[uc_adata.obs["disease"] == "UC_EXP"].copy()
+
+
+    return uc_adata
+
 
 def import_tb():
     tb_adata = load_archs4("GSE89403")

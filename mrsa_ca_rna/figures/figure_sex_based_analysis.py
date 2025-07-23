@@ -18,9 +18,6 @@ from mrsa_ca_rna.import_data import import_gene_tiers
 from mrsa_ca_rna.regression import perform_LR
 from mrsa_ca_rna.utils import concat_datasets
 
-from scipy import stats
-from statsmodels.stats.multitest import multipletests
-
 
 def setup_data():
     """Load the dataset."""
@@ -209,7 +206,7 @@ def plot_confusion_matrix(ax, targets, proba, model):
     # Get predicted classes from probabilities
     y_pred = model.classes_[np.argmax(proba, axis=1)]
 
-    # Create display labels with "Resolver" and "Persistent" instead of 0 and 1
+    # Create display labels with "Male" and "Female" instead of 0 and 1
     display_labels = np.array(
         [
             "Male" if cls == 0 else "Female" if cls == 1 else cls
@@ -277,177 +274,8 @@ def plot_gender_confusion_matrix(ax, data, proba, model, gender_type="male"):
     return cm
 
 
-def plot_gene_expression_by_gender(ax, data, gene_list):
-    """
-    Plot boxplots comparing gene expression between males and females
-    for a given gene list and perform statistical testing with BH correction.
-    
-    Parameters:
-    -----------
-    ax : matplotlib.axes.Axes
-        The axis on which to plot
-    data : AnnData
-        The AnnData object containing gene expression data
-    gene_list : list
-        List of genes to include in the analysis
-    
-    Returns:
-    --------
-    pandas.DataFrame
-        DataFrame containing statistical test results
-    """
-    # Get genes that exist in the dataset
-    genes = data.var.index.intersection(gene_list)
-    
-    # Extract log-normalized expression data (before z-scoring) for meaningful comparisons
-    # This uses CPM-normalized, log2-transformed data that preserves biological meaning
-    raw_counts = data[:, genes].layers["raw"]
-    total_counts = np.sum(raw_counts, axis=1, keepdims=True)
-    cpm_data = raw_counts * 1e6 / total_counts
-    log_expr_data = np.log2(cpm_data + 1)
-    
-    gene_expr = pd.DataFrame(log_expr_data, 
-                            index=data.obs.index, 
-                            columns=genes)
-    
-    # Add gender information
-    gender = data.obs["gender"].values
-    gender_labels = []
-    
-    for g in gender:
-        if isinstance(g, np.integer | int):
-            gender_labels.append("Male" if g == 0 else "Female")
-        else:
-            gender_labels.append(str(g).capitalize())
-    
-    # Create a new DataFrame with gene expression and gender
-    gene_expr_with_gender = gene_expr.copy()
-    gene_expr_with_gender["Gender"] = gender_labels
-    
-    # Perform t-tests for each gene
-    p_values = []
-    t_stats = []
-    genes_tested = []
-    
-    for gene in genes:
-        male_expr = gene_expr_with_gender[
-            gene_expr_with_gender["Gender"] == "Male"
-        ][gene]
-        female_expr = gene_expr_with_gender[
-            gene_expr_with_gender["Gender"] == "Female"
-        ][gene]
-        
-        # Perform t-test
-        t_stat, p_val = stats.ttest_ind(male_expr, female_expr, equal_var=False)
-        
-        p_values.append(p_val)
-        t_stats.append(t_stat)
-        genes_tested.append(gene)
-    
-    # Apply Benjamini-Hochberg correction
-    reject, p_corrected, _, _ = multipletests(p_values, method='fdr_bh')
-    
-    # Create results DataFrame
-    stats_results = pd.DataFrame({
-        'Gene': genes_tested,
-        'T-statistic': t_stats,
-        'P-value': p_values,
-        'P-adjusted': p_corrected,
-        'Significant': reject
-    })
-    
-    # Convert to long format for seaborn
-    gene_expr_long = pd.melt(
-        gene_expr_with_gender,
-        id_vars=["Gender"],
-        value_vars=genes,
-        var_name="Gene",
-        value_name="Expression"
-    )
-    
-    # Note: Removed variance-based filtering to use ALL genes in gene_list
-    # This ensures we don't filter out any genes for an agnostic analysis
-    
-    # Create the boxplot
-    sns.boxplot(
-        data=gene_expr_long,
-        x="Gene",
-        y="Expression",
-        hue="Gender",
-        ax=ax,
-        palette=["skyblue", "lightpink"]
-    )
-    
-    # Add individual data points for more detail
-    sns.stripplot(
-        data=gene_expr_long,
-        x="Gene",
-        y="Expression",
-        hue="Gender",
-        dodge=True,
-        alpha=0.3,
-        size=3,
-        ax=ax,
-        palette=["navy", "darkred"]
-    )
-    
-    # Adjust the plot
-    ax.set_xlabel("Genes")
-    ax.set_ylabel("Log2(CPM + 1)")  # Updated to reflect actual data scale
-    
-    # Keep only one legend (remove stripplot legend)
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[:2], labels[:2], title="Gender", loc="upper right")
-    
-    # Add significance indicators and mean expression annotations
-    y_max = gene_expr_long["Expression"].max()
-    y_min = gene_expr_long["Expression"].min()
-    y_range = y_max - y_min
-    
-    for i, gene in enumerate(gene_expr_long["Gene"].unique()):
-        gene_stats = stats_results[stats_results["Gene"] == gene]
-        if not gene_stats.empty:
-            p_adj = gene_stats["P-adjusted"].values[0]
-            
-            # Add significance stars
-            if p_adj < 0.001:
-                text = "***"
-            elif p_adj < 0.01:
-                text = "**"
-            elif p_adj < 0.05:
-                text = "*"
-            else:
-                text = "ns"
-                
-            ax.text(i, y_max + y_range*0.05, text, ha='center', fontweight='bold')
-        
-        # Add mean expression annotation using gender-specific normalized means
-        # Get normalized expression data for this gene (matches y-axis scale)
-        gene_data = gene_expr_long[gene_expr_long["Gene"] == gene]
-        male_mean = gene_data[gene_data["Gender"] == "Male"]["Expression"].mean()
-        female_mean = gene_data[gene_data["Gender"] == "Female"]["Expression"].mean()
-        
-        # Show gender-specific means in a compact format
-        ax.text(i, y_min - y_range*0.15, 
-                f"M:{male_mean:.1f}\nF:{female_mean:.1f}", 
-                ha='center', fontsize=7, color='gray', va='top')
-    
-    # Add significance legend
-    ax.text(0.5, 1.08, 
-            "* p<0.05, ** p<0.01, *** p<0.001, ns: not significant (BH-corrected)",
-            transform=ax.transAxes, ha='center', fontsize=9)
-    
-    # Add mean expression legend
-    ax.text(0.5, -0.20, 
-            "M/F = Male/Female mean log2(CPM+1) expression",
-            transform=ax.transAxes, ha='center', fontsize=8, color='gray')
-    
-    return stats_results
-
-
 def genFig():
-    """Generate ROC curves, confusion matrices, gene coefficients, 
-    and gene expression boxplots."""
+    """Generate ROC curves, confusion matrices, and gene coefficients for gender prediction."""
     # Get tiers data
     tiers = import_gene_tiers()
 
@@ -471,8 +299,7 @@ def genFig():
 
     # Set title for the figure
     fig.suptitle(
-        "MRSA Prediction Analysis: ROC Curves, "
-        "Standard and Gender-Based Confusion Matrices",
+        "MRSA Gender Prediction Analysis: ROC Curves and Confusion Matrices",
         fontsize=16,
     )
 
@@ -480,16 +307,7 @@ def genFig():
     coef_fig_size = (14, num_tiers * 4)
     coef_layout = {"ncols": 1, "nrows": num_tiers}
     coef_ax, coef_f, _ = setupBase(coef_fig_size, coef_layout)
-    coef_f.suptitle("Gene Coefficients by Class for Gender Prediction", fontsize=16)
-
-    # Create an additional figure for gene expression boxplots
-    expr_fig_size = (12, 12)
-    expr_layout = {"ncols": 1, "nrows": 2}
-    expr_ax, expr_f, _ = setupBase(expr_fig_size, expr_layout)
-    expr_f.suptitle(
-        "Gene Expression Comparison by Gender for Tiers 1 and 2", 
-        fontsize=16
-    )
+    coef_f.suptitle("Gene Coefficients for Gender Prediction Models", fontsize=16)
 
     # Process each tier, creating a single model for all plots
     # Limit to only the first two tiers
@@ -523,25 +341,6 @@ def genFig():
         # Plot coefficients in separate figure
         plot_coefficients_for_tier(coef_ax[i], X, model)
 
-        # For tier 1, generate gene expression boxplot with statistical testing
-        if tier_name == "Tier 1":
-            gene_list = [
-                "CCL2", "IL27", "CXCL8", "IL6", "GLS2", 
-                "IL10", "SELE", "TIRAP", "CCL26", "CEBPB"
-            ]
-            tier1_stats = plot_gene_expression_by_gender(expr_ax[0], data, gene_list)
-            print("Tier 1 statistical results:")
-            print(tier1_stats)
-
-        if tier_name == "Tier 2":
-            gene_list = [
-                "CXCL10", "GLS2", "CCL2", "TREM1", "SELE", 
-                "NOXO1", "G6PD", "TIRAP", "HLA-DQA2", "HLA-DQB2"
-            ]
-            tier2_stats = plot_gene_expression_by_gender(expr_ax[1], data, gene_list)
-            print("Tier 2 statistical results:")
-            print(tier2_stats)
-
         # Add titles to each subplot
         ax[roc_idx].set_title(
             f"Gender Prediction - {tier_name} ({len(X.columns)} genes)"
@@ -559,5 +358,5 @@ def genFig():
             f"\nBalanced Accuracy: {score:.2f}"
         )
 
-    # Return all figures
-    return fig, coef_f, expr_f
+    # Return both figures
+    return fig, coef_f

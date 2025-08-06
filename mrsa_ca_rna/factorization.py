@@ -157,7 +157,7 @@ def perform_parafac2(
     weights, factors, projections = standardize_pf2(weights, factors, projections)
     X = store_pf2(X, weights, factors, projections)
 
-    # PacMAP requires more than one component
+    # PaCMAP requires more than one component
     if rank > 1:
         pcm = PaCMAP()
         X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))

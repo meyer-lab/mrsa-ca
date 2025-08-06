@@ -32,7 +32,7 @@ from mrsa_ca_rna.import_data import (
 
 def concat_datasets(
     ad_list: list[str] | None = None,
-    filter_threshold: float = 0.1,
+    filter_threshold: float = 1.0,
     min_pct: float = 0.25,
 ) -> ad.AnnData:
     """Concatenate multiple AnnData objects from different datasets into
@@ -44,7 +44,7 @@ def concat_datasets(
     ad_list : list[str], optional
         list of datasets to include, by default None = All datasets
     filter_threshold : float, optional
-        CPM threshold for filtering genes, -1 to disable, by default 0.1
+        CPM threshold for filtering genes, -1 to disable, by default 1.0
     min_pct : float, optional
         Minimum fraction of samples required to express gene
         above threshold, by default 0.25
@@ -310,7 +310,7 @@ def find_top_features(
             pos_values = features_df.loc[pos_mask, cmp].tolist()
 
             # Add to result data
-            for feature, value in zip(pos_features, pos_values, strict=False):
+            for feature, value in zip(pos_features, pos_values, strict=True):
                 result_data.append(
                     {
                         feature_name: feature,
@@ -332,7 +332,7 @@ def find_top_features(
             neg_values = features_df.loc[neg_mask, cmp].tolist()
 
             # Add to result data
-            for feature, value in zip(neg_features, neg_values, strict=False):
+            for feature, value in zip(neg_features, neg_values, strict=True):
                 result_data.append(
                     {
                         feature_name: feature,
@@ -492,11 +492,11 @@ def map_genes(
     # Create appropriate mapping dictionary
     if from_type == "ensembl" and to_type == "symbol":
         mapping_dict = dict(
-            zip(gene_df["ensembl_id"], gene_df["gene_name"], strict=False)
+            zip(gene_df["ensembl_id"], gene_df["gene_name"], strict=True)
         )
     elif from_type == "symbol" and to_type == "ensembl":
         mapping_dict = dict(
-            zip(gene_df["gene_name"], gene_df["ensembl_id"], strict=False)
+            zip(gene_df["gene_name"], gene_df["ensembl_id"], strict=True)
         )
     elif from_type == to_type:
         # Return identity mapping

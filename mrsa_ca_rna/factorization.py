@@ -48,7 +48,14 @@ def store_pf2(
 
     # Go through each unique index and store the projections
     for i, proj in enumerate(projections):
-        pf2_proj[unique_idxs == i, :] = np.asarray(proj)
+        # Get the number of samples for this disease in the original data
+        mask = unique_idxs == i
+        n_samples = mask.sum()
+
+        # Take only the relevant rows from the projection matrix
+        # (discarding any rows that correspond to padding)
+        proj_to_store = np.asarray(proj[:n_samples, :])
+        pf2_proj[mask, :] = proj_to_store
 
     # Store the projections in the obsm slot
     X.obsm["Pf2_projections"] = pf2_proj
@@ -61,9 +68,9 @@ def store_pf2(
 
 
 def standardize_pf2(
-    factors: list[np.ndarray], projections: list[np.ndarray]
+    weights: np.ndarray, factors: list[np.ndarray], projections: list[np.ndarray]
 ) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
-    weights, factors = cp_flip_sign(cp_normalize((None, factors)), mode=1)
+    weights, factors = cp_flip_sign(cp_normalize((weights, factors)), mode=1)
 
     # Order components by weight
     w_idx = np.argsort(weights)
@@ -113,6 +120,17 @@ def perform_parafac2(
     # convert to list
     X_list = [cp.array(X[sgIndex == i].X) for i in range(np.amax(sgIndex) + 1)]
 
+    # Check if any arrays are smaller than the requested rank
+    for i, arr in enumerate(X_list):
+        if arr.shape[0] < rank:
+            # Calculate padding needed
+            padding_rows = rank - arr.shape[0]
+            # Create zero padding with same number of columns
+            zero_padding = cp.zeros((padding_rows, arr.shape[1]), dtype=arr.dtype)
+            # Add padding to the array
+            X_list[i] = cp.vstack([arr, zero_padding])
+            print(f"Padded array {i} from {arr.shape[0]} to {rank} rows")
+
     tl.set_backend("cupy")
 
     pf2, errors = parafac2(
@@ -120,9 +138,10 @@ def perform_parafac2(
         rank=rank,
         verbose=True,
         init="svd",
-        tol=1e-5,
-        n_iter_max=100,
+        tol=1e-6,
+        n_iter_max=1000,
         return_errors=True,
+        normalize_factors=False,
     )
 
     # calculate R2X
@@ -135,9 +154,15 @@ def perform_parafac2(
     factors = [cp.asnumpy(f.get()) for f in pf2[1]]
     projections = [cp.asnumpy(p.get()) for p in pf2[2]]
 
+    # Standardize the factors and projections
+    weights, factors, projections = standardize_pf2(weights, factors, projections)
     X = store_pf2(X, weights, factors, projections)
 
-    pcm = PaCMAP()
-    X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
+    if rank > 1:
+        pcm = PaCMAP()
+        X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
+    else:
+        print("Rank is 1, skipping PaCMAP projection.")
+        X.obsm["Pf2_PaCMAP"] = np.zeros((X.shape[0], 2))
 
     return X, R2X

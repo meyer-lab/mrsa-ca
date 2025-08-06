@@ -356,14 +356,16 @@ def find_top_features(
         return result_df
     else:
         return pd.DataFrame(
-            columns=pd.Index([
-                feature_name,
-                "component",
-                "value",
-                "abs_value",
-                "direction",
-                "rank",
-            ])
+            columns=pd.Index(
+                [
+                    feature_name,
+                    "component",
+                    "value",
+                    "abs_value",
+                    "direction",
+                    "rank",
+                ]
+            )
         )
 
 
@@ -429,8 +431,8 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
 
                         # Use gene_name if available, otherwise use gene_id
                         gene_name = (
-                            gene_name_match.group(1) 
-                            if gene_name_match 
+                            gene_name_match.group(1)
+                            if gene_name_match
                             else gene_id_base
                         )
                         gene_mappings[gene_id_base] = gene_name
@@ -468,8 +470,8 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
 
                         # Use gene_name if available, otherwise use gene_id
                         gene_name = (
-                            gene_name_match.group(1) 
-                            if gene_name_match 
+                            gene_name_match.group(1)
+                            if gene_name_match
                             else gene_id_base
                         )
                         gene_mappings[gene_id_base] = gene_name

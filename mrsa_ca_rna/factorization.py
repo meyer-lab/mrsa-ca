@@ -129,7 +129,6 @@ def perform_parafac2(
             zero_padding = cp.zeros((padding_rows, arr.shape[1]), dtype=arr.dtype)
             # Add padding to the array
             X_list[i] = cp.vstack([arr, zero_padding])
-            print(f"Padded array {i} from {arr.shape[0]} to {rank} rows")
 
     tl.set_backend("cupy")
 
@@ -158,11 +157,11 @@ def perform_parafac2(
     weights, factors, projections = standardize_pf2(weights, factors, projections)
     X = store_pf2(X, weights, factors, projections)
 
+    # PacMAP requires more than one component
     if rank > 1:
         pcm = PaCMAP()
         X.obsm["Pf2_PaCMAP"] = np.asarray(pcm.fit_transform(X.obsm["Pf2_projections"]))
     else:
-        print("Rank is 1, skipping PaCMAP projection.")
         X.obsm["Pf2_PaCMAP"] = np.zeros((X.shape[0], 2))
 
     return X, R2X

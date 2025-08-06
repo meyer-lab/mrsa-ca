@@ -397,6 +397,7 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
 
     # Determine if file is gzipped and open appropriately
     try:
+
         def _parse_gtf_file(f, gene_mappings):
             for line in f:
                 # Skip comment lines
@@ -430,9 +431,7 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
 
                     # Use gene_name if available, otherwise use gene_id
                     gene_name = (
-                        gene_name_match.group(1)
-                        if gene_name_match
-                        else gene_id_base
+                        gene_name_match.group(1) if gene_name_match else gene_id_base
                     )
                     gene_mappings[gene_id_base] = gene_name
 
@@ -454,7 +453,6 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
                 for ensembl_id, gene_name in gene_mappings.items()
             ]
         )
-        print(f"Loaded {len(df)} gene mappings from GTF file")
         return df
     else:
         print("No gene mappings found in GTF file")

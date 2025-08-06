@@ -397,85 +397,51 @@ def get_gene_mapping(gtf_path: str | None = None) -> pd.DataFrame:
 
     # Determine if file is gzipped and open appropriately
     try:
+        def _parse_gtf_file(f, gene_mappings):
+            for line in f:
+                # Skip comment lines
+                if line.startswith("#"):
+                    continue
+
+                # Split the line by tabs
+                fields = line.strip().split("\t")
+
+                # We need at least 9 fields for a valid GTF line
+                if len(fields) < 9:
+                    continue
+
+                # Only process gene entries
+                feature_type = fields[2]
+                if feature_type != "gene":
+                    continue
+
+                # Parse the attributes field (9th column)
+                attributes = fields[8]
+
+                # Extract gene_id and gene_name using regex
+                gene_id_match = re.search(r'gene_id\s+"([^"]+)"', attributes)
+                gene_name_match = re.search(r'gene_name\s+"([^"]+)"', attributes)
+
+                if gene_id_match:
+                    gene_id = gene_id_match.group(1)
+                    # Remove version number from Ensembl ID
+                    # (e.g., ENSG00000139618.2 -> ENSG00000139618)
+                    gene_id_base = gene_id.split(".")[0]
+
+                    # Use gene_name if available, otherwise use gene_id
+                    gene_name = (
+                        gene_name_match.group(1)
+                        if gene_name_match
+                        else gene_id_base
+                    )
+                    gene_mappings[gene_id_base] = gene_name
+
         if gtf_path.endswith(".gz"):
             with gzip.open(gtf_path, "rt", encoding="utf-8") as f:
-                for line in f:
-                    # Skip comment lines
-                    if line.startswith("#"):
-                        continue
-
-                    # Split the line by tabs
-                    fields = line.strip().split("\t")
-
-                    # We need at least 9 fields for a valid GTF line
-                    if len(fields) < 9:
-                        continue
-
-                    # Only process gene entries
-                    feature_type = fields[2]
-                    if feature_type != "gene":
-                        continue
-
-                    # Parse the attributes field (9th column)
-                    attributes = fields[8]
-
-                    # Extract gene_id and gene_name using regex
-                    gene_id_match = re.search(r'gene_id\s+"([^"]+)"', attributes)
-                    gene_name_match = re.search(r'gene_name\s+"([^"]+)"', attributes)
-
-                    if gene_id_match:
-                        gene_id = gene_id_match.group(1)
-                        # Remove version number from Ensembl ID
-                        # (e.g., ENSG00000139618.2 -> ENSG00000139618)
-                        gene_id_base = gene_id.split(".")[0]
-
-                        # Use gene_name if available, otherwise use gene_id
-                        gene_name = (
-                            gene_name_match.group(1)
-                            if gene_name_match
-                            else gene_id_base
-                        )
-                        gene_mappings[gene_id_base] = gene_name
+                _parse_gtf_file(f, gene_mappings)
         else:
             with open(gtf_path, encoding="utf-8") as f:
-                for line in f:
-                    # Skip comment lines
-                    if line.startswith("#"):
-                        continue
-
-                    # Split the line by tabs
-                    fields = line.strip().split("\t")
-
-                    # We need at least 9 fields for a valid GTF line
-                    if len(fields) < 9:
-                        continue
-
-                    # Only process gene entries
-                    feature_type = fields[2]
-                    if feature_type != "gene":
-                        continue
-
-                    # Parse the attributes field (9th column)
-                    attributes = fields[8]
-
-                    # Extract gene_id and gene_name using regex
-                    gene_id_match = re.search(r'gene_id\s+"([^"]+)"', attributes)
-                    gene_name_match = re.search(r'gene_name\s+"([^"]+)"', attributes)
-
-                    if gene_id_match:
-                        gene_id = gene_id_match.group(1)
-                        # Remove version number from Ensembl ID
-                        # (e.g., ENSG00000139618.2 -> ENSG00000139618)
-                        gene_id_base = gene_id.split(".")[0]
-
-                        # Use gene_name if available, otherwise use gene_id
-                        gene_name = (
-                            gene_name_match.group(1)
-                            if gene_name_match
-                            else gene_id_base
-                        )
-                        gene_mappings[gene_id_base] = gene_name
-
+                _parse_gtf_file(f, gene_mappings)
     except Exception as e:
         print(f"Error reading GTF file: {e}")
         return pd.DataFrame(columns=pd.Index(["ensembl_id", "gene_name"]))

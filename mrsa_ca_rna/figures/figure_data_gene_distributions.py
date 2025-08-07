@@ -1,16 +1,16 @@
-""" 
+"""
 This file plots the distribution of gene expression across datasets to observe
 any possible irregularities leading to biased factorization results.
 """
 
 import anndata as ad
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 
-from mrsa_ca_rna.utils import concat_datasets, calculate_cpm
-from mrsa_ca_rna.figures.base import setupBase, calculate_layout
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.utils import calculate_cpm, concat_datasets
 
 
 def get_data(data_type: str = "raw") -> ad.AnnData:

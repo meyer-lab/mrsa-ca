@@ -163,7 +163,7 @@ pygments==2.18.0
     # via ipython
 pyparsing==3.1.4
     # via matplotlib
-pyright==1.1.382.post0
+pyright==1.1.403
 pytest==8.3.3
     # via pytest-cov
 pytest-cov==5.0.0

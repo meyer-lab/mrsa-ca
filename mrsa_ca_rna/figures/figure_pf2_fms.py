@@ -50,8 +50,8 @@ def bootstrap_fms(X, rank, target_trials=30):
     return fms_list, R2X_diff_list
 
 
-def get_data(rank=5, trials=30):
-    disease_data = concat_datasets(filter_threshold=5, min_pct=0.5)
+def get_data(filter_threshold, min_pct, rank=5, trials=30):
+    disease_data = concat_datasets(filter_threshold=filter_threshold, min_pct=min_pct)
 
     fms_list, r2x_list = bootstrap_fms(
         disease_data.copy(), rank=rank, target_trials=trials
@@ -71,9 +71,11 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     trials = 30
+    filter_threshold = 5
+    min_pct = 0.5
 
     # Generate data for different ranks
-    trial_data = get_data(5, trials)
+    trial_data = get_data(filter_threshold, min_pct, rank=5, trials=trials)
 
     # Create scatter plot and KDE plot
     a = sns.scatterplot(data=trial_data, x="fms", y="R2X_diff", ax=ax[0])
@@ -89,7 +91,7 @@ def genFig():
 
     f.suptitle(
         "Pf2 Factor Match Score and R2X Difference w/Resampled data\n"
-        "Data filtering: CPM > 5 in 50% of samples"
+        f"Data filtering: CPM > {filter_threshold} in {min_pct * 100}% of samples"
     )
 
     return f

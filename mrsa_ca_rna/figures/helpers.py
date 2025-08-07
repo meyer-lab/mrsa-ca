@@ -73,7 +73,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes, title=None):
 
 
 def reorder_table(X):
-    """Reorders a table's rows using heirarchical clustering."""
+    """Reorders a table's rows using hierarchical clustering."""
     start_time = time.time()
     try:
         # Perform hierarchical clustering

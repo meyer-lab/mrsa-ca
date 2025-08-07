@@ -126,12 +126,14 @@ def genFig():
     return f, g
 
 
-# Identify outliers to help identify strong eigenstates
 def identify_disease_specific_outliers(
     projections, column_name, z_threshold=2.5, iqr_factor=1.5
 ) -> dict[str, pd.DataFrame]:
     """
     Identify outliers within each disease separately.
+
+    This is an investigation into whether outliers possibly lead to strong eigenstates
+    defined by few wildly different samples.
 
     Parameters:
     - projections: DataFrame with projection values and disease labels
@@ -178,7 +180,7 @@ def identify_disease_specific_outliers(
             print(f"  Found {len(all_outliers)} outliers:")
 
             for idx, row in all_outliers.iterrows():
-                z_score = (row[column_name] - mean) / std if std > 0 else float("inf")
+                z_score = (row[column_name] - mean) / std if std > 0 else 0.0
                 print(
                     f"    Sample {idx}: value = {row[column_name]:.4f}, "
                     f"z-score = {z_score:.2f}"

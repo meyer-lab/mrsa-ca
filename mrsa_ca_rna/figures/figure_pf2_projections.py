@@ -77,9 +77,9 @@ def genFig():
     # Calculate the percentiles based on absolute values from zero
     column_name = projections.columns[1]
     abs_values = projections[column_name].abs()
-    p50 = abs_values.quantile(0.5)
-    p75 = abs_values.quantile(0.75)
-    p95 = abs_values.quantile(0.95)
+    p50 = float(abs_values.quantile(0.5))
+    p75 = float(abs_values.quantile(0.75))
+    p95 = float(abs_values.quantile(0.95))
 
     # Add sample counts to disease labels
     disease_counts = projections["disease"].value_counts().to_dict()
@@ -120,15 +120,16 @@ def genFig():
     # Identify outliers within each disease
     column_name = projections.columns[0]  # The first projection column
     outliers = identify_disease_specific_outliers(projections, column_name)
-    if outliers:
-        outliers.to_csv("output/pf2_disease_outliers.csv")
+    if len(outliers) > 0:
+        pd.concat(outliers.values()).to_csv("output/pf2_disease_outliers.csv")
 
     return f, g
+
 
 # Identify outliers to help identify strong eigenstates
 def identify_disease_specific_outliers(
     projections, column_name, z_threshold=2.5, iqr_factor=1.5
-) -> pd.DataFrame:
+) -> dict[str, pd.DataFrame]:
     """
     Identify outliers within each disease separately.
 
@@ -179,7 +180,8 @@ def identify_disease_specific_outliers(
             for idx, row in all_outliers.iterrows():
                 z_score = (row[column_name] - mean) / std if std > 0 else float("inf")
                 print(
-                    f"    Sample {idx}: value = {row[column_name]:.4f}, z-score = {z_score:.2f}"
+                    f"    Sample {idx}: value = {row[column_name]:.4f}, "
+                    f"z-score = {z_score:.2f}"
                 )
 
     return outliers_by_disease

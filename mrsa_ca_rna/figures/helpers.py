@@ -23,7 +23,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
         vmin=-max_abs,
         vmax=max_abs,
         interpolation="nearest",
-        extent=[0, len(data_df.columns), 0, len(data_df.index)],  # Align with seaborn
+        extent=(0, len(data_df.columns), 0, len(data_df.index)),  # Align with seaborn
     )
 
     # Add colorbar
@@ -66,7 +66,7 @@ def plot_gene_matrix(data: ad.AnnData, ax: Axes, title=None):
     xticks = np.arange(1, rank + 1)
 
     artist = plot_table_rasterized(
-        pd.DataFrame(X, index=yt, columns=xticks), ax, title=title
+        pd.DataFrame(X, index=pd.Index(yt), columns=pd.Index(xticks)), ax, title=title
     )
 
     return artist

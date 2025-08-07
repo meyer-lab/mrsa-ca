@@ -32,6 +32,7 @@ def figure_setup():
 
     return X, r2x
 
+
 # GSEA analysis will make separate plots for each component
 def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
     out_dir = os.path.join("output", "gsea", gene_set)

@@ -46,7 +46,7 @@ def genFig():
     )
     a.set_title(
         f"PaCMAP Embedding of Disease Projections from rank {rank} factorization"
-        )
+    )
     a.set_xlabel("PaCMAP 1")
     a.set_ylabel("PaCMAP 2")
     a.legend(markerscale=2)
@@ -61,9 +61,9 @@ def genFig():
     norm = Normalize(-abs_max, abs_max)
     sm = plt.cm.ScalarMappable(cmap="coolwarm", norm=norm)
     sm.set_array([])
-    plt.colorbar(sm, ax=ax[1], label=f"Eigen-{strongest_eigenstate+1} Value").set_label(
-        f"Eigen-{strongest_eigenstate+1} Value", rotation=270
-    )
+    plt.colorbar(
+        sm, ax=ax[1], label=f"Eigen-{strongest_eigenstate + 1} Value"
+    ).set_label(f"Eigen-{strongest_eigenstate + 1} Value", rotation=270)
 
     b = sns.scatterplot(
         x=pacmap_coords[:, 0],
@@ -74,7 +74,7 @@ def genFig():
         palette="coolwarm",
         s=5,
     )
-    b.set_title(f"PaCMAP Embedding organized by Eigen-{strongest_eigenstate+1} Value")
+    b.set_title(f"PaCMAP Embedding organized by Eigen-{strongest_eigenstate + 1} Value")
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
     b.legend(markerscale=2)

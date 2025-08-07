@@ -90,6 +90,6 @@ def genFig():
     f.suptitle(
         "Pf2 Factor Match Score and R2X Difference w/Resampled data\n"
         "Data filtering: CPM > 5 in 50% of samples"
-        )
+    )
 
     return f

@@ -1,12 +1,14 @@
 """This file plots the gene factor matrix from the PF2 model."""
 
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy.stats import kendalltau, pearsonr, spearmanr
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.utils import concat_datasets, find_top_genes_by_threshold
+from mrsa_ca_rna.utils import concat_datasets, find_top_features
 
 
 def calculate_gene_coverage(top_genes_df: pd.DataFrame, total_genes):
@@ -133,11 +135,11 @@ def get_data():
     # genes_df = pd.read_csv("output/pf2_genes_5.csv", index_col=0, header=0)
 
     # Calculate mean expression
-    mean_exp = np.mean(X.layers["raw"], axis=0)
+    mean_exp = np.mean(np.asarray(X.layers["raw"]), axis=0)
     mean_genes_df = pd.DataFrame(
         mean_exp,
         index=X.var.index,
-        columns=["mean_expression"],
+        columns=pd.Index(["mean_expression"]),
     )
 
     return mean_genes_df, genes_df
@@ -150,7 +152,7 @@ def genFig():
     mean_genes, genes_df = get_data()
 
     # Get top genes for each component
-    top_genes_df = find_top_genes_by_threshold(genes_df, threshold_fraction=0.5)
+    top_genes_df = find_top_features(genes_df, threshold_fraction=0.5)
 
     # Calculate gene space coverage
     total_genes = len(mean_genes)
@@ -169,7 +171,9 @@ def genFig():
     colors = sns.color_palette("tab20", n_comps)
     palette = {"All genes": "gray"}
     for i, comp in enumerate(set(c for c in plot_df["component"] if c != "All genes")):
-        palette[comp] = colors[i % len(colors)]
+        # Convert color tuple to hex string for palette
+        color_hex = mcolors.rgb2hex(colors[i % len(colors)])
+        palette[comp] = color_hex
 
     # Create the scatter plot
     a = sns.scatterplot(
@@ -217,20 +221,17 @@ def genFig():
     # Calculate correlation metrics for each component
     corr_text = []
     for comp in df["component"].unique():
-        comp_data: pd.DataFrame = df[df["component"] == comp]
+        comp_data: pd.DataFrame = df.loc[df["component"] == comp, :].copy()
+
+        x = comp_data["component_weight"].values
+        y = comp_data["mean_expression"].values
 
         # Calculate linear correlation (Pearson)
-        pearson_r = comp_data["component_weight"].corr(
-            comp_data["mean_expression"], method="pearson"
-        )
+        pearson_r, _ = pearsonr(x, y)
 
         # Calculate non-linear correlations
-        spearman_r = comp_data["component_weight"].corr(
-            comp_data["mean_expression"], method="spearman"
-        )
-        kendall_tau = comp_data["component_weight"].corr(
-            comp_data["mean_expression"], method="kendall"
-        )
+        spearman_r, _ = spearmanr(x, y)
+        kendall_tau, _ = kendalltau(x, y)
 
         corr_text.append(
             f"Component {comp}:\n"
@@ -245,7 +246,7 @@ def genFig():
         x="component_weight",
         y="mean_expression",
         hue="component",
-        palette=colors,
+        palette=[mcolors.rgb2hex(c) for c in colors],
         ax=ax[1],
     )
 

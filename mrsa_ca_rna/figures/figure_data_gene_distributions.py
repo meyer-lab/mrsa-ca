@@ -18,10 +18,13 @@ def get_data(data_type: str = "raw") -> ad.AnnData:
 
     if data_type == "raw":
         # Use raw expression data
-        exp = X.layers["raw"].copy()
+        exp = np.asarray(X.layers["raw"])
     elif data_type == "cpm":
         # Use normalized expression data
-        exp = X.X.copy()
+        exp = np.asarray(X.X)
+    else:
+        # Default to raw data
+        exp = np.asarray(X.layers["raw"])
 
     # Add read depth for each sample
     X.obsm["read_depth"] = np.asarray(exp.sum(axis=1)).flatten()
@@ -48,13 +51,13 @@ def prepare_expression_freq(X: ad.AnnData, threshold=5) -> pd.DataFrame:
     """Make a DataFrame with expression frequency and mean expression
     for seaborn plotting."""
 
-    cpm_data = calculate_cpm(X.layers["raw"])
+    cpm_data = calculate_cpm(np.asarray(X.layers["raw"]))
 
     expr_freq = np.mean(cpm_data > threshold, axis=0) * 100
 
     df = pd.DataFrame(
         {
-            "mean_expression": X.varm["mean_expression"].flatten(),
+            "mean_expression": np.asarray(X.varm["mean_expression"]).flatten(),
             "expression_frequency": expr_freq,
             "gene": X.var.index,
         }
@@ -66,11 +69,12 @@ def prepare_expression_freq(X: ad.AnnData, threshold=5) -> pd.DataFrame:
 def prepare_top_genes_data(X: ad.AnnData, n_genes: int = 5) -> pd.DataFrame:
     """Extract expression data for the top N genes with highest mean expression."""
     # Get the top genes by mean expression
-    top_gene_indices = np.argsort(X.varm["mean_expression"])[-n_genes:][::-1]
+    mean_expr_array = np.asarray(X.varm["mean_expression"]).flatten()
+    top_gene_indices = np.argsort(mean_expr_array)[-n_genes:][::-1]
     top_gene_names = X.var_names[top_gene_indices]
 
     # Get raw expression data
-    raw_data = X.layers["raw"]
+    raw_data = np.asarray(X.layers["raw"])
 
     # Create DataFrame
     df_list = []
@@ -134,13 +138,17 @@ def genFig():
         alpha=0.5,
         ax=ax[1],
     )
-    b = sns.scatterplot(
-        data=expression_freq[expression_freq["is_top_gene"]],
-        x="mean_expression",
-        y="expression_frequency",
-        hue="gene",
-        ax=ax[1],
-    )
+
+    # Filter for top genes and ensure it's a DataFrame
+    top_genes_expr_freq = expression_freq.loc[expression_freq["is_top_gene"], :].copy()
+    if not top_genes_expr_freq.empty:
+        b = sns.scatterplot(
+            data=top_genes_expr_freq,
+            x="mean_expression",
+            y="expression_frequency",
+            hue="gene",
+            ax=ax[1],
+        )
     b.set_title(f"Gene Expression Profile with CPM>{threshold}")
     b.set_xlabel(f"Mean Expression ({data_type.upper()} Counts)")
     b.set_ylabel("Expression Frequency (%)")

@@ -6,10 +6,10 @@ in the PARAFAC2 decomposition by directly comparing the A (disease) and C (gene)
 from math import ceil
 
 import anndata as ad
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from mrsa_ca_rna.factorization import perform_parafac2
@@ -31,9 +31,11 @@ def get_data(filter_threshold=5, min_pct=0.5, rank=5):
 
     # Organize genes into a DataFrame then analyze
     gene_factors_df = pd.DataFrame(
-        X.varm["Pf2_C"],
+        data=X.varm["Pf2_C"],
         index=X.var_names,
-        columns=[f"Component_{i + 1}" for i in range(X.uns["Pf2_A"].shape[1])],
+        columns=pd.Index(
+            [f"Component_{i + 1}" for i in range(X.uns["Pf2_A"].shape[1])]
+        ),
     )
     top_genes_df = find_top_features(
         gene_factors_df, threshold_fraction=0.5, feature_name="gene"
@@ -41,9 +43,11 @@ def get_data(filter_threshold=5, min_pct=0.5, rank=5):
 
     # Organize diseases into a DataFrame then analyze
     disease_factors_df = pd.DataFrame(
-        X.uns["Pf2_A"],
+        data=X.uns["Pf2_A"],
         index=X.obs["disease"].unique(),
-        columns=[f"Component_{i + 1}" for i in range(X.uns["Pf2_A"].shape[1])],
+        columns=pd.Index(
+            [f"Component_{i + 1}" for i in range(X.uns["Pf2_A"].shape[1])]
+        ),
     )
     top_diseases_df = find_top_features(
         disease_factors_df, threshold_fraction=0.1, feature_name="disease"
@@ -109,7 +113,7 @@ def highlight_heatmap_columns(
                 num_rows = ceil(ylim[1] - ylim[0])
 
     for col_idx in column_indices:
-        rect = plt.Rectangle(
+        rect = Rectangle(
             (col_idx, 0),  # x, y position
             1,  # width
             num_rows,  # height
@@ -152,11 +156,13 @@ def plot_component_details(
     comp_key = f"Component_{comp_num}"
 
     # Filter data for the current component
-    comp_diseases = top_diseases_df[top_diseases_df["component"] == comp_key]
-    comp_genes = top_genes_df[top_genes_df["component"] == comp_key]
+    comp_diseases = top_diseases_df.loc[
+        top_diseases_df["component"] == comp_key, :
+    ].copy()
+    comp_genes = top_genes_df.loc[top_genes_df["component"] == comp_key, :].copy()
 
     # Get top diseases (sorted by absolute value, take top n_diseases)
-    top_diseases = comp_diseases.nlargest(n_diseases, "abs_value")
+    top_diseases = comp_diseases.nlargest(n=n_diseases, columns="abs_value")
 
     # Separate positive and negative genes for this component
     pos_genes = comp_genes[comp_genes["direction"] == "positive"].head(n_genes)
@@ -168,7 +174,7 @@ def plot_component_details(
 
     # Plot diseases
     if not top_diseases.empty:
-        sns.barplot(x="value", y="disease", data=top_diseases, ax=ax_disease)
+        sns.barplot(data=top_diseases, x="value", y="disease", ax=ax_disease)
         ax_disease.set_title(f"Component {comp_num}: Top Diseases")
         ax_disease.axvline(x=0, color="gray", linestyle="--")
     else:
@@ -184,7 +190,7 @@ def plot_component_details(
 
     # Plot positive genes
     if not pos_genes.empty:
-        sns.barplot(x="value", y="gene", data=pos_genes, ax=ax_pos_gene, color="red")
+        sns.barplot(data=pos_genes, x="value", y="gene", ax=ax_pos_gene, color="red")
         ax_pos_gene.set_title(f"Positive Genes (n={total_pos_genes})")
         ax_pos_gene.axvline(x=0, color="gray", linestyle="--")
     else:
@@ -200,7 +206,7 @@ def plot_component_details(
 
     # Plot negative genes
     if not neg_genes.empty:
-        sns.barplot(x="value", y="gene", data=neg_genes, ax=ax_neg_gene, color="blue")
+        sns.barplot(data=neg_genes, x="value", y="gene", ax=ax_neg_gene, color="blue")
         ax_neg_gene.set_title(f"Negative Genes (n={total_neg_genes})")
         ax_neg_gene.axvline(x=0, color="gray", linestyle="--")
     else:
@@ -260,7 +266,7 @@ def genFig():
     ax_a_matrix.set_ylabel("Disease")
 
     # Plot C matrix (genes) using the rasterized plotter
-    sparsity = check_sparsity(X.varm["Pf2_C"])
+    sparsity = check_sparsity(np.asarray(X.varm["Pf2_C"]))
     plot_gene_matrix(
         X, ax=ax_c_matrix, title=f"Gene Factor Matrix (C)\nSparsity: {sparsity:.2f}"
     )
@@ -300,8 +306,8 @@ def genFig():
     f.suptitle("PARAFAC2 Component Analysis: Disease-Gene Associations", fontsize=16)
 
     # Create histogram figure using the overall top genes from all components
-    pos_genes_all = top_genes_df[top_genes_df["direction"] == "positive"]
-    neg_genes_all = top_genes_df[top_genes_df["direction"] == "negative"]
+    pos_genes_all = top_genes_df.loc[top_genes_df["direction"] == "positive", :]
+    neg_genes_all = top_genes_df.loc[top_genes_df["direction"] == "negative", :]
     g = plot_gene_expression_histograms(
         X, pos_genes_all, neg_genes_all, n_genes=n_genes_to_plot
     )
@@ -328,7 +334,7 @@ def plot_gene_expression_histograms(
     ax, f, _ = setupBase(fig_size, layout)
 
     # Get CPM expression data
-    exp = calculate_cpm(X.layers["raw"])
+    exp = calculate_cpm(np.asarray(X.layers["raw"]))
 
     for i, gene in enumerate(all_genes):
         ax_i = ax[i]

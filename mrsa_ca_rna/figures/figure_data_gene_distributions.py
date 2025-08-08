@@ -80,7 +80,7 @@ def prepare_top_genes_data(X: ad.AnnData, n_genes: int = 5) -> pd.DataFrame:
     df_list = []
     for i, gene_idx in enumerate(top_gene_indices):
         gene = top_gene_names[i]
-        # Extract gene expression (handles both sparse and dense)
+        # Extract gene expression
         gene_expr = np.asarray(raw_data[:, gene_idx]).flatten()
 
         # Create a dataframe for this gene
@@ -139,8 +139,8 @@ def genFig():
         ax=ax[1],
     )
 
-    # Filter for top genes and ensure it's a DataFrame
-    top_genes_expr_freq = expression_freq.loc[expression_freq["is_top_gene"], :].copy()
+    # Filter for top genes
+    top_genes_expr_freq = expression_freq.loc[expression_freq["is_top_gene"], :]
     if not top_genes_expr_freq.empty:
         b = sns.scatterplot(
             data=top_genes_expr_freq,

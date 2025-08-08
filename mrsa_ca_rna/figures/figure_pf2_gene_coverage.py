@@ -77,7 +77,7 @@ def calculate_gene_coverage(top_genes_df: pd.DataFrame, total_genes):
     return coverage_stats, coverage_report
 
 
-def prepare_plot_dataframe(mean_genes, top_genes_df):
+def prepare_plot_dataframe(mean_genes: pd.DataFrame, top_genes_df: pd.DataFrame):
     """Prepare dataframe for plotting gene expression by component.
 
     Parameters
@@ -130,9 +130,6 @@ def get_data():
         index=X.var.index,
         columns=pd.Index([str(x) for x in range(1, X.uns["Pf2_A"].shape[1] + 1)]),
     )
-
-    # # Grab latest gene matrix if not running the factorization
-    # genes_df = pd.read_csv("output/pf2_genes_5.csv", index_col=0, header=0)
 
     # Calculate mean expression
     mean_exp = np.mean(np.asarray(X.layers["raw"]), axis=0)

@@ -1,0 +1,45 @@
+# GSE list of included datasets
+# MRSA
+# No GSE for MRSA
+# Candidemia
+GSE176262
+# Breast Cancer
+GSE201085
+# Ulcerative Colitis and Primary Sclerosing Cholangitis
+GSE177044
+# Tuberculosis
+GSE89403
+# Type 1 Diabetes Mellitus
+GSE124400
+# COVID
+GSE161731
+# Lupus
+GSE116006
+# HIV with Cryptococcus Meningitis
+GSE162914
+# Enterovirus Meningitis
+GSE133378
+# Zika
+GSE129882
+# Healthy and Heme blocked healthy
+GSE133758
+# Rheumatoid Arthritis
+GSE120178
+# Hepatitus B Virus
+GSE173897
+# Kidney Transplant
+GSE112927
+# COVID Marines cohort
+GSE198449
+# Breast Cancer TCR study
+GSE239933
+# Sepsis
+GSE185263
+# Leukemia (MPN)
+GSE277354
+# COVID Sinai cohort
+GSE215865
+# Asthema
+GSE115823
+# Aethersclerosis
+GSE221615

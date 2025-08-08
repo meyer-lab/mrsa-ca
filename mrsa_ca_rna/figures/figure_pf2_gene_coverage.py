@@ -31,7 +31,7 @@ def calculate_gene_coverage(top_genes_df: pd.DataFrame, total_genes):
     # Convert DataFrame to dict format for calculation
     top_genes = {}
     for comp, group in top_genes_df.groupby("component"):
-        top_genes[comp] = group["feature"].tolist()
+        top_genes[comp] = group["gene"].tolist()
 
     # Calculate gene space coverage
     all_component_genes = set()
@@ -149,7 +149,7 @@ def genFig():
     mean_genes, genes_df = get_data()
 
     # Get top genes for each component
-    top_genes_df = find_top_features(genes_df, threshold_fraction=0.5)
+    top_genes_df = find_top_features(genes_df, threshold_fraction=0.5, feature_name="gene")
 
     # Calculate gene space coverage
     total_genes = len(mean_genes)

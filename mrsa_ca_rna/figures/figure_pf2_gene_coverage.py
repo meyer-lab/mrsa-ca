@@ -149,7 +149,9 @@ def genFig():
     mean_genes, genes_df = get_data()
 
     # Get top genes for each component
-    top_genes_df = find_top_features(genes_df, threshold_fraction=0.5, feature_name="gene")
+    top_genes_df = find_top_features(
+        genes_df, threshold_fraction=0.5, feature_name="gene"
+    )
 
     # Calculate gene space coverage
     total_genes = len(mean_genes)

@@ -73,7 +73,7 @@ def load_expression_data() -> ad.AnnData:
 
     exp_df = pd.read_csv(file_path, delimiter=",", compression="gzip")
 
-    # Temprorarily remove studies from a list
+    # Temporarily remove unfinished studies using a list of study IDs
     studies_to_remove = [
         "GSE176262",
         "GSE89403",

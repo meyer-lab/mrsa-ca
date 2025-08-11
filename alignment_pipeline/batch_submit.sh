@@ -16,6 +16,7 @@
 DRY_RUN=false
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GSE_LIST="$SCRIPT_DIR/gse_list.txt"
+SCRIPT="run_quantify.sh"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --file)
             GSE_LIST="$2"
+            shift 2
+            ;;
+        --script)
+            SCRIPT="$2"
             shift 2
             ;;
         -h|--help)
@@ -57,8 +62,8 @@ if [[ ! -f "$GSE_LIST" ]]; then
     exit 1
 fi
 
-if [[ ! -f "$SCRIPT_DIR/run_quantify.sh" ]]; then
-    echo "Error: run_quantify.sh not found in $SCRIPT_DIR"
+if [[ ! -f "$SCRIPT_DIR/$SCRIPT" ]]; then
+    echo "Error: $SCRIPT not found in $SCRIPT_DIR"
     exit 1
 fi
 
@@ -109,12 +114,12 @@ while IFS= read -r line; do
         submit_reason="results exist, will check for missing samples"
     fi
     
-    # Submit job using run_quantify.sh
+    # Submit job using the specified script
     if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[DRY RUN] Would submit: qsub run_quantify.sh $gse ($submit_reason)"
+        echo "[DRY RUN] Would submit: qsub $SCRIPT $gse ($submit_reason)"
     else
         echo "Submitting job for $gse ($submit_reason)..."
-        qsub run_quantify.sh "$gse"
+        qsub "$SCRIPT" "$gse"
     fi
     
     submitted_count=$((submitted_count + 1))

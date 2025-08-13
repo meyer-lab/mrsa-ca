@@ -57,10 +57,11 @@ def process_single_srr(srr, input_dir, output_dir, genome, return_type, identifi
 
 def process_srrs_simple(srr_list, input_dir, output_dir, max_workers=1, 
                        genome="homo_sapiens", return_type="gene", identifier="symbol",
-                       cleanup="end", study_id=None):
+                       cleanup="end", study_id=None, max_download_workers=1):
     """
     Simplified SRR processing pipeline with concurrent download and alignment.
-    Uses the same 2-worker approach as legacy: 1 downloader + 1 aligner.
+    Can handle multiple download workers (max_download_workers) with single alignment worker.
+    Each download worker processes unique SRRs to avoid conflicts.
     """
     os.makedirs(input_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
@@ -98,63 +99,98 @@ def process_srrs_simple(srr_list, input_dir, output_dir, max_workers=1,
     all_results = []
     failed_alignments = []
     
-    # Use two single-worker executors for concurrent download and alignment
-    with ThreadPoolExecutor(max_workers=1) as download_executor, \
+    # Use multiple download workers with single alignment worker for safe concurrent processing
+    # Each download worker gets unique SRRs to avoid conflicts
+    import threading
+    from collections import deque
+    
+    # Thread-safe queues for coordination
+    download_queue = deque(to_download)
+    ready_queue = deque(ready_for_alignment)
+    download_queue_lock = threading.Lock()
+    ready_queue_lock = threading.Lock()
+    
+    # Limit download workers to prevent resource exhaustion
+    max_download_workers = min(max_download_workers, len(to_download), 4)
+    
+    logger.info(f"🚀 Using {max_download_workers} download workers and 1 alignment worker")
+    
+    with ThreadPoolExecutor(max_workers=max_download_workers) as download_executor, \
          ThreadPoolExecutor(max_workers=1) as align_executor:
         
         # Track active futures
-        active_download_future = None
+        active_download_futures = {}  # future -> srr mapping
         active_align_future = None
-        current_download_srr = None
         current_align_srr = None
         
-        # Start the first alignment if any files are ready
-        if ready_for_alignment:
-            srr = ready_for_alignment.pop(0)
-            active_align_future = align_executor.submit(
-                align_srr, srr, input_dir, output_dir, genome, return_type, 
-                identifier, cleanup_after=cleanup_immediate
-            )
-            current_align_srr = srr
-            logger.info(f"Started alignment of existing file {srr}")
+        def submit_download():
+            """Submit a download job if SRRs are available."""
+            with download_queue_lock:
+                if download_queue:
+                    srr = download_queue.popleft()
+                    future = download_executor.submit(download_srr, srr, input_dir)
+                    active_download_futures[future] = srr
+                    logger.info(f"Started download of {srr} (worker {len(active_download_futures)})")
+                    return True
+            return False
         
-        # Start the first download if any
-        if to_download:
-            srr = to_download.pop(0)
-            active_download_future = download_executor.submit(download_srr, srr, input_dir)
-            current_download_srr = srr
-            logger.info(f"Started download of {srr}")
+        def submit_alignment():
+            """Submit an alignment job if files are ready."""
+            nonlocal active_align_future, current_align_srr
+            
+            if active_align_future is None:
+                with ready_queue_lock:
+                    if ready_queue:
+                        srr = ready_queue.popleft()
+                        active_align_future = align_executor.submit(
+                            align_srr, srr, input_dir, output_dir, genome, return_type,
+                            identifier, cleanup_after=cleanup_immediate
+                        )
+                        current_align_srr = srr
+                        logger.info(f"Started alignment of {srr}")
+                        return True
+            return False
+        
+        # Start initial downloads (up to max_download_workers)
+        for _ in range(max_download_workers):
+            if not submit_download():
+                break
+        
+        # Start initial alignment if files are ready
+        submit_alignment()
         
         # Process until all downloads and alignments are complete
-        while active_download_future is not None or active_align_future is not None or \
-              ready_for_alignment or to_download:
+        while active_download_futures or active_align_future or download_queue or ready_queue:
             
-            # Check if download is complete
-            if active_download_future is not None and active_download_future.done():
+            # Check completed download futures
+            completed_downloads = []
+            for future, srr in active_download_futures.items():
+                if future.done():
+                    completed_downloads.append((future, srr))
+            
+            # Process completed downloads
+            for future, srr in completed_downloads:
+                del active_download_futures[future]
+                
                 try:
-                    success = active_download_future.result()
+                    success = future.result()
                     if success:
-                        logger.info(f"Download of {current_download_srr} completed")
+                        logger.info(f"Download of {srr} completed")
                         # Check if the SRR is now ready for alignment
-                        read_type, file_paths = get_fastq_paths(current_download_srr, input_dir)
+                        read_type, file_paths = get_fastq_paths(srr, input_dir)
                         if read_type != 'missing':
-                            ready_for_alignment.append(current_download_srr)
+                            with ready_queue_lock:
+                                ready_queue.append(srr)
                     else:
-                        logger.error(f"Download of {current_download_srr} failed")
-                        failed_alignments.append(current_download_srr)
+                        logger.error(f"Download of {srr} failed")
+                        failed_alignments.append(srr)
                         
                 except Exception as e:
-                    logger.error(f"Error in download of {current_download_srr}: {str(e)}")
-                    failed_alignments.append(current_download_srr)
+                    logger.error(f"Error in download of {srr}: {str(e)}")
+                    failed_alignments.append(srr)
                 
-                # Start next download
-                active_download_future = None
-                current_download_srr = None
-                if to_download:
-                    srr = to_download.pop(0)
-                    active_download_future = download_executor.submit(download_srr, srr, input_dir)
-                    current_download_srr = srr
-                    logger.info(f"Started download of {srr}")
+                # Start next download if available
+                submit_download()
             
             # Check if alignment is complete
             if active_align_future is not None and active_align_future.done():
@@ -170,31 +206,18 @@ def process_srrs_simple(srr_list, input_dir, output_dir, max_workers=1,
                     logger.error(f"Error in alignment of {current_align_srr}: {str(e)}")
                     failed_alignments.append(current_align_srr)
                 
-                # Start next alignment
+                # Reset alignment tracking
                 active_align_future = None
                 current_align_srr = None
-                if ready_for_alignment:
-                    srr = ready_for_alignment.pop(0)
-                    active_align_future = align_executor.submit(
-                        align_srr, srr, input_dir, output_dir, genome, return_type,
-                        identifier, cleanup_after=cleanup_immediate
-                    )
-                    current_align_srr = srr
-                    logger.info(f"Started alignment of {srr}")
+                
+                # Start next alignment if files are ready
+                submit_alignment()
             
             # If no alignment is running but we have files ready, start one
-            if active_align_future is None and ready_for_alignment:
-                srr = ready_for_alignment.pop(0)
-                active_align_future = align_executor.submit(
-                    align_srr, srr, input_dir, output_dir, genome, return_type,
-                    identifier, cleanup_after=cleanup_immediate
-                )
-                current_align_srr = srr
-                logger.info(f"Started alignment of {srr}")
-            
-            # Small sleep to prevent busy waiting
-            import time
-            time.sleep(0.1)
+            if not submit_alignment():
+                # Small sleep to prevent busy waiting
+                import time
+                time.sleep(0.1)
     
     # Final cleanup if requested
     if cleanup == "end":
@@ -243,7 +266,8 @@ def process_samples_simple(sample_to_srrs, input_dir, output_dir, max_workers=1,
     
     # Process individual SRRs
     process_srrs_simple(all_srrs, input_dir, output_dir, max_workers,
-                       genome, return_type, identifier, cleanup, study_id=None)
+                       genome, return_type, identifier, cleanup, study_id=None, 
+                       max_download_workers=max_workers)
     
     # Validate all SRR results are present - STRICT MODE
     try:
@@ -523,7 +547,8 @@ def main():
     # Basic options
     parser.add_argument("--input_dir", default="data/input", help="Directory for FASTQ files")
     parser.add_argument("--output_dir", default="data/results", help="Directory for results")
-    parser.add_argument("--max_workers", type=int, default=1, help="Number of parallel workers")
+    parser.add_argument("--max_workers", type=int, default=1, help="Number of parallel workers (for backward compatibility)")
+    parser.add_argument("--download_workers", type=int, default=None, help="Number of parallel download workers (default: same as max_workers)")
     parser.add_argument("--genome", default="homo_sapiens", help="Genome to align to")
     parser.add_argument("--return_type", default="gene", help="Return type (gene/transcript)")
     parser.add_argument("--identifier", default="symbol", help="Identifier type")
@@ -535,6 +560,12 @@ def main():
     parser.add_argument("--reset_indexes", action="store_true", help="Reset alignment indexes")
     
     args = parser.parse_args()
+    
+    # Handle download worker configuration
+    if args.download_workers is None:
+        args.download_workers = args.max_workers
+    
+    logger.info(f"Configuration: {args.download_workers} download workers, 1 alignment worker")
     
     # Setup
     os.makedirs(args.input_dir, exist_ok=True)
@@ -563,7 +594,8 @@ def main():
         
         results = process_srrs_simple(
             srr_list, args.input_dir, args.output_dir, args.max_workers,
-            args.genome, args.return_type, args.identifier, args.cleanup, args.study_id
+            args.genome, args.return_type, args.identifier, args.cleanup, args.study_id,
+            max_download_workers=args.download_workers
         )
         
     elif args.sample_mapping:

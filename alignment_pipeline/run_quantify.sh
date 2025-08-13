@@ -97,30 +97,57 @@ echo "Configuring thread allocation for performance optimization..."
 NSLOTS=${NSLOTS:-8}  # Default to 8 if not set by SGE
 echo "SGE allocated cores: $NSLOTS"
 
-# Intelligent core distribution:
-# - Reserve 1 core for pipeline orchestration
-# - Allocate 2-3 cores for parallel SRA downloads
-# - Allocate remaining cores for kallisto alignment threading
-# - Conservative threading for mathematical libraries
+# Intelligent core distribution based on workload characteristics:
+# 1. Reserve 1 core for math/file operations (robustness)
+# 2. Allocate 2-3 cores per download worker (minimal, network-bound)
+# 3. Give remaining cores to alignment (~75% target for kallisto)
 
-AVAILABLE_CORES=$((NSLOTS - 1))  # Reserve 1 for orchestration
-DOWNLOAD_THREADS=$(( AVAILABLE_CORES < 3 ? 1 : 3 ))  # Min 1, max 3
-ALIGNMENT_THREADS=$((AVAILABLE_CORES - DOWNLOAD_THREADS + 1))  # Rest to alignment
-MATH_THREADS=$((NSLOTS / 4))  # Conservative for NumPy/pandas
-MATH_THREADS=$(( MATH_THREADS < 1 ? 1 : MATH_THREADS ))  # At least 1
+MATH_CORES=1  # Reserve for file operations
+CORES_PER_DOWNLOAD=2  # Minimal allocation (network is bottleneck, not CPU)
+WORKABLE_CORES=$((NSLOTS - MATH_CORES))
 
-# Export thread configuration for the pipeline
-export PIPELINE_DOWNLOAD_THREADS=$DOWNLOAD_THREADS
-export PIPELINE_ALIGNMENT_THREADS=$ALIGNMENT_THREADS
-export OMP_NUM_THREADS=$MATH_THREADS
-export OPENBLAS_NUM_THREADS=$MATH_THREADS
-export MKL_NUM_THREADS=$MATH_THREADS
+# Calculate optimal download workers and core allocation
+# Start with 1 download worker and scale up while maintaining ~75% alignment allocation
+DOWNLOAD_WORKERS=1
+BEST_ALIGNMENT_CORES=0
+BEST_DOWNLOAD_WORKERS=1
+
+# Test different download worker counts to find optimal allocation
+for test_workers in {1..6}; do
+    test_download_cores=$((test_workers * CORES_PER_DOWNLOAD))
+    test_alignment_cores=$((WORKABLE_CORES - test_download_cores))
+    
+    # Must have at least 1 core for alignment and reasonable allocation
+    if [ $test_alignment_cores -ge 1 ] && [ $test_download_cores -le $WORKABLE_CORES ]; then
+        alignment_percentage=$((test_alignment_cores * 100 / WORKABLE_CORES))
+        
+        # Prefer configurations closer to 75% alignment allocation
+        if [ $test_alignment_cores -gt $BEST_ALIGNMENT_CORES ] && [ $alignment_percentage -ge 60 ]; then
+            BEST_ALIGNMENT_CORES=$test_alignment_cores
+            BEST_DOWNLOAD_WORKERS=$test_workers
+        fi
+    fi
+done
+
+DOWNLOAD_WORKERS=$BEST_DOWNLOAD_WORKERS
+DOWNLOAD_CORES=$((DOWNLOAD_WORKERS * CORES_PER_DOWNLOAD))
+ALIGNMENT_CORES=$((WORKABLE_CORES - DOWNLOAD_CORES))
+
+# Export thread configuration for external programs
+export OMP_NUM_THREADS=$MATH_CORES
+export OPENBLAS_NUM_THREADS=$MATH_CORES
+export MKL_NUM_THREADS=$MATH_CORES
+
+# Export core allocation for fasterq-dump and kallisto
+export FASTERQ_THREADS=$CORES_PER_DOWNLOAD  # Each download worker will use this
+export KALLISTO_THREADS=$ALIGNMENT_CORES    # Single alignment worker uses all remaining
 
 echo "Thread allocation configured:"
-echo "  - Download threads: $DOWNLOAD_THREADS"
-echo "  - Alignment threads: $ALIGNMENT_THREADS" 
-echo "  - Math library threads: $MATH_THREADS"
-echo "  - Total cores utilized: $NSLOTS"
+echo "  - Total cores available: $NSLOTS"
+echo "  - Math/file operation cores: $MATH_CORES"
+echo "  - Download workers: $DOWNLOAD_WORKERS (${CORES_PER_DOWNLOAD} cores each = ${DOWNLOAD_CORES} total)"
+echo "  - Alignment cores: $ALIGNMENT_CORES ($(( ALIGNMENT_CORES * 100 / WORKABLE_CORES ))% of workable cores)"
+echo "  - Core distribution verification: $MATH_CORES + $DOWNLOAD_CORES + $ALIGNMENT_CORES = $((MATH_CORES + DOWNLOAD_CORES + ALIGNMENT_CORES)) cores"
 
 # Use Hoffman2 environment variables for directory paths
 # $SCRATCH and $HOME are provided by the cluster environment
@@ -232,26 +259,26 @@ fi
 
 # Run the processing script with appropriate parameters based on mode
 if [[ "$PROCESSING_MODE" == "sample_mapping" ]]; then
-    echo "Running in sample mapping mode with simplified CSV-based checkpointing..."
+    echo "Running in sample mapping mode with configurable download workers..."
     python process_rnaseq.py \
         --sample_mapping "$INPUT_FILE" \
         --input_dir "$SCRATCH_DIR" \
         --output_dir "$RESULTS_DIR" \
         --study_id "$STUDY_ID" \
-        --max_workers 1 \
+        --download_workers $DOWNLOAD_WORKERS \
         --genome homo_sapiens \
         --return_type gene \
         --identifier symbol \
         --cleanup immediate \
         --combination_method sum
 else
-    echo "Running in direct SRR mode with simplified CSV-based checkpointing..."
+    echo "Running in direct SRR mode with configurable download workers..."
     python process_rnaseq.py \
         --srr_file "$INPUT_FILE" \
         --input_dir "$SCRATCH_DIR" \
         --output_dir "$RESULTS_DIR" \
         --study_id "$STUDY_ID" \
-        --max_workers 1 \
+        --download_workers $DOWNLOAD_WORKERS \
         --genome homo_sapiens \
         --return_type gene \
         --identifier symbol \

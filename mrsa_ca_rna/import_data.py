@@ -66,7 +66,10 @@ def load_expression_data() -> ad.AnnData:
         "GSE221615": "AETHERSCLEROSIS",
     }
 
-    file_path = join(BASE_DIR, "mrsa_ca_rna", "data", "master_expression_data.csv.gzip")
+    # Use absolute path to the master expression data file for gitactions
+    file_path = (
+        "/home/jamesp/Playground/mrsa_ca/mrsa_ca_rna/data/master_expression_data.csv.gz"
+    )
 
     exp_df = pd.read_csv(file_path, delimiter=",", compression="gzip")
 

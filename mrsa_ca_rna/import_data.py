@@ -68,7 +68,7 @@ def load_expression_data() -> ad.AnnData:
 
     # Use absolute path to the master expression data file for gitactions
     file_path = (
-        "/home/jamesp/Playground/mrsa_ca/mrsa_ca_rna/data/master_expression_data.csv.gz"
+        "/home/jamesp/Playground/mrsa-ca/mrsa_ca_rna/data/master_expression_data.csv.gzip"
     )
 
     exp_df = pd.read_csv(file_path, delimiter=",", compression="gzip")
@@ -85,6 +85,11 @@ def load_expression_data() -> ad.AnnData:
     # Split metadata from expression data and make AnnData object
     metadata = exp_df.loc[:, ["sample_id", "disease"]].copy()
     exp = exp_df.drop(columns=["sample_id", "disease"])
+
+    # Cast indices as strings for anndata
+    metadata.index = metadata.index.astype(str)
+    exp.columns = exp.columns.astype(str)
+
     data_ad = ad.AnnData(
         X=exp.values, obs=metadata, var=exp.columns.to_frame(name="gene_id")
     )

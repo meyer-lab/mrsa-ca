@@ -94,11 +94,14 @@ def import_ca_metadata() -> pd.DataFrame:
 
     clinical_var = parse_metadata(metadata)
 
-    # Remove all but the Candidemia samples and keep only the phenotype column
-    clinical_var = clinical_var.loc[clinical_var["phenotype"] == "Candidemia", ["phenotype"]]
+    # Remove all but the Candidemia samples
+    clinical_var = clinical_var.loc[clinical_var["phenotype"] == "Candidemia", :]
 
     # Add a "status" column
     clinical_var["status"] = "Unknown"
+
+    # Keep only the status column
+    clinical_var = clinical_var[["status"]].copy()
 
     return clinical_var
 

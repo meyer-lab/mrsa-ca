@@ -185,6 +185,12 @@ def prepare_mrsa_ca(X: ad.AnnData) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
     mrsa_metadata = pd.concat([X_mrsa.obs, mrsa_metadata], axis=1)
     ca_metadata = pd.concat([X_ca.obs, ca_metadata], axis=1, join="inner")
 
+    # Verify there are 106 Candidemia samples after "inner" join
+    if ca_metadata.shape[0] != 106:
+        raise ValueError(
+            f"Expected 106 Candidemia samples, found {ca_metadata.shape[0]} after join"
+        )
+
     # Prepare the AnnData objects by trimming to the same indices
     X_mrsa = X_mrsa[X_mrsa.obs.index.isin(mrsa_metadata.index)].copy()
     X_ca = X_ca[X_ca.obs.index.isin(ca_metadata.index)].copy()

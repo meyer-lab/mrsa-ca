@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mrsa_ca_rna.import_data import load_expression_data
+from mrsa_ca_rna.import_data import disease_registry, load_expression_data
 from mrsa_ca_rna.utils import (
     calculate_cpm,
     gene_filter,
@@ -161,30 +161,7 @@ def test_prepare_data_disease_labels(sample_adata):
     assert adata.obs["disease"].dtype == object, "Disease labels are not strings"
 
     # Test for expected disease categories (from disease_registry)
-    expected_diseases = {
-        "MRSA",
-        "CANDIDA",
-        "BREAST_CANCER",
-        "UC_PSC",
-        "TB",
-        "T1DM",
-        "COVID",
-        "LUPUS",
-        "HIV_CM",
-        "ENTEROVIRUS",
-        "ZIKA",
-        "HEALTHY",
-        "RA",
-        "HBV",
-        "KIDNEY",
-        "COVID_MARINES",
-        "BREAST_CANCER_TCR",
-        "SEPSIS",
-        "LEUKEMIA",
-        "COVID_SINAI",
-        "ASTHEMA",
-        "AETHERSCLEROSIS",
-    }
+    expected_diseases = disease_registry.values()
 
     observed_diseases = set(adata.obs["disease"].unique())
     assert observed_diseases.issubset(expected_diseases), (

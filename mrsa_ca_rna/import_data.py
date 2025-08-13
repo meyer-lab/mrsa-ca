@@ -15,6 +15,32 @@ import pandas as pd
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
+# Add disease registry to module scope so it can be used in tests
+disease_registry = {
+    "MRSA": "MRSA",
+    "GSE176262": "CANDIDA",
+    "GSE201085": "BREAST_CANCER",
+    "GSE177044": "UC_PSC",
+    "GSE89403": "TB",
+    "GSE124400": "T1DM",
+    "GSE161731": "COVID",
+    "GSE116006": "LUPUS",
+    "GSE162914": "HIV_CM",
+    "GSE133378": "ENTEROVIRUS",
+    "GSE129882": "ZIKA",
+    "GSE133758": "HEALTHY",
+    "GSE120178": "RA",
+    "GSE173897": "HBV",
+    "GSE112927": "KIDNEY",
+    "GSE198449": "COVID_MARINES",
+    "GSE239933": "BREAST_CANCER_TCR",
+    "GSE185263": "SEPSIS",
+    "GSE277354": "LEUKEMIA",
+    "GSE215865": "COVID_SINAI",
+    "GSE115823": "ASTHEMA",
+    "GSE221615": "AETHERSCLEROSIS",
+}
+
 
 def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
     """Parses metadata from a DataFrame, extracting key-value pairs from the
@@ -43,31 +69,6 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
 def load_expression_data() -> ad.AnnData:
     """Load expression data from master file, label with disease,
     and return as AnnData object."""
-
-    disease_registry = {
-        "MRSA": "MRSA",
-        "GSE176262": "CANDIDA",
-        "GSE201085": "BREAST_CANCER",
-        "GSE177044": "UC_PSC",
-        "GSE89403": "TB",
-        "GSE124400": "T1DM",
-        "GSE161731": "COVID",
-        "GSE116006": "LUPUS",
-        "GSE162914": "HIV_CM",
-        "GSE133378": "ENTEROVIRUS",
-        "GSE129882": "ZIKA",
-        "GSE133758": "HEALTHY",
-        "GSE120178": "RA",
-        "GSE173897": "HBV",
-        "GSE112927": "KIDNEY",
-        "GSE198449": "COVID_MARINES",
-        "GSE239933": "BREAST_CANCER_TCR",
-        "GSE185263": "SEPSIS",
-        "GSE277354": "LEUKEMIA",
-        "GSE215865": "COVID_SINAI",
-        "GSE115823": "ASTHEMA",
-        "GSE221615": "AETHERSCLEROSIS",
-    }
 
     # Use absolute path to the master expression data file for gitactions
     file_path = (

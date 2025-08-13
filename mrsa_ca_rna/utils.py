@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.import_data import load_expression_data, import_ca_metadata, import_mrsa_metadata
 
 
-def concat_datasets(
+def prepare_data(
     filter_threshold: float = 1.0,
     min_pct: float = 0.25,
 ) -> ad.AnnData:

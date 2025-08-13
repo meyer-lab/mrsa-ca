@@ -18,14 +18,14 @@ from mrsa_ca_rna.figures.helpers import plot_gene_matrix
 from mrsa_ca_rna.utils import (
     calculate_cpm,
     check_sparsity,
-    concat_datasets,
+    prepare_data,
     find_top_features,
 )
 
 
 def get_data(filter_threshold=5, min_pct=0.5, rank=5):
     """Set up the data for analysis"""
-    X = concat_datasets(filter_threshold=filter_threshold, min_pct=min_pct)
+    X = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
 
     X, r2x = perform_parafac2(X, slice_col="disease", rank=rank)
 

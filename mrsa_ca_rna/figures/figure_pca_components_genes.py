@@ -12,7 +12,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -33,7 +33,7 @@ def figure_setup():
     top_n = 5
 
     # Get the MRSA and CA data, grab persistance labels
-    combined_ad = concat_datasets(filter_threshold=-1)
+    combined_ad = prepare_data(filter_threshold=-1)
     _, _, combined_ad = prepare_mrsa_ca(combined_ad)
     
     # Get the labels for MRSA samples

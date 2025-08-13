@@ -12,7 +12,7 @@ from mrsa_ca_rna.figures.helpers import plot_gene_matrix
 from mrsa_ca_rna.gsea import gsea_analysis_per_cmp
 from mrsa_ca_rna.utils import (
     check_sparsity,
-    concat_datasets,
+    prepare_data,
     find_top_features,
 )
 
@@ -22,7 +22,7 @@ def figure_setup():
 
     rank = 5
 
-    X = concat_datasets(filter_threshold=5, min_pct=0.5)
+    X = prepare_data(filter_threshold=5, min_pct=0.5)
 
     X, r2x = perform_parafac2(
         X,

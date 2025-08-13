@@ -12,14 +12,14 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def figure_setup():
     """Create a dataFrame of regression performance over component #"""
     components = 15
 
-    combined = concat_datasets(filter_threshold=-1)
+    combined = prepare_data(filter_threshold=-1)
 
     # Get the MRSA and CA data, grab persistance labels
     mrsa_split, _, combined = prepare_mrsa_ca(combined)

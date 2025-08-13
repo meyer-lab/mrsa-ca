@@ -10,14 +10,14 @@ from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.utils import concat_datasets, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def figure_setup(n_comps: int = 15) -> pd.DataFrame:
     """Make and organize the data to be used in genFig"""
 
     # Get all the data, then split it into the datasets we want to compare
-    X = concat_datasets(filter_threshold=-1)
+    X = prepare_data(filter_threshold=-1)
     mrsa_data, ca_data, combined_data = prepare_mrsa_ca(X)
 
     # convert the datasets to pd.dataframes to hand to perform_pca

@@ -12,7 +12,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import concat_datasets, prepare_mrsa_ca
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -33,7 +33,10 @@ def figure_setup():
     top_n = 5
 
     # Get the MRSA and CA data, grab persistance labels
-    combined_ad = concat_datasets(["mrsa", "ca"])
+    combined_ad = concat_datasets(filter_threshold=-1)
+    _, _, combined_ad = prepare_mrsa_ca(combined_ad)
+    
+    # Get the labels for MRSA samples
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
         int
     )
@@ -44,8 +47,8 @@ def figure_setup():
 
     # Can only use MRSA data for regression, so truncate the combined PC data
     mrsa_index = combined_ad.obs["disease"] == "MRSA"
-    patient_comps = patient_comps.loc[mrsa_index, :"PC10"].copy()
-    gene_comps = gene_comps.loc[:"PC10", :].copy()
+    patient_comps = patient_comps.loc[mrsa_index, :"PC7"].copy()
+    gene_comps = gene_comps.loc[:"PC7", :].copy()
 
     # Perform logistic regression on the PCA components
     _, y_proba, model = perform_LR(patient_comps, y_true, splits=10)

@@ -12,7 +12,7 @@ import seaborn as sns
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import concat_datasets, prepare_mrsa_ca
 
 
 def setup_figure() -> tuple[pd.DataFrame, float]:
@@ -23,7 +23,9 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
     """
 
     # Load the combined datasets
-    combined = concat_datasets(ad_list=["mrsa", "ca"])
+    combined = concat_datasets(filter_threshold=-1)
+    # Prepare the MRSA and CA data
+    _, _, combined = prepare_mrsa_ca(combined)
 
     scores, _, _ = perform_pca(combined.to_df(), components=5)
 

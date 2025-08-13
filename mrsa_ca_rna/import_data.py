@@ -28,7 +28,10 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
             items = [item.split(": ", 1) for item in row.split(",") if ": " in item]
             return {k.strip(): v.strip() for k, v in items if len(k) > 0 and len(v) > 0}
         else:
-            raise TypeError(f"Unhandled metadata format: {type(row)} for row {row}")
+            raise TypeError(
+                f"Unhandled metadata format: {type(row)} "
+                f"for row {row.name if hasattr(row, 'name') else 'unknown'}"
+            )
 
     parsed_data = characteristics.apply(parse_row)
     result_df = pd.DataFrame.from_records(

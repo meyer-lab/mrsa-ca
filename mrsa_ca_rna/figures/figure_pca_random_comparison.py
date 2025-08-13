@@ -13,7 +13,6 @@ import seaborn as sns
 from scipy.stats import ortho_group
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 
 # local imports
 from mrsa_ca_rna.figures.base import setupBase

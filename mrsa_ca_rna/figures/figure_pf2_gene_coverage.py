@@ -8,7 +8,7 @@ from scipy.stats import kendalltau, pearsonr, spearmanr
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.utils import prepare_data, find_top_features
+from mrsa_ca_rna.utils import find_top_features, prepare_data
 
 
 def calculate_gene_coverage(top_genes_df: pd.DataFrame, total_genes):

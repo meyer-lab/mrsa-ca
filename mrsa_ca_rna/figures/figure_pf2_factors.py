@@ -12,8 +12,8 @@ from mrsa_ca_rna.figures.helpers import plot_gene_matrix
 from mrsa_ca_rna.gsea import gsea_analysis_per_cmp
 from mrsa_ca_rna.utils import (
     check_sparsity,
-    prepare_data,
     find_top_features,
+    prepare_data,
 )
 
 

@@ -10,7 +10,11 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from mrsa_ca_rna.import_data import load_expression_data, import_ca_metadata, import_mrsa_metadata
+from mrsa_ca_rna.import_data import (
+    import_ca_metadata,
+    import_mrsa_metadata,
+    load_expression_data,
+)
 
 
 def prepare_data(
@@ -161,7 +165,8 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
 
     return scaled_exp.astype(np.float64)
 
-def prepare_mrsa_ca(X: ad.AnnData) -> ad.AnnData:
+
+def prepare_mrsa_ca(X: ad.AnnData) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
     """Add MRSA and Candidemia metadata to the AnnData object."""
 
     # Import the metadata
@@ -171,7 +176,7 @@ def prepare_mrsa_ca(X: ad.AnnData) -> ad.AnnData:
     # Subset X into MRSA and Candidemia datasets
     X_mrsa = X[X.obs["disease"] == "MRSA"].copy()
     X_ca = X[X.obs["disease"] == "CANDIDA"].copy()
-    
+
     # Reindex the AnnData objects to line up with the metadata
     X_mrsa.obs = X_mrsa.obs.set_index("sample_id")
     X_ca.obs = X_ca.obs.set_index("sample_id")
@@ -181,8 +186,8 @@ def prepare_mrsa_ca(X: ad.AnnData) -> ad.AnnData:
     ca_metadata = pd.concat([X_ca.obs, ca_metadata], axis=1, join="inner")
 
     # Prepare the AnnData objects by trimming to the same indices
-    X_mrsa = X_mrsa[mrsa_metadata.index].copy()
-    X_ca = X_ca[ca_metadata.index].copy()
+    X_mrsa = X_mrsa[X_mrsa.obs.index.isin(mrsa_metadata.index)].copy()
+    X_ca = X_ca[X_ca.obs.index.isin(ca_metadata.index)].copy()
 
     # Add the metadata to the AnnData objects
     X_mrsa.obs = mrsa_metadata
@@ -198,6 +203,7 @@ def prepare_mrsa_ca(X: ad.AnnData) -> ad.AnnData:
 
     # Return the separated and combined AnnData objects
     return X_mrsa, X_ca, X_combined
+
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:
     """Check the sparsity of a numpy array

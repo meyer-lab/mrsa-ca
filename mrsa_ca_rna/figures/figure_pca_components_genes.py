@@ -35,7 +35,7 @@ def figure_setup():
     # Get the MRSA and CA data, grab persistance labels
     combined_ad = prepare_data(filter_threshold=-1)
     _, _, combined_ad = prepare_mrsa_ca(combined_ad)
-    
+
     # Get the labels for MRSA samples
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
         int

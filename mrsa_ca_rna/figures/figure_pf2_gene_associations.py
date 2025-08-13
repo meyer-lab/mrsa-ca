@@ -18,8 +18,8 @@ from mrsa_ca_rna.figures.helpers import plot_gene_matrix
 from mrsa_ca_rna.utils import (
     calculate_cpm,
     check_sparsity,
-    prepare_data,
     find_top_features,
+    prepare_data,
 )
 
 

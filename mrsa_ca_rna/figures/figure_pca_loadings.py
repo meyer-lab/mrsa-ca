@@ -15,10 +15,9 @@ from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def figure_setup():
-
     adata = prepare_data(filter_threshold=-1)
     _, _, adata = prepare_mrsa_ca(adata)
-    
+
     # Convert the AnnData object to a DataFrame for PCA
     df = adata.to_df()
 

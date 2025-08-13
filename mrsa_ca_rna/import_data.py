@@ -38,7 +38,8 @@ def parse_metadata(metadata: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_expression_data() -> ad.AnnData:
-    """Load expression data from master file, label with disease, and return as AnnData object."""
+    """Load expression data from master file, label with disease,
+    and return as AnnData object."""
 
     disease_registry = {
         "MRSA": "MRSA",
@@ -70,19 +71,23 @@ def load_expression_data() -> ad.AnnData:
     exp_df = pd.read_csv(file_path, delimiter=",", compression="gzip")
 
     # Map the disease registry to the data and rename columns
-    exp_df["study_id"] = exp_df["study_id"].map(disease_registry)
+    exp_df["study_id"] = exp_df["study_id"].replace(disease_registry)
     exp_df = exp_df.rename(
         columns={
             "GSM": "sample_id",
             "study_id": "disease",
-        })
+        }
+    )
 
     # Split metadata from expression data and make AnnData object
     metadata = exp_df.loc[:, ["sample_id", "disease"]].copy()
     exp = exp_df.drop(columns=["sample_id", "disease"])
-    data_ad = ad.AnnData(X=exp.values, obs=metadata, var=exp.columns.to_frame(name="gene_id"))
+    data_ad = ad.AnnData(
+        X=exp.values, obs=metadata, var=exp.columns.to_frame(name="gene_id")
+    )
 
     return data_ad
+
 
 def import_ca_metadata() -> pd.DataFrame:
     """Imports the metadata for the CA dataset from a JSON file
@@ -105,6 +110,7 @@ def import_ca_metadata() -> pd.DataFrame:
 
     return clinical_var
 
+
 def import_mrsa_metadata() -> pd.DataFrame:
     """Imports the metadata for the MRSA dataset from 3 sources, metadata_mrsa_tfac.txt,
     metadata_mrsa_tfac_validation.txt, and metadata_mrsa_sra.csv. The tfac files are
@@ -113,7 +119,9 @@ def import_mrsa_metadata() -> pd.DataFrame:
 
     # Load TFAC metadata
     tfac_path = join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac.txt")
-    tfac_val_path = join(BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac_validation.txt")
+    tfac_val_path = join(
+        BASE_DIR, "mrsa_ca_rna", "data", "metadata_mrsa_tfac_validation.txt"
+    )
 
     tfac_metadata = pd.read_csv(tfac_path, sep=",", index_col=0, dtype=str)
     tfac_val_metadata = pd.read_csv(tfac_val_path, sep=",", index_col=0, dtype=str)
@@ -122,7 +130,9 @@ def import_mrsa_metadata() -> pd.DataFrame:
     common_indices = tfac_metadata.index.intersection(tfac_val_metadata.index)
 
     # Fill in the Unknown values in the TFAC metadata with the validation metadata
-    tfac_metadata.loc[common_indices, "status"] = tfac_val_metadata.loc[common_indices, "status"]
+    tfac_metadata.loc[common_indices, "status"] = tfac_val_metadata.loc[
+        common_indices, "status"
+    ]
 
     # Now that "status" is all 1s and 0s, we can convert it to an integer type
     tfac_metadata["status"] = tfac_metadata["status"].astype(int)
@@ -132,7 +142,9 @@ def import_mrsa_metadata() -> pd.DataFrame:
     sra_metadata = pd.read_csv(sra_path, sep=",", index_col=0)
 
     # Reorient the SRA metadata to have the Library Name as the index
-    sra_mapping = sra_metadata.reset_index(names=["SRA"]).set_index("isolate")["SRA"].to_dict()
+    sra_mapping = (
+        sra_metadata.reset_index(names=["SRA"]).set_index("isolate")["SRA"].to_dict()
+    )
 
     # Map the SRA numbers to the sample numbers in the TFAC metadata
     tfac_metadata.index = tfac_metadata.index.map(sra_mapping)

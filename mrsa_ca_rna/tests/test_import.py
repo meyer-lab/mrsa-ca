@@ -199,14 +199,12 @@ def test_prepare_data_reproducibility():
 
     # Test reproducibility
     assert adata1.shape == adata2.shape, "Inconsistent shapes between runs"
-    assert np.allclose(
-        np.asarray(adata1.X), np.asarray(adata2.X)
-    ), "Inconsistent main matrix between runs"
+    assert np.allclose(np.asarray(adata1.X), np.asarray(adata2.X)), (
+        "Inconsistent main matrix between runs"
+    )
     assert np.allclose(
         np.asarray(adata1.layers["raw"]), np.asarray(adata2.layers["raw"])
-    ), (
-        "Inconsistent raw layer between runs"
-    )
+    ), "Inconsistent raw layer between runs"
     assert adata1.obs.equals(adata2.obs), "Inconsistent observations between runs"
     assert adata1.var.equals(adata2.var), "Inconsistent variables between runs"
 

@@ -84,7 +84,7 @@ def figure_setup():
     pc_index = pd.Index([f"{i}" for i in range(1, n_comp + 1)])
     pc_columns = pd.Index([f"Resample {i + 1}" for i in range(n_resamples)])
 
-    pca_singular_values = pd.DataFrame(
+    pca_explained_variance = pd.DataFrame(
         np.zeros((n_comp, n_resamples)), columns=pc_columns, index=pc_index
     )
     pca_diff = pd.DataFrame(
@@ -103,11 +103,11 @@ def figure_setup():
         leave=True,
     ):
         _, loadings, pca = perform_pca(data, components=n_comp)
-        pca_singular_values.iloc[:, i] = pca.singular_values_
+        pca_explained_variance.iloc[:, i] = pca.explained_variance_ratio_
         pca_diff.iloc[:, i] = matrix_cosines(loadings_true.T, loadings.T)
         pca_fms.iloc[:, i] = matrix_fms(loadings_true.T, loadings.T)
 
-    return pca_singular_values, pca_diff, pca_fms
+    return pca_explained_variance, pca_diff, pca_fms
 
 
 def genFig():
@@ -115,11 +115,11 @@ def genFig():
     layout = {"ncols": 1, "nrows": 3}
     ax, f, _ = setupBase(fig_size, layout)
 
-    pca_singular_values, pca_diff, pca_fms = figure_setup()
+    pca_explained_variance, pca_diff, pca_fms = figure_setup()
 
     # Convert to long form for plotting
-    pca_singular_values = pca_singular_values.reset_index(names=["Component"]).melt(
-        id_vars="Component", var_name="Resample", value_name="Singular Values"
+    pca_explained_variance = pca_explained_variance.reset_index(names=["Component"]).melt(
+        id_vars="Component", var_name="Resample", value_name="Explained Variance"
     )
 
     pca_diff = pca_diff.reset_index(names=["Component"]).melt(
@@ -132,17 +132,17 @@ def genFig():
 
     # singular values
     a = sns.lineplot(
-        data=pca_singular_values,
+        data=pca_explained_variance,
         x="Component",
-        y="Singular Values",
+        y="Explained Variance",
         errorbar=("ci", 95),
         markers=True,
         dashes=False,
         ax=ax[0],
     )
     a.set_xlabel("PCA Component")
-    a.set_ylabel("Singular values")
-    a.set_title("Average Singular values of PCA Components with 95% CI")
+    a.set_ylabel("Explained Variance")
+    a.set_title("Average Explained Variance of PCA Components with 95% CI")
 
     # cosine distances
     a = sns.lineplot(

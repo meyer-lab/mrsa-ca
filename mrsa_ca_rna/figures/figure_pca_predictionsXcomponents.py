@@ -83,6 +83,6 @@ def genFig():
     )
     a.set_title("Regression Performance by Component Count")
     a.set_xlabel("Component Count")
-    a.set_ylabel("Regression Performance (Balanced Accuracy)")
+    a.set_ylabel("Regression Performance (CV Balanced Accuracy)")
 
     return f

@@ -161,7 +161,7 @@ def genFig():
     plot_df = prepare_plot_dataframe(mean_genes, top_genes_df)
 
     # Create figure and axes
-    layout, _ = calculate_layout(num_plots=2, scale_factor=4)
+    _, layout = calculate_layout(num_plots=2, scale_factor=4)
     fig_size = (12, 10)
     ax, f, _ = setupBase(fig_size, layout)
 

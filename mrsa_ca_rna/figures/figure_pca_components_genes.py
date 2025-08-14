@@ -5,6 +5,7 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 
 # imports
 
+import matplotlib.pyplot as plt
 import anndata as ad
 import numpy as np
 import seaborn as sns
@@ -110,12 +111,8 @@ def genFig():
             feature_name="gene",
             n_features=5,
         )
-
-    # Set the overall title for the figure
-    f.suptitle(
-        "PCA Components and Top Genes in MRSA Classification",
-        fontsize=16,
-        y=1.02,
-    )
+        b.set(title=f"Gene Contributions to {pc}", xlabel="Gene", ylabel="Contribution")
+        # Rotate x-tick labels for better readability
+        plt.setp(b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
     return f

@@ -5,14 +5,16 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 
 # imports
 
+import anndata as ad
 import numpy as np
 import seaborn as sns
 from sklearn.metrics import roc_auc_score, roc_curve
 
-from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.figures.helpers import plot_component_features
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import find_top_features, prepare_data, prepare_mrsa_ca
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -29,9 +31,7 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
     return data, auc
 
 
-def figure_setup():
-    top_n = 5
-
+def get_data():
     # Get the MRSA and CA data, grab persistance labels
     combined_ad = prepare_data(filter_threshold=-1)
     _, _, combined_ad = prepare_mrsa_ca(combined_ad)
@@ -40,15 +40,19 @@ def figure_setup():
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
         int
     )
+    
+    return y_true, combined_ad
 
-    # Perform PCA on the combined data
+def run_models(components, y_true, combined_ad: ad.AnnData):
+
+    # Convert to DataFrame for PCA
     combined_df = combined_ad.to_df()
-    patient_comps, gene_comps, _ = perform_pca(combined_df)
+
+    patient_comps, gene_comps, _ = perform_pca(combined_df, components=components)
 
     # Can only use MRSA data for regression, so truncate the combined PC data
     mrsa_index = combined_ad.obs["disease"] == "MRSA"
-    patient_comps = patient_comps.loc[mrsa_index, :"PC7"].copy()
-    gene_comps = gene_comps.loc[:"PC7", :].copy()
+    patient_comps = patient_comps.loc[mrsa_index].copy()
 
     # Perform logistic regression on the PCA components
     _, y_proba, model = perform_LR(patient_comps, y_true, splits=10)
@@ -57,33 +61,28 @@ def figure_setup():
     weights: np.ndarray = model.coef_[0]
     weights_dict = {f"PC{i + 1}": weights[i] for i in range(len(weights))}
 
-    # Get top genes for each component individually
-    top_genes_per_component = {}
-    for pc in gene_comps.index:
-        # Find top genes for this component based on absolute contribution
-        component_top_genes = (
-            gene_comps.loc[pc].abs().sort_values(ascending=False).head(top_n)
-        )
-        top_genes_per_component[pc] = component_top_genes.index.tolist()
-
-    # Create a unique set of all top genes across components
-    all_top_genes = list(
-        set([gene for genes in top_genes_per_component.values() for gene in genes])
-    )
-
-    # Filter gene_comps to only include these top genes
-    gene_comps = gene_comps.loc[:, all_top_genes]
-
-    return y_proba, y_true, weights_dict, gene_comps, top_genes_per_component
-
+    return y_proba, gene_comps, weights_dict
 
 def genFig():
-    fig_size = (12, 16)
-    layout = {"ncols": 3, "nrows": 4}
-    ax, f, _ = setupBase(fig_size, layout)
 
-    # TODO: split up functions to not be returning so much data
-    y_proba, y_true, weights, comp_genes, top_genes_per_component = figure_setup()
+    # Scope of our PCA analysis
+    components = 5
+
+    # ROC curve, beta coefficients, and top genes per component
+    num_plots = 2 + components
+
+    fig_size, layout = calculate_layout(num_plots)
+    ax, f, gs = setupBase(fig_size, layout)
+
+    gs.update(hspace=0.1)
+
+    y_true, combined_ad = get_data()
+
+    # Run the models and get the predictions
+    y_proba, gene_comps, weights = run_models(components, y_true, combined_ad)
+
+    # Get the top genes by component
+    features_df = find_top_features(gene_comps.T, 0.75, feature_name="gene")
 
     data, auc = make_roc_curve(y_true, y_proba)
 
@@ -91,32 +90,32 @@ def genFig():
     a.set_xlabel("False Positive Rate")
     a.set_ylabel("True Positive Rate")
     a.set_title(
-        "Classification of MRSA outcomes using a 10 component\n"
+        f"Classification of MRSA outcomes using a {components} component\n"
         "PCA decomposition of Combined data\n"
         f"AUC: {auc:.3f}"
     )
 
-    # plot the top 10 components and their weights
+    # Plot the beta coefficients of the PCA components
     a = sns.barplot(x=list(weights.keys()), y=list(weights.values()), ax=ax[1])
     a.set_xlabel("Component")
     a.set_ylabel("Weight")
     a.set_title("Beta Coefficients of the PCA Components")
 
-    # plot the top 10 components and their associated gene values
-    for i, pc in enumerate(comp_genes.index[:10]):
-        pc_top_genes = top_genes_per_component[pc]
-        component_data = comp_genes.loc[pc, pc_top_genes]
+    # Plot the top genes for each component
+    for i in range(components):
+        plot_component_features(
+            ax=ax[2 + i],
+            features_df=features_df,
+            component=i + 1,
+            feature_name="gene",
+            n_features=5,
+        )
 
-        b = sns.barplot(
-            x=component_data.index,
-            y=component_data.values,
-            order=component_data.index,
-            ax=ax[i + 2],
-        )
-        b.set(title=f"Gene Contributions to {pc}", xlabel="Gene", ylabel="Contribution")
-        # Rotate x-tick labels for better readability
-        b.set_xticklabels(
-            b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
-        )
+    # Set the overall title for the figure
+    f.suptitle(
+        "PCA Components and Top Genes in MRSA Classification",
+        fontsize=16,
+        y=1.02,
+    )
 
     return f

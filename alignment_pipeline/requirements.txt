@@ -1,0 +1,6 @@
+pandas>=1.3.0
+xalign>=0.1.73
+certifi>=2021.5.25
+requests>=2.25.0
+biomart
+GEOparse

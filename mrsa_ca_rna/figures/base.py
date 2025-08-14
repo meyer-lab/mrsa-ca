@@ -116,11 +116,11 @@ def setupBase(figsize, gridd):
 
     # Get the number of actual plots needed
     num_plots = gridd.get("num_plots", gridd["nrows"] * gridd["ncols"])
-    
+
     ax = list()
     for x in range(num_plots):
         ax.append(f.add_subplot(gs[x]))
-    
+
     # Remove any unused subplot spaces to prevent layout issues
     total_subplots = gridd["nrows"] * gridd["ncols"]
     if num_plots < total_subplots:

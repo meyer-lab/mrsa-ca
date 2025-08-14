@@ -112,14 +112,12 @@ def plot_component_features(
         Component identifier to filter for (e.g., "Component_1")
     feature_name : str, default="feature"
         Name of the feature column in the DataFrame
-    n_features : int, default=10
+    n_features : int, default=5
         Number of features to display in each direction
     pos_color : str, default="red"
         Color for positive features
     neg_color : str, default="blue"
         Color for negative features
-    title : str, optional
-        Title for the plot. If None, uses component name
     pad : float, default=0.6
         Padding between positive and negative plots
 

@@ -8,12 +8,12 @@ from matplotlib.colors import Normalize
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data
 
 
 def get_data(filter_threshold=5, min_pct=0.5, rank=5) -> tuple[ad.AnnData, float]:
     """Concatenate the data and perform the factorization"""
-    X = concat_datasets(filter_threshold=filter_threshold, min_pct=min_pct)
+    X = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
     X, r2x = perform_parafac2(
         X,
         slice_col="disease",

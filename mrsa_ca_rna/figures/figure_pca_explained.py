@@ -6,28 +6,18 @@ Datasets are MRSA, MRSA+CA, and CA.
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
-def figure_setup():
+def figure_setup(n_comps: int = 15) -> pd.DataFrame:
     """Make and organize the data to be used in genFig"""
 
-    # list the datasets we want to compare and define total components
-    datasets = ["mrsa", "ca"]
-    components = 70
-
     # Get all the data, then split it into the datasets we want to compare
-    combined_data = concat_datasets(datasets)
-    mrsa_data = combined_data[combined_data.obs["disease"] == "MRSA"].copy()
-    ca_data = combined_data[combined_data.obs["disease"] == "Candidemia"].copy()
-
-    # Z-score the split datasets
-    mrsa_data.X = StandardScaler().fit_transform(mrsa_data.X)
-    ca_data.X = StandardScaler().fit_transform(ca_data.X)
+    X = prepare_data(filter_threshold=-1)
+    mrsa_data, ca_data, combined_data = prepare_mrsa_ca(X)
 
     # convert the datasets to pd.dataframes to hand to perform_pca
     combined_data = combined_data.to_df()
@@ -35,9 +25,9 @@ def figure_setup():
     ca_data = ca_data.to_df()
 
     # perform PCA on the datasets
-    _, _, combined_pca = perform_pca(combined_data, components)
-    _, _, mrsa_pca = perform_pca(mrsa_data, components)
-    _, _, ca_pca = perform_pca(ca_data, components)
+    _, _, combined_pca = perform_pca(combined_data, components=n_comps)
+    _, _, mrsa_pca = perform_pca(mrsa_data, components=n_comps)
+    _, _, ca_pca = perform_pca(ca_data, components=n_comps)
 
     # get the cumulative explained variance for each dataset
     combined_explained = np.cumsum(combined_pca.explained_variance_ratio_)
@@ -46,7 +36,7 @@ def figure_setup():
 
     # create a dataframe to hold the data (1-70, explained variance)
     variance_explained = pd.DataFrame(
-        np.arange(1, components + 1, dtype=int), columns=pd.Index(["components"])
+        np.arange(1, n_comps + 1, dtype=int), columns=pd.Index(["components"])
     )
     variance_explained["combined"] = combined_explained
     variance_explained["mrsa"] = mrsa_explained
@@ -59,14 +49,11 @@ def genFig():
     """
     Start making the figure.
     """
-    fig_size = (3, 3)
+    fig_size = (4, 4)
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
-    explained_variance = figure_setup()
-
-    # subset the data to only include the first 15 components
-    explained_variance = explained_variance[explained_variance["components"] <= 15]
+    explained_variance = figure_setup(n_comps=15)
 
     # convert the data to long form for seaborn
     explained_variance = explained_variance.melt(

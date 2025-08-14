@@ -11,27 +11,13 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from mrsa_ca_rna.import_data import (
-    import_bc,
-    import_bc_tcr,
-    import_ca,
-    import_covid,
-    import_covid_marine,
-    import_em,
-    import_hbv,
-    import_heme,
-    import_hiv,
-    import_lupus,
-    import_mrsa,
-    import_ra,
-    import_t1dm,
-    import_tb,
-    import_uc,
-    import_zika,
+    import_ca_metadata,
+    import_mrsa_metadata,
+    load_expression_data,
 )
 
 
-def concat_datasets(
-    ad_list: list[str] | None = None,
+def prepare_data(
     filter_threshold: float = 1.0,
     min_pct: float = 0.25,
 ) -> ad.AnnData:
@@ -61,49 +47,9 @@ def concat_datasets(
     ValueError
         If no valid datasets are provided or found.
     """
-    # Create a dictionary of all available import functions
-    data_dict = {
-        "mrsa": import_mrsa,
-        "ca": import_ca,
-        "bc": import_bc,
-        "tb": import_tb,
-        "uc": import_uc,
-        "t1dm": import_t1dm,
-        "covid": import_covid,
-        "lupus": import_lupus,
-        "hiv": import_hiv,
-        "em": import_em,
-        "zika": import_zika,
-        "heme": import_heme,
-        "ra": import_ra,
-        "hbv": import_hbv,
-        "covid_marine": import_covid_marine,
-        "bc_tcr": import_bc_tcr,
-    }
 
-    # If no list is provided or "all" is specified, use all available datasets
-    if ad_list is None or ad_list == "all":
-        ad_list = list(data_dict.keys())
-
-    # Ensure ad_list is a list
-    if isinstance(ad_list, str) and ad_list != "all":
-        ad_list = [ad_list]
-
-    # Call the data import functions and store the resulting AnnData objects
-    adata_list = []
-
-    for ad_key in ad_list:
-        if ad_key not in data_dict:
-            raise RuntimeError(f"Dataset '{ad_key}' not found in available datasets.")
-        else:
-            print(f"Importing dataset: {ad_key}")
-            adata_list.append(data_dict[ad_key]())
-
-    if not adata_list:
-        raise ValueError("No valid datasets provided or found")
-
-    # Concat all anndata objects together keeping only the vars and obs in common
-    adata = ad.concat(adata_list, join="inner")
+    # Load the expression data
+    adata = load_expression_data()
 
     # Filtering now optional if filter_threshold is set to -1
     if filter_threshold >= 0:
@@ -218,6 +164,51 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     scaled_exp = StandardScaler().fit_transform(trans_exp)
 
     return scaled_exp.astype(np.float64)
+
+
+def prepare_mrsa_ca(X: ad.AnnData) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
+    """Add MRSA and Candidemia metadata to the AnnData object."""
+
+    # Import the metadata
+    mrsa_metadata = import_mrsa_metadata()
+    ca_metadata = import_ca_metadata()
+
+    # Subset X into MRSA and Candidemia datasets
+    X_mrsa = X[X.obs["disease"] == "MRSA"].copy()
+    X_ca = X[X.obs["disease"] == "CANDIDA"].copy()
+
+    # Reindex the AnnData objects to line up with the metadata
+    X_mrsa.obs = X_mrsa.obs.set_index("sample_id")
+    X_ca.obs = X_ca.obs.set_index("sample_id")
+
+    # Add the metadata to the AnnData objects
+    mrsa_metadata = pd.concat([X_mrsa.obs, mrsa_metadata], axis=1)
+    ca_metadata = pd.concat([X_ca.obs, ca_metadata], axis=1, join="inner")
+
+    # Verify there are 106 Candidemia samples after "inner" join
+    if ca_metadata.shape[0] != 106:
+        raise ValueError(
+            f"Expected 106 Candidemia samples, found {ca_metadata.shape[0]} after join"
+        )
+
+    # Prepare the AnnData objects by trimming to the same indices
+    X_mrsa = X_mrsa[X_mrsa.obs.index.isin(mrsa_metadata.index)].copy()
+    X_ca = X_ca[X_ca.obs.index.isin(ca_metadata.index)].copy()
+
+    # Add the metadata to the AnnData objects
+    X_mrsa.obs = mrsa_metadata
+    X_ca.obs = ca_metadata
+
+    # Combine the datasets into a single AnnData object
+    X_combined = ad.concat([X_mrsa, X_ca], label="disease", keys=["MRSA", "Candidemia"])
+
+    # Re-Z-score the data
+    X_mrsa.X = StandardScaler().fit_transform(X_mrsa.X)
+    X_ca.X = StandardScaler().fit_transform(X_ca.X)
+    X_combined.X = StandardScaler().fit_transform(X_combined.X)
+
+    # Return the separated and combined AnnData objects
+    return X_mrsa, X_ca, X_combined
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:

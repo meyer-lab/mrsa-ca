@@ -13,13 +13,12 @@ import seaborn as sns
 from scipy.stats import ortho_group
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 
 # local imports
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 skf = StratifiedKFold(n_splits=10)
 
@@ -27,8 +26,9 @@ skf = StratifiedKFold(n_splits=10)
 def make_roc_curve(X, y):
     """Function trains model on given data and returns the ROC curve"""
     # Import and scale mrsa and ca data together
-    datasets = ["mrsa"]
-    mrsa_adata = concat_datasets(datasets)
+    datasets = prepare_data(filter_threshold=-1)
+    # Prepare the MRSA and CA data
+    mrsa_adata, _, _ = prepare_mrsa_ca(datasets)
 
     # Trim to mrsa data and extract y_true
     y_true = mrsa_adata.obs.loc[:, "status"].astype(int)
@@ -48,24 +48,18 @@ def figure_setup():
     """Performs logistic regression on MRSA data, transformed using CA's PCA model,
     and using random data. The statuses are either shuffled or not for each case"""
 
-    # Get MRSA data
-    datasets = ["mrsa", "ca"]
-
     # Grab and split the data
-    combined = concat_datasets(datasets)
-    mrsa_data = combined[combined.obs["disease"] == "MRSA"].copy()
-    mrsa_index = mrsa_data.obs.index
-    ca_data = combined[combined.obs["disease"] == "Candidemia"].copy()
+    combined = prepare_data(filter_threshold=-1)
+    mrsa_data, ca_data, combined = prepare_mrsa_ca(combined)
 
-    # Z-score the new independent datasets
-    mrsa_data.X = StandardScaler().fit_transform(mrsa_data.X)
-    ca_data.X = StandardScaler().fit_transform(ca_data.X)
+    # Save the MRSA data index for later
+    mrsa_index = mrsa_data.obs.index
 
     # Get regression targets
     y_true = mrsa_data.obs.loc[:, "status"].astype(int)
 
     # Perform PCA on combined MRSA and CA data
-    components = 8
+    components = 5
     combined_pc, _, _ = perform_pca(combined.to_df(), components=components)
     mrsa_pc, _, _ = perform_pca(mrsa_data.to_df(), components=components)
     _, _, ca_pca = perform_pca(ca_data.to_df(), components=components)

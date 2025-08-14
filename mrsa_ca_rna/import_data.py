@@ -71,9 +71,7 @@ def load_expression_data() -> ad.AnnData:
     and return as AnnData object."""
 
     # Use absolute path to the master expression data file for gitactions
-    file_path = (
-        "/home/jamesp/Playground/mrsa-ca/mrsa_ca_rna/data/master_expression_data.csv.gzip"
-    )
+    file_path = "/opt/extra-storage/jamesp/master_expression_data.csv.gzip"
 
     exp_df = pd.read_csv(file_path, delimiter=",", compression="gzip")
 

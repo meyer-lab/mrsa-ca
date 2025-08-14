@@ -161,7 +161,7 @@ def test_prepare_data_disease_labels(sample_adata):
     assert adata.obs["disease"].dtype == object, "Disease labels are not strings"
 
     # Test for expected disease categories (from disease_registry)
-    expected_diseases = disease_registry.values()
+    expected_diseases = set(disease_registry.values())
 
     observed_diseases = set(adata.obs["disease"].unique())
     assert observed_diseases.issubset(expected_diseases), (

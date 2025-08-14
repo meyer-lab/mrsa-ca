@@ -139,7 +139,7 @@ def plot_component_features(
         if isinstance(pos_features_filtered, pd.DataFrame)
         else pd.DataFrame()
     )
-    
+
     neg_features_filtered = comp_features[comp_features["direction"] == "negative"]
     neg_features = (
         neg_features_filtered.head(n_features)

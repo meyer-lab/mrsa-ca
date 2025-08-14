@@ -12,7 +12,7 @@ from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.utils import concat_datasets, resample_adata
+from mrsa_ca_rna.utils import prepare_data, resample_adata
 
 
 def factorize(X_in: ad.AnnData, rank: int):
@@ -51,7 +51,7 @@ def bootstrap_fms(X, rank, target_trials=30):
 
 
 def get_data(filter_threshold, min_pct, rank=5, trials=30):
-    disease_data = concat_datasets(filter_threshold=filter_threshold, min_pct=min_pct)
+    disease_data = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
 
     fms_list, r2x_list = bootstrap_fms(
         disease_data.copy(), rank=rank, target_trials=trials

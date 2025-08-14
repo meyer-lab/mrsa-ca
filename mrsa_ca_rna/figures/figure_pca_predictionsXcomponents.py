@@ -12,19 +12,17 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def figure_setup():
     """Create a dataFrame of regression performance over component #"""
     components = 15
 
-    # collect the mrsa and ca data
-    datasets = ["mrsa", "ca"]
-    combined = concat_datasets(datasets)
+    combined = prepare_data(filter_threshold=-1)
 
-    # Subset out the MRSA data
-    mrsa_split = combined[combined.obs["disease"] == "MRSA"].copy()
+    # Get the MRSA and CA data, grab persistance labels
+    mrsa_split, _, combined = prepare_mrsa_ca(combined)
 
     # convert the datasets to pd.dataframes to hand to perform_pca
     mrsa_df = mrsa_split.to_df()
@@ -69,7 +67,7 @@ def figure_setup():
 
 
 def genFig():
-    fig_size = (3, 3)
+    fig_size = (4, 4)
     layout = {"ncols": 1, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 

@@ -8,11 +8,11 @@ import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data
 
 
 def figure_setup():
-    X = concat_datasets(filter_threshold=5, min_pct=0.5)
+    X = prepare_data(filter_threshold=5, min_pct=0.5)
 
     rank = 5
 

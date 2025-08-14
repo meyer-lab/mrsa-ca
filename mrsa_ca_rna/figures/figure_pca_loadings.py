@@ -11,13 +11,14 @@ import seaborn as sns
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.utils import concat_datasets
+from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
 
 
 def figure_setup():
-    datasets = ["mrsa", "ca"]
+    adata = prepare_data(filter_threshold=-1)
+    _, _, adata = prepare_mrsa_ca(adata)
 
-    adata = concat_datasets(datasets)
+    # Convert the AnnData object to a DataFrame for PCA
     df = adata.to_df()
 
     _, loadings, _ = perform_pca(df, components=10)

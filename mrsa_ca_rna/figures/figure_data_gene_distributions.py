@@ -10,11 +10,11 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.utils import calculate_cpm, concat_datasets
+from mrsa_ca_rna.utils import calculate_cpm, prepare_data
 
 
 def get_data(data_type: str = "raw") -> ad.AnnData:
-    X = concat_datasets(filter_threshold=-1)
+    X = prepare_data(filter_threshold=-1)
 
     if data_type == "raw":
         # Use raw expression data

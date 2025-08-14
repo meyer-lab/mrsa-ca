@@ -8,7 +8,7 @@ from scipy.stats import kendalltau, pearsonr, spearmanr
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.utils import concat_datasets, find_top_features
+from mrsa_ca_rna.utils import find_top_features, prepare_data
 
 
 def calculate_gene_coverage(top_genes_df: pd.DataFrame, total_genes):
@@ -121,7 +121,7 @@ def prepare_plot_dataframe(mean_genes: pd.DataFrame, top_genes_df: pd.DataFrame)
 
 def get_data():
     """Get the data for plotting the gene factor matrix."""
-    X = concat_datasets(filter_threshold=5, min_pct=0.5)
+    X = prepare_data(filter_threshold=5, min_pct=0.5)
 
     # Perform PARAFAC2 factorization
     X, _ = perform_parafac2(X, slice_col="disease", rank=1)

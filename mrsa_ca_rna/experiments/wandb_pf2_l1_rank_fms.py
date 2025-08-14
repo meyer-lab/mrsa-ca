@@ -8,14 +8,14 @@ from sklearn.preprocessing import StandardScaler
 from tlviz.factor_tools import factor_match_score
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.utils import concat_datasets, resample_adata
+from mrsa_ca_rna.utils import prepare_data, resample_adata
 
 
 def objective(config):
     rank = config.rank
     thresh = config.thresh
 
-    disease_data = concat_datasets(
+    disease_data = prepare_data(
         filter_threshold=thresh,
     )
     data_size = disease_data.shape[1] / 16315

@@ -78,10 +78,10 @@ def calculate_layout(num_plots, scale_factor=4):
     width = cols * scale_factor
     height = rows * scale_factor
 
-    layout = {"ncols": cols, "nrows": rows}
+    layout = {"ncols": cols, "nrows": rows, "num_plots": num_plots}
     fig_size = (width, height)
 
-    return layout, fig_size
+    return fig_size, layout
 
 
 def setupBase(figsize, gridd):
@@ -90,7 +90,7 @@ def setupBase(figsize, gridd):
 
     Accepts:
         figsize (tuple): size of figure in inches
-        gridd (ndarray): subplot dimensions in rows and columns
+        gridd (dict): subplot dimensions and number of plots
         style (str): graph style (default: 'whitegrid')
 
     Returns:
@@ -112,17 +112,22 @@ def setupBase(figsize, gridd):
     matplotlib.rcParams["ytick.labelsize"] = 9
 
     f = plt.figure(figsize=figsize, constrained_layout=True)
-    gs = gridspec.GridSpec(**gridd, figure=f)
+    gs = gridspec.GridSpec(nrows=gridd["nrows"], ncols=gridd["ncols"], figure=f)
 
-    x = 0
+    # Get the number of actual plots needed
+    num_plots = gridd.get("num_plots", gridd["nrows"] * gridd["ncols"])
+    
     ax = list()
-    while x < gridd["nrows"] * gridd["ncols"]:
-        ax.append(
-            f.add_subplot(
-                gs[x],
-            )
-        )
-        x += 1
+    for x in range(num_plots):
+        ax.append(f.add_subplot(gs[x]))
+    
+    # Remove any unused subplot spaces to prevent layout issues
+    total_subplots = gridd["nrows"] * gridd["ncols"]
+    if num_plots < total_subplots:
+        for x in range(num_plots, total_subplots):
+            # Create the subplot and immediately remove it
+            unused_ax = f.add_subplot(gs[x])
+            unused_ax.remove()
 
     return ax, f, gs
 

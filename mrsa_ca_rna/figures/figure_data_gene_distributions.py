@@ -113,7 +113,8 @@ def genFig():
     )
 
     # Set up plots
-    fig_size, layout = calculate_layout(num_plots=3, scale_factor=4)
+    layout = {"ncols": 2, "nrows": 2}
+    fig_size = (8, 8)
     ax, f, gs = setupBase(fig_size, layout)
 
     # Create boxplot of read depth by disease

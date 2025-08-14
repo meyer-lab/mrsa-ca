@@ -330,7 +330,7 @@ def plot_gene_expression_histograms(
         return None
 
     # Calculate layout and setup figure
-    layout, fig_size = calculate_layout(len(all_genes), scale_factor=3)
+    fig_size, layout = calculate_layout(len(all_genes), scale_factor=3)
     ax, f, _ = setupBase(fig_size, layout)
 
     # Get CPM expression data

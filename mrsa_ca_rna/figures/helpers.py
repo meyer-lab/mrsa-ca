@@ -5,8 +5,10 @@ import time
 import anndata as ad
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from fastcluster import linkage
 from matplotlib.axes import Axes
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list
 
 
@@ -85,3 +87,113 @@ def reorder_table(X):
     except Exception as e:
         print(f"Clustering failed after {time.time() - start_time:.2f} seconds: {e}")
         return np.arange(X.shape[0])
+
+
+def plot_component_features(
+    ax: Axes,
+    features_df: pd.DataFrame,
+    component: int | str,
+    feature_name: str = "feature",
+    n_features: int = 5,
+    pos_color: str = "red",
+    neg_color: str = "blue",
+    pad: float = 0.6,
+) -> tuple[Axes, Axes]:
+    """
+    Plot positive and negative features in a split barplot layout.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes object to split for plotting
+    features_df : pd.DataFrame
+        DataFrame from find_top_features with feature data
+    component : str
+        Component identifier to filter for (e.g., "Component_1")
+    feature_name : str, default="feature"
+        Name of the feature column in the DataFrame
+    n_features : int, default=5
+        Number of features to display in each direction
+    pos_color : str, default="red"
+        Color for positive features
+    neg_color : str, default="blue"
+        Color for negative features
+    pad : float, default=0.6
+        Padding between positive and negative plots
+
+    Returns
+    -------
+    tuple[matplotlib.axes.Axes, matplotlib.axes.Axes]
+        Axes for positive and negative feature plots
+    """
+
+    # Filter data for the specified component
+    comp_features = features_df[features_df["component"] == component].copy()
+
+    # Separate positive and negative features
+    pos_features_filtered = comp_features[comp_features["direction"] == "positive"]
+    pos_features = (
+        pos_features_filtered.head(n_features)
+        if isinstance(pos_features_filtered, pd.DataFrame)
+        else pd.DataFrame()
+    )
+
+    neg_features_filtered = comp_features[comp_features["direction"] == "negative"]
+    neg_features = (
+        neg_features_filtered.head(n_features)
+        if isinstance(neg_features_filtered, pd.DataFrame)
+        else pd.DataFrame()
+    )
+
+    # Get total counts for titles
+    total_pos_features = len(comp_features[comp_features["direction"] == "positive"])
+    total_neg_features = len(comp_features[comp_features["direction"] == "negative"])
+
+    # Split the axes
+    divider = make_axes_locatable(ax)
+    ax_pos = ax  # Top plot uses the original axis
+    ax_neg = divider.append_axes("bottom", size="100%", pad=pad)
+
+    # Plot positive features
+    if not pos_features.empty:
+        sns.barplot(
+            data=pos_features, x="value", y=feature_name, ax=ax_pos, color=pos_color
+        )
+        ax_pos.set_title(f"{component}: Positive Features (n={total_pos_features})")
+        ax_pos.axvline(x=0, color="gray", linestyle="--")
+    else:
+        ax_pos.text(
+            0.5,
+            0.5,
+            "No positive features found",
+            ha="center",
+            va="center",
+            transform=ax_pos.transAxes,
+        )
+        ax_pos.set_title(f"{component}: Positive Features")
+
+    # Plot negative features
+    if not neg_features.empty:
+        sns.barplot(
+            data=neg_features, x="value", y=feature_name, ax=ax_neg, color=neg_color
+        )
+        ax_neg.set_title(f"{component}: Negative Features (n={total_neg_features})")
+        ax_neg.axvline(x=0, color="gray", linestyle="--")
+    else:
+        ax_neg.text(
+            0.5,
+            0.5,
+            "No negative features found",
+            ha="center",
+            va="center",
+            transform=ax_neg.transAxes,
+        )
+        ax_neg.set_title(f"{component}: Negative Features")
+
+    # Balance axis limits
+    for axis in [ax_pos, ax_neg]:
+        if axis.patches:  # Check if there are any bars plotted
+            xlim = max(abs(min(axis.get_xlim()[0], 0)), abs(max(axis.get_xlim()[1], 0)))
+            axis.set_xlim(-xlim, xlim)
+
+    return ax_pos, ax_neg

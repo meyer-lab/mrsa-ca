@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from mrsa_ca_rna.figures.base import calculate_layout, setupBase
+from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import calculate_cpm, prepare_data
 
 
@@ -113,7 +113,8 @@ def genFig():
     )
 
     # Set up plots
-    layout, fig_size = calculate_layout(num_plots=3, scale_factor=4)
+    layout = {"ncols": 2, "nrows": 2}
+    fig_size = (8, 8)
     ax, f, gs = setupBase(fig_size, layout)
 
     # Create boxplot of read depth by disease

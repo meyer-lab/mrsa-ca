@@ -5,9 +5,9 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 
 # imports
 
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, roc_curve
 
 from mrsa_ca_rna.figures.base import setupBase
@@ -116,8 +116,6 @@ def genFig():
         )
         b.set(title=f"Gene Contributions to {pc}", xlabel="Gene", ylabel="Contribution")
         # Rotate x-tick labels for better readability
-        plt.setp(
-            b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor"
-        )
+        plt.setp(b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
     return f

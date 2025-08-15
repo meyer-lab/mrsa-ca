@@ -166,7 +166,7 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     return scaled_exp.astype(np.float64)
 
 
-def prepare_mrsa_ca(filter_threshold: float = 1.0, min_pct: float = 0.25) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
+def prepare_mrsa_ca(filter_threshold: float = -1.0, min_pct: float = 0.10) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
     """Add MRSA and Candidemia metadata to the AnnData object."""
 
     # Import the metadata and combine

@@ -109,10 +109,7 @@ def genFig():
             features_df=features_df,
             component=i + 1,
             feature_name="gene",
-            n_features=5,
+            n_features=10,
         )
-        b.set(title=f"Gene Contributions to {pc}", xlabel="Gene", ylabel="Contribution")
-        # Rotate x-tick labels for better readability
-        plt.setp(b.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
     return f

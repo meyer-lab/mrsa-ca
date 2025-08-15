@@ -42,8 +42,8 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
 
     # relabel the columns after the matrix multiplication
     data.columns = data.columns.map({0: "PC1", 1: "PC2", 2: "PC3", 3: "PC4", 4: "PC5"})
-    data["disease"] = combined.obs.loc[mrsa_idxs, "disease"]
-    data["status"] = combined.obs.loc[mrsa_idxs, "status"]
+    data["disease"] = combined.obs.loc[:, "disease"]
+    data["status"] = combined.obs.loc[:, "status"]
 
     return data, accuracy
 

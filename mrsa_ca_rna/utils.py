@@ -166,7 +166,9 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     return scaled_exp.astype(np.float64)
 
 
-def prepare_mrsa_ca(filter_threshold: float = -1.0, min_pct: float = 0.10) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
+def prepare_mrsa_ca(
+    filter_threshold: float = -1.0, min_pct: float = 0.10
+) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
     """Add MRSA and Candidemia metadata to the AnnData object."""
 
     # Import the metadata and combine
@@ -188,9 +190,7 @@ def prepare_mrsa_ca(filter_threshold: float = -1.0, min_pct: float = 0.10) -> tu
 
     # Filter genes based on the specified threshold and minimum percentage
     if filter_threshold >= 0:
-        filter = gene_filter(
-            X.to_df(), threshold=filter_threshold, min_pct=min_pct
-        )
+        filter = gene_filter(X.to_df(), threshold=filter_threshold, min_pct=min_pct)
         gene_mask = X.var_names.isin(filter.columns)
         X = X[:, gene_mask].copy()
         # Report remaining genes

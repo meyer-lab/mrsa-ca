@@ -116,9 +116,9 @@ def genFig():
     pca_explained_variance, pca_diff, pca_fms = figure_setup()
 
     # Convert to long form for plotting
-    pca_explained_variance = pca_explained_variance.reset_index(names=["Component"]).melt(
-        id_vars="Component", var_name="Resample", value_name="Explained Variance"
-    )
+    pca_explained_variance = pca_explained_variance.reset_index(
+        names=["Component"]
+    ).melt(id_vars="Component", var_name="Resample", value_name="Explained Variance")
 
     pca_diff = pca_diff.reset_index(names=["Component"]).melt(
         id_vars="Component", var_name="Resample", value_name="Cosine Distance"

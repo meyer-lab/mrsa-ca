@@ -5,7 +5,6 @@ the top 5 components ranked by predictive ability, and their associated comp_gen
 
 # imports
 
-import matplotlib.pyplot as plt
 import anndata as ad
 import numpy as np
 import seaborn as sns
@@ -40,11 +39,11 @@ def get_data():
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(
         int
     )
-    
+
     return y_true, combined_ad
 
-def run_models(components, y_true, combined_ad: ad.AnnData):
 
+def run_models(components, y_true, combined_ad: ad.AnnData):
     # Convert to DataFrame for PCA
     combined_df = combined_ad.to_df()
 
@@ -63,8 +62,8 @@ def run_models(components, y_true, combined_ad: ad.AnnData):
 
     return y_proba, gene_comps, weights_dict
 
-def genFig():
 
+def genFig():
     # Scope of our PCA analysis
     components = 5
 

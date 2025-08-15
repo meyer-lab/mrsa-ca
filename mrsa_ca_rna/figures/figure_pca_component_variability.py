@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_mrsa_ca
 
 
 def matrix_cosines(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
@@ -53,20 +53,18 @@ def matrix_fms(a: pd.DataFrame, b: pd.DataFrame) -> np.ndarray:
 
 
 def figure_setup():
-    # import and convert the data to pandas for resample
-    X = prepare_data(filter_threshold=-1)
-
-    _, _, mrsa_ca = prepare_mrsa_ca(X)
-    mrsa_ca = mrsa_ca.to_df()
+    # import and convert the data to pandas for resampling
+    _, _, combined = prepare_mrsa_ca()
+    combined = combined.to_df()
 
     n_comp = 15
     # start with a pca decomposition of the true data
-    _, loadings_true, _ = perform_pca(mrsa_ca, components=n_comp)
+    _, loadings_true, _ = perform_pca(combined, components=n_comp)
 
     # resample the data
     n_resamples = 100
     resampled_data: list[pd.DataFrame] = [
-        resample(mrsa_ca, replace=True)
+        resample(combined, replace=True)
         for _ in range(n_resamples)  # type: ignore
     ]
 

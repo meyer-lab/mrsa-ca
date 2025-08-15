@@ -18,17 +18,15 @@ from sklearn.model_selection import StratifiedKFold
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_mrsa_ca
 
 skf = StratifiedKFold(n_splits=10)
 
 
 def make_roc_curve(X, y):
     """Function trains model on given data and returns the ROC curve"""
-    # Import and scale mrsa and ca data together
-    datasets = prepare_data(filter_threshold=-1)
     # Prepare the MRSA and CA data
-    mrsa_adata, _, _ = prepare_mrsa_ca(datasets)
+    mrsa_adata, _, _ = prepare_mrsa_ca()
 
     # Trim to mrsa data and extract y_true
     y_true = mrsa_adata.obs.loc[:, "status"].astype(int)
@@ -48,9 +46,7 @@ def figure_setup():
     """Performs logistic regression on MRSA data, transformed using CA's PCA model,
     and using random data. The statuses are either shuffled or not for each case"""
 
-    # Grab and split the data
-    combined = prepare_data(filter_threshold=-1)
-    mrsa_data, ca_data, combined = prepare_mrsa_ca(combined)
+    mrsa_data, ca_data, combined = prepare_mrsa_ca()
 
     # Save the MRSA data index for later
     mrsa_index = mrsa_data.obs.index

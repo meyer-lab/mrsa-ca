@@ -15,7 +15,7 @@ from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.figures.helpers import plot_component_features
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import find_top_features, prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import find_top_features, prepare_mrsa_ca
 
 
 def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
@@ -34,8 +34,7 @@ def make_roc_curve(y_true: np.ndarray, y_proba: np.ndarray):
 
 def get_data():
     # Get the MRSA and CA data, grab persistance labels
-    combined_ad = prepare_data(filter_threshold=-1)
-    _, _, combined_ad = prepare_mrsa_ca(combined_ad)
+    _, _, combined_ad = prepare_mrsa_ca()
 
     # Get the labels for MRSA samples
     y_true = combined_ad.obs.loc[combined_ad.obs["disease"] == "MRSA", "status"].astype(

@@ -51,12 +51,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 2}
     ax, f, _ = setupBase(figure_size, layout)
 
-    # bring in the rna anndata objects and push them to dataframes for perform_pca()
-
     data, accuracy = setup_figure()
-
-    n_cats = len(data.loc[:, "status"].unique())
-    sns.set_palette("turbo", n_cats)
 
     # plot PC1 and PC2
     a = sns.scatterplot(data, x="PC1", y="PC2", hue="status", style="disease", ax=ax[0])

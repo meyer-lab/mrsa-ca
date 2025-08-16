@@ -166,49 +166,50 @@ def normalize_counts(counts: np.ndarray) -> np.ndarray:
     return scaled_exp.astype(np.float64)
 
 
-def prepare_mrsa_ca(X: ad.AnnData) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
+def prepare_mrsa_ca(
+    filter_threshold: float = -1.0, min_pct: float = 0.10
+) -> tuple[ad.AnnData, ad.AnnData, ad.AnnData]:
     """Add MRSA and Candidemia metadata to the AnnData object."""
 
-    # Import the metadata
+    # Import the metadata and combine
     mrsa_metadata = import_mrsa_metadata()
     ca_metadata = import_ca_metadata()
+    metadata = pd.concat([mrsa_metadata, ca_metadata], axis=0, join="outer")
 
-    # Subset X into MRSA and Candidemia datasets
+    # Bring in all data without filtering
+    X_init = load_expression_data()
+
+    # Index the AnnData on sample_id to match the metadata
+    X_init.obs = X_init.obs.set_index("sample_id")
+
+    # Subset the AnnData to the metadata indices (MRSA and CA only samples)
+    X = X_init[X_init.obs.index.isin(metadata.index)].copy()
+
+    # Add the metadata to the AnnData object
+    X.obs = pd.concat([X.obs, metadata], axis=1, join="outer")
+
+    # Filter genes based on the specified threshold and minimum percentage
+    if filter_threshold >= 0:
+        filter = gene_filter(X.to_df(), threshold=filter_threshold, min_pct=min_pct)
+        gene_mask = X.var_names.isin(filter.columns)
+        X = X[:, gene_mask].copy()
+        # Report remaining genes
+        print(f"Remaining genes after filtering: {X.shape[1]}")
+
+    # Normalize the counts
+    X.X = normalize_counts(np.asarray(X.X))
+
+    # Split the data into MRSA and Candidemia subsets
     X_mrsa = X[X.obs["disease"] == "MRSA"].copy()
     X_ca = X[X.obs["disease"] == "CANDIDA"].copy()
-
-    # Reindex the AnnData objects to line up with the metadata
-    X_mrsa.obs = X_mrsa.obs.set_index("sample_id")
-    X_ca.obs = X_ca.obs.set_index("sample_id")
-
-    # Add the metadata to the AnnData objects
-    mrsa_metadata = pd.concat([X_mrsa.obs, mrsa_metadata], axis=1)
-    ca_metadata = pd.concat([X_ca.obs, ca_metadata], axis=1, join="inner")
-
-    # Verify there are 106 Candidemia samples after "inner" join
-    if ca_metadata.shape[0] != 106:
-        raise ValueError(
-            f"Expected 106 Candidemia samples, found {ca_metadata.shape[0]} after join"
-        )
-
-    # Prepare the AnnData objects by trimming to the same indices
-    X_mrsa = X_mrsa[X_mrsa.obs.index.isin(mrsa_metadata.index)].copy()
-    X_ca = X_ca[X_ca.obs.index.isin(ca_metadata.index)].copy()
-
-    # Add the metadata to the AnnData objects
-    X_mrsa.obs = mrsa_metadata
-    X_ca.obs = ca_metadata
-
-    # Combine the datasets into a single AnnData object
-    X_combined = ad.concat([X_mrsa, X_ca], label="disease", keys=["MRSA", "Candidemia"])
 
     # Re-Z-score the data
     X_mrsa.X = StandardScaler().fit_transform(X_mrsa.X)
     X_ca.X = StandardScaler().fit_transform(X_ca.X)
-    X_combined.X = StandardScaler().fit_transform(X_combined.X)
+    X.X = StandardScaler().fit_transform(X.X)
 
     # Return the separated and combined AnnData objects
-    return X_mrsa, X_ca, X_combined
+    return X_mrsa, X_ca, X
 
 
 def check_sparsity(array: np.ndarray, threshold: float = 1e-4) -> float:

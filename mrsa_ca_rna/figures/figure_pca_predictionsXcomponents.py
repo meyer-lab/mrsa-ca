@@ -12,17 +12,15 @@ from sklearn.preprocessing import StandardScaler
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_mrsa_ca
 
 
 def figure_setup():
     """Create a dataFrame of regression performance over component #"""
     components = 15
 
-    combined = prepare_data(filter_threshold=-1)
-
     # Get the MRSA and CA data, grab persistance labels
-    mrsa_split, _, combined = prepare_mrsa_ca(combined)
+    mrsa_split, _, combined = prepare_mrsa_ca()
 
     # convert the datasets to pd.dataframes to hand to perform_pca
     mrsa_df = mrsa_split.to_df()
@@ -83,6 +81,6 @@ def genFig():
     )
     a.set_title("Regression Performance by Component Count")
     a.set_xlabel("Component Count")
-    a.set_ylabel("Regression Performance (Balanced Accuracy)")
+    a.set_ylabel("Regression Performance (CV Balanced Accuracy)")
 
     return f

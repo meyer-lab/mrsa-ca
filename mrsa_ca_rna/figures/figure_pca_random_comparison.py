@@ -18,39 +18,16 @@ from sklearn.model_selection import StratifiedKFold
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_mrsa_ca
 
 skf = StratifiedKFold(n_splits=10)
-
-
-def make_roc_curve(X, y):
-    """Function trains model on given data and returns the ROC curve"""
-    # Import and scale mrsa and ca data together
-    datasets = prepare_data(filter_threshold=-1)
-    # Prepare the MRSA and CA data
-    mrsa_adata, _, _ = prepare_mrsa_ca(datasets)
-
-    # Trim to mrsa data and extract y_true
-    y_true = mrsa_adata.obs.loc[:, "status"].astype(int)
-
-    _, y_proba, _ = perform_LR(X, y)  # type: ignore
-    # for the life of me, I cannot figure out how to stop pyright from complaining here
-
-    fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_proba[:, 1])
-
-    data = {"FPR": fpr, "TPR": tpr}
-    score = roc_auc_score(y_true, y_proba[:, 1])
-
-    return data, score
 
 
 def figure_setup():
     """Performs logistic regression on MRSA data, transformed using CA's PCA model,
     and using random data. The statuses are either shuffled or not for each case"""
 
-    # Grab and split the data
-    combined = prepare_data(filter_threshold=-1)
-    mrsa_data, ca_data, combined = prepare_mrsa_ca(combined)
+    mrsa_data, ca_data, combined = prepare_mrsa_ca()
 
     # Save the MRSA data index for later
     mrsa_index = mrsa_data.obs.index
@@ -94,10 +71,22 @@ def genFig():
 
     mrsa_dict, y_shuffled, y_true = figure_setup()
 
+    # Avoid calling import function multiple times by adding a closure
+    def make_roc_curve(X, y):
+        """Function trains model on given data and returns the ROC curve"""
+        _, y_proba, _ = perform_LR(X, y)  # type: ignore
+
+        fpr, tpr, _ = roc_curve(y_true=y_true, y_score=y_proba[:, 1])
+
+        data = {"FPR": fpr, "TPR": tpr}
+        score = roc_auc_score(y_true, y_proba[:, 1])
+
+        return data, score
+
     # perform logistic regression for the following cases:
     # - Combined data, True status
     # - MRSA data, True status
-    # - Transofmed MRSA data, True status
+    # - Transformed MRSA data, True status
     # - Combined data, Shuffled status
     # - Random data, True status
     combined, combined_auc = make_roc_curve(mrsa_dict["combined"], y_true)

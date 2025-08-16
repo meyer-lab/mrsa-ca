@@ -34,8 +34,7 @@ def perform_pca(
     scaled_rna = scaler.fit_transform(data)
     rna_decomp = pca.fit_transform(scaled_rna)
 
-    pc_labels = [f"PC{i}" for i in range(1, components + 1)]
-    pc_labels_index = pd.Index(pc_labels)
+    pc_labels_index = pd.Index(range(1, components + 1), name="PC")
 
     scores = pd.DataFrame(rna_decomp, index=data.index, columns=pc_labels_index)
     loadings = pd.DataFrame(

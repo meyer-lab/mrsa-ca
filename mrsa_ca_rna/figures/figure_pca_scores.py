@@ -12,7 +12,7 @@ import seaborn as sns
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.pca import perform_pca
 from mrsa_ca_rna.regression import perform_LR
-from mrsa_ca_rna.utils import prepare_data, prepare_mrsa_ca
+from mrsa_ca_rna.utils import prepare_mrsa_ca
 
 
 def setup_figure() -> tuple[pd.DataFrame, float]:
@@ -22,10 +22,8 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
     PC2 and 3 might be the most interesting to look at.
     """
 
-    # Load the combined datasets
-    combined = prepare_data(filter_threshold=-1)
     # Prepare the MRSA and CA data
-    _, _, combined = prepare_mrsa_ca(combined)
+    _, _, combined = prepare_mrsa_ca()
 
     scores, _, _ = perform_pca(combined.to_df(), components=5)
 
@@ -42,8 +40,8 @@ def setup_figure() -> tuple[pd.DataFrame, float]:
 
     # relabel the columns after the matrix multiplication
     data.columns = data.columns.map({0: "PC1", 1: "PC2", 2: "PC3", 3: "PC4", 4: "PC5"})
-    data["disease"] = combined.obs.loc[mrsa_idxs, "disease"]
-    data["status"] = combined.obs.loc[mrsa_idxs, "status"]
+    data["disease"] = combined.obs.loc[:, "disease"]
+    data["status"] = combined.obs.loc[:, "status"]
 
     return data, accuracy
 
@@ -53,12 +51,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 2}
     ax, f, _ = setupBase(figure_size, layout)
 
-    # bring in the rna anndata objects and push them to dataframes for perform_pca()
-
     data, accuracy = setup_figure()
-
-    n_cats = len(data.loc[:, "status"].unique())
-    sns.set_palette("turbo", n_cats)
 
     # plot PC1 and PC2
     a = sns.scatterplot(data, x="PC1", y="PC2", hue="status", style="disease", ax=ax[0])

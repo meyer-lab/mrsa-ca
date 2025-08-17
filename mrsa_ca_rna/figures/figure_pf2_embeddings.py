@@ -28,7 +28,7 @@ def genFig():
     X, r2x = get_data(filter_threshold=5, min_pct=0.5, rank=rank)
 
     layout = {"ncols": 3, "nrows": 1}
-    fig_size = (12, 6)
+    fig_size = (12, 4)
     ax, f, _ = setupBase(fig_size, layout)
 
     # Explicitly cast the data to avoid spmatrix issues
@@ -45,7 +45,7 @@ def genFig():
         s=5,
     )
     a.set_title(
-        f"PaCMAP Embedding of Disease Projections from rank {rank} factorization"
+        f"PaCMAP Embedding of Disease Projections\nRank {rank} factorization"
     )
     a.set_xlabel("PaCMAP 1")
     a.set_ylabel("PaCMAP 2")
@@ -74,7 +74,7 @@ def genFig():
         palette="coolwarm",
         s=5,
     )
-    b.set_title(f"PaCMAP Embedding organized by Eigen-{strongest_eigenstate + 1} Value")
+    b.set_title(f"PaCMAP Embedding\norganized by Eigen-{strongest_eigenstate + 1} Value")
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
     b.legend(markerscale=2)

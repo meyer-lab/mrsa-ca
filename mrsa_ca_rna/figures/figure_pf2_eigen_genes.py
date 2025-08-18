@@ -52,7 +52,7 @@ def prepare_weighted_genes(X: ad.AnnData) -> pd.DataFrame:
     )
 
     # Find top genes by threshold
-    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.5)
+    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.5, feature_name="gene")
     top_genes.to_csv("output/eigen_genes.csv", index=True)
 
     return top_genes
@@ -89,7 +89,7 @@ def plot_gene_expression_histograms(X: ad.AnnData, pos_genes: pd.DataFrame, neg_
         return None
     
     # Calculate layout and setup figure
-    layout, fig_size = calculate_layout(len(all_genes), scale_factor=3)
+    fig_size, layout = calculate_layout(len(all_genes), scale_factor=3)
     ax, f, _ = setupBase(fig_size, layout)
     
     # Get CPM expression data

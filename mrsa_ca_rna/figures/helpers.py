@@ -8,7 +8,6 @@ import pandas as pd
 import seaborn as sns
 from fastcluster import linkage
 from matplotlib.axes import Axes
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list
 
 
@@ -130,8 +129,12 @@ def plot_component_features(
     comp_features = features_df[features_df["component"] == component].copy()
 
     # We only want the top n features in each direction
-    pos_features = comp_features[comp_features["direction"] == "positive"].head(n_features)
-    neg_features = comp_features[comp_features["direction"] == "negative"].head(n_features)
+    pos_features = comp_features.loc[comp_features["direction"] == "positive"].head(
+        n_features
+    )
+    neg_features = comp_features.loc[comp_features["direction"] == "negative"].head(
+        n_features
+    )
     combined_features = pd.concat([pos_features, neg_features])
 
     if not combined_features.empty:
@@ -143,20 +146,26 @@ def plot_component_features(
             palette={"positive": pos_color, "negative": neg_color},
             ax=ax,
             orient="h",
-            legend=False
+            legend=False,
         )
-        ax.set_title(f"Top {n_features} Positive and Negative "
-                     f"{feature_name.capitalize()}s\nComponent: {component}")
-        ax.set_xlabel(None)
+        ax.set_title(
+            f"Top {n_features} Positive and Negative "
+            f"{feature_name.capitalize()}s\nComponent: {component}"
+        )
+        ax.set_xlabel("")
         ax.set_ylabel(feature_name.capitalize())
     else:
         ax.text(
-            0.5, 0.5, f"No {feature_name}s found for {component}",
-            ha="center", va="center", transform=ax.transAxes,
+            0.5,
+            0.5,
+            f"No {feature_name}s found for {component}",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
         )
         ax.set_title(f"No features found for {component}")
-        ax.set_xlabel(None)
-        ax.set_ylabel(None)
+        ax.set_xlabel("")
+        ax.set_ylabel("")
         return ax
 
     if ax.patches:  # Check if there are any bars plotted

@@ -12,11 +12,9 @@ from mrsa_ca_rna.utils import prepare_data
 
 
 def figure_setup():
-    X = prepare_data(filter_threshold=5, min_pct=0.5)
-
-    rank = 5
-
-    X, _ = perform_parafac2(X, slice_col="disease", rank=rank)
+    X = prepare_data()
+    
+    X, _ = perform_parafac2(X)
 
     # Make a weighted projection DataFrame for easier plotting and disease labeling
     p_df = pd.DataFrame(

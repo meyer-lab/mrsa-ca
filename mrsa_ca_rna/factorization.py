@@ -135,7 +135,7 @@ def perform_parafac2(
     pf2, errors = parafac2(
         X_list,
         rank=rank,
-        verbose=True,
+        verbose=False,
         init="svd",
         tol=1e-6,
         n_iter_max=1000,

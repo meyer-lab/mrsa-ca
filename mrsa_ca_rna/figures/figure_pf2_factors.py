@@ -20,15 +20,9 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 5
+    X = prepare_data()
 
-    X = prepare_data(filter_threshold=5, min_pct=0.5)
-
-    X, r2x = perform_parafac2(
-        X,
-        slice_col="disease",
-        rank=rank,
-    )
+    X, r2x = perform_parafac2(X)
 
     return X, r2x
 
@@ -67,7 +61,7 @@ def genFig():
         index=X.var.index,
         columns=pd.Index(ranks_labels),
     )
-    top_genes = find_top_features(genes_df, threshold_fraction=0.5, feature_name="gene")
+    top_genes = find_top_features(genes_df, threshold_fraction=0.75, feature_name="gene")
     top_genes.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
 
     # Check sparsity of the gene factor matrix

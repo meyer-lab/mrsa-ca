@@ -15,10 +15,9 @@ from mrsa_ca_rna.utils import calculate_cpm, find_top_features, prepare_data
 
 def get_data() -> ad.AnnData:
     """Get the data for the figure."""
-    X = prepare_data(filter_threshold=5.0, min_pct=0.50)
+    X = prepare_data()
 
-    rank = 5
-    X, _ = perform_parafac2(X, slice_col="disease", rank=rank)
+    X, _ = perform_parafac2(X)
 
     # Identify the strongest eigen state (row with largest sum across columns)
     strongest_eigenstate = np.sum(np.abs(np.asarray(X.uns["Pf2_B"])), axis=1).argmax()
@@ -52,7 +51,7 @@ def prepare_weighted_genes(X: ad.AnnData) -> pd.DataFrame:
     )
 
     # Find top genes by threshold
-    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.5, feature_name="gene")
+    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.75, feature_name="gene")
     top_genes.to_csv("output/eigen_genes.csv", index=True)
 
     return top_genes

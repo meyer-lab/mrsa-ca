@@ -11,21 +11,16 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import prepare_data
 
 
-def get_data(filter_threshold=5, min_pct=0.5, rank=5) -> tuple[ad.AnnData, float]:
+def get_data() -> tuple[ad.AnnData, float]:
     """Concatenate the data and perform the factorization"""
-    X = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
-    X, r2x = perform_parafac2(
-        X,
-        slice_col="disease",
-        rank=rank,
-    )
+    X = prepare_data()
+    X, r2x = perform_parafac2(X)
     return X, r2x
 
 
 def genFig():
     """Generate the figure with PaCMAP and UMAP embeddings"""
-    rank = 5
-    X, r2x = get_data(filter_threshold=5, min_pct=0.5, rank=rank)
+    X, r2x = get_data()
 
     layout = {"ncols": 3, "nrows": 1}
     fig_size = (12, 4)
@@ -45,7 +40,7 @@ def genFig():
         s=5,
     )
     a.set_title(
-        f"PaCMAP Embedding of Disease Projections\nRank {rank} factorization"
+        f"PaCMAP Embedding of Disease Projections {X.varm['Pf2_C'].shape[1]} components"
     )
     a.set_xlabel("PaCMAP 1")
     a.set_ylabel("PaCMAP 2")

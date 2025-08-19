@@ -22,14 +22,13 @@ def genFig():
     """Generate the figure with PaCMAP and UMAP embeddings"""
     X, r2x = get_data()
 
-    layout = {"ncols": 3, "nrows": 1}
-    fig_size = (12, 4)
+    layout = {"ncols": 2, "nrows": 1}
+    fig_size = (10, 4)
     ax, f, _ = setupBase(fig_size, layout)
 
     # Explicitly cast the data to avoid spmatrix issues
     pacmap_coords: np.ndarray = np.asarray(X.obsm["Pf2_PaCMAP"])
     projections: np.ndarray = np.asarray(X.obsm["Pf2_projections"])
-    weighted_proj: np.ndarray = np.asarray(X.obsm["weighted_Pf2_projections"])
 
     a = sns.scatterplot(
         x=pacmap_coords[:, 0],
@@ -73,24 +72,5 @@ def genFig():
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
     b.legend(markerscale=2)
-
-    c = sns.scatterplot(
-        x=weighted_proj[:, 0],
-        y=weighted_proj[:, 1],
-        hue=X.obs["disease"],
-        ax=ax[2],
-        palette="tab20",
-        s=5,
-    )
-    c.set_title("Patients described by Pf2 components")
-    c.set_xlabel("Pf2 Component 1")
-    c.set_ylabel("Pf2 Component 2")
-    c.legend(markerscale=2)
-
-    f.suptitle(
-        f"Pf2 Factorization with R2X: {r2x:.3f}\n"
-        "Dimensionality Reduction of Disease Projections",
-        fontsize=16,
-    )
 
     return f

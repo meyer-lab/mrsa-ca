@@ -120,17 +120,14 @@ def genFig():
     n_genes_to_plot = 25
 
     # Two column layout - first row for matrices, subsequent rows for components
-    nrows = -(len(components_to_show) // -2) + 1
+    nrows = ceil(len(components_to_show) / 2) + 1
     layout = {"ncols": 2, "nrows": nrows}
     fig_size = (10, nrows * 6)
     ax, f, gs = setupBase(fig_size, layout)
 
-    # First row: A matrix (diseases) and C matrix (genes) side by side
-    ax_a_matrix = ax[0]  # Top left
-    # ax_c_matrix = ax[1]  # Top right
-
-    f.delaxes(ax[0])
-    f.delaxes(ax[1])
+    # Remove first row to make an A matrix spanning all columns
+    for i in range(layout["ncols"]):
+        f.delaxes(ax[i])
     ax_a_matrix = f.add_subplot(gs[0, :])
 
     # Get components and disease labels
@@ -155,18 +152,13 @@ def genFig():
     ax_a_matrix.set_xlabel("Component")
     ax_a_matrix.set_ylabel("Disease")
 
-    # # Plot C matrix (genes) using the rasterized plotter
-    # sparsity = check_sparsity(np.asarray(X.varm["Pf2_C"]))
-    # plot_gene_matrix(
-    #     X, ax=ax_c_matrix, title=f"Gene Factor Matrix (C)\nSparsity: {sparsity:.2f}"
-    # )
-
     # Plot each selected component's details
     for i, comp_num in enumerate(components_to_show):
-        # Calculate row index for this component (skip first row which has matrices)
-        row_idx = i + 2
 
-        # Use the existing plotting function
+        # Skip the first row since it contains the A matrix
+        row_idx = i + layout["ncols"]
+
+        # Use the helper function to plot component features
         plot_component_features(
             ax[row_idx],
             top_genes_df,
@@ -175,9 +167,8 @@ def genFig():
             n_features=n_genes_to_plot,
         )
 
-        # Highlight this component in both matrices
+        # Highlight this component in the A matrix
         highlight_heatmap_columns(ax_a_matrix, comp_num - 1)
-        # highlight_heatmap_columns(ax_c_matrix, comp_num - 1)
 
     f.suptitle("PARAFAC2 Component Analysis: Disease-Gene Associations", fontsize=16)
 

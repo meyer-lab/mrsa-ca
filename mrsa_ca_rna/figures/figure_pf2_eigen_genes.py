@@ -158,9 +158,10 @@ def genFig():
     ax, f, gs = setupBase(fig_size, layout)
 
     # Delete row 2 and 3 axes, then make subplots spanning those rows
-    for col in range(layout["ncols"]):
-        f.delaxes(ax[3 + col])
-        f.delaxes(ax[6 + col])
+    ncols = layout["ncols"]
+    for row in [1, 2]:
+        for col in range(ncols):
+            f.delaxes(ax[row * ncols + col])
     ax_row2 = f.add_subplot(gs[1, :])
     ax_row3 = f.add_subplot(gs[2, :])
 

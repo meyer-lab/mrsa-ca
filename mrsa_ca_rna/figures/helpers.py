@@ -145,7 +145,6 @@ def plot_component_features(
             hue="direction",
             palette={"positive": pos_color, "negative": neg_color},
             ax=ax,
-            orient="h",
             legend=False,
         )
         ax.set_title(
@@ -154,6 +153,10 @@ def plot_component_features(
         )
         ax.set_xlabel("")
         ax.set_ylabel(feature_name.capitalize())
+
+        # Balance the limits
+        xlim = max(abs(min(ax.get_xlim()[0], 0)), abs(max(ax.get_xlim()[1], 0)))
+        ax.set_xlim(-xlim, xlim)
     else:
         ax.text(
             0.5,
@@ -166,10 +169,5 @@ def plot_component_features(
         ax.set_title(f"No features found for {component}")
         ax.set_xlabel("")
         ax.set_ylabel("")
-        return ax
-
-    if ax.patches:  # Check if there are any bars plotted
-        xlim = max(abs(min(ax.get_xlim()[0], 0)), abs(max(ax.get_xlim()[1], 0)))
-        ax.set_xlim(-xlim, xlim)
 
     return ax

@@ -5,7 +5,6 @@ import os
 import anndata as ad
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
@@ -59,10 +58,12 @@ def genFig():
     # Export gene factor matrix for external analysis
     genes_df = pd.DataFrame(
         X.varm["Pf2_C"],
-        index=X.var.index,
+        index=pd.Index(X.var.index),
         columns=pd.Index(ranks_labels),
     )
-    top_genes = find_top_features(genes_df, threshold_fraction=0.75, feature_name="gene")
+    top_genes = find_top_features(
+        genes_df, threshold_fraction=0.75, feature_name="gene"
+    )
     top_genes.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
 
     # Check sparsity of the gene factor matrix
@@ -72,7 +73,7 @@ def genFig():
     A_df = pd.DataFrame(
         X.uns["Pf2_A"],
         index=X.obs["disease"].unique(),
-        columns=ranks_labels,
+        columns=pd.Index(ranks_labels),
     )
     a = sns.heatmap(
         A_df,
@@ -93,8 +94,8 @@ def genFig():
     # plot the eigenstate factor matrix using diverging cmap
     B_df = pd.DataFrame(
         X.uns["Pf2_B"],
-        index=[f"Eigenstate {i + 1}" for i in range(X.uns["Pf2_B"].shape[0])],
-        columns=ranks_labels,
+        index=pd.Index([f"Eigenstate {i + 1}" for i in range(X.uns["Pf2_B"].shape[0])]),
+        columns=pd.Index(ranks_labels),
     )
     b = sns.heatmap(
         B_df,

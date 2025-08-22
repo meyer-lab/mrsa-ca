@@ -6,14 +6,13 @@ import anndata as ad
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.utils import calculate_cpm, find_top_features, prepare_data
 
 
-def get_data() -> ad.AnnData:
+def get_data() -> tuple[ad.AnnData, int]:
     """Get the data for the figure."""
     X = prepare_data()
 
@@ -23,7 +22,9 @@ def get_data() -> ad.AnnData:
     strongest_eigenstate = np.sum(np.abs(np.asarray(X.uns["Pf2_B"])), axis=1).argmax()
 
     # Multiply the C matrix with the strongest eigen state
-    weighted_genes = np.dot(X.varm["Pf2_C"], X.uns["Pf2_B"][strongest_eigenstate, :])
+    weighted_genes = np.dot(
+        np.asarray(X.varm["Pf2_C"]), X.uns["Pf2_B"][strongest_eigenstate, :]
+    )
 
     X.varm["Pf2_weighted_genes"] = weighted_genes
 
@@ -35,8 +36,8 @@ def prepare_B_matrix(X: ad.AnnData) -> pd.DataFrame:
     B_matrix = X.uns["Pf2_B"]
     B_df = pd.DataFrame(
         B_matrix,
-        index=[f"Eigenstate {i + 1}" for i in range(B_matrix.shape[0])],
-        columns=[f"Component {i + 1}" for i in range(B_matrix.shape[1])],
+        index=pd.Index([f"Eigenstate {i + 1}" for i in range(B_matrix.shape[0])]),
+        columns=pd.Index([f"Component {i + 1}" for i in range(B_matrix.shape[1])]),
     )
     return B_df
 
@@ -46,15 +47,18 @@ def prepare_weighted_genes(X: ad.AnnData) -> pd.DataFrame:
     weighted_genes = X.varm["Pf2_weighted_genes"]
     weighted_genes_df = pd.DataFrame(
         weighted_genes,
-        index=X.var.index,
-        columns=["Weighted Genes"],
+        index=pd.Index(X.var.index),
+        columns=pd.Index(["Weighted Genes"]),
     )
 
     # Find top genes by threshold
-    top_genes = find_top_features(weighted_genes_df, threshold_fraction=0.75, feature_name="gene")
+    top_genes = find_top_features(
+        weighted_genes_df, threshold_fraction=0.75, feature_name="gene"
+    )
     top_genes.to_csv("output/eigen_genes.csv", index=True)
 
     return top_genes
+
 
 def prepare_disease_expression(X: ad.AnnData, genes) -> pd.DataFrame:
     """
@@ -70,45 +74,49 @@ def prepare_disease_expression(X: ad.AnnData, genes) -> pd.DataFrame:
         id_vars=["index", "disease"],
         value_vars=genes,
         var_name="gene",
-        value_name="expression"
+        value_name="expression",
     )
     expr_long.rename(columns={"index": "sample"}, inplace=True)
     return expr_long
 
 
-def plot_gene_expression_histograms(X: ad.AnnData, pos_genes: pd.DataFrame, neg_genes: pd.DataFrame, n_genes: int = 10):
-    """Plot histograms for raw expression data of top positive and negative eigen genes."""
-    
+def plot_gene_expression_histograms(
+    X: ad.AnnData, pos_genes: pd.DataFrame, neg_genes: pd.DataFrame, n_genes: int = 10
+):
+    """
+    Plot histograms for raw expression data of top positive and negative eigen genes.
+    """
+
     # Get top genes from each direction
     top_pos_genes = pos_genes.head(n_genes)["gene"].tolist()
     top_neg_genes = neg_genes.head(n_genes)["gene"].tolist()
     all_genes = top_pos_genes + top_neg_genes
-    
+
     if not all_genes:
         return None
-    
+
     # Calculate layout and setup figure
     fig_size, layout = calculate_layout(len(all_genes), scale_factor=3)
     ax, f, _ = setupBase(fig_size, layout)
-    
+
     # Get CPM expression data
-    exp = calculate_cpm(X.layers["raw"])
-    
+    exp = calculate_cpm(np.asarray(X.layers["raw"]))
+
     for i, gene in enumerate(all_genes):
         ax_i = ax[i]
-        
+
         # Get expression data for this gene
         gene_idx = np.where(X.var.index == gene)[0][0]
         gene_data = exp[:, gene_idx]
-        
+
         # Determine color and direction
         if gene in top_pos_genes:
             color = "red"
             direction = "Positive"
         else:  # Must be negative
-            color = "blue" 
+            color = "blue"
             direction = "Negative"
-        
+
         # Plot histogram
         sns.histplot(
             gene_data,
@@ -117,16 +125,17 @@ def plot_gene_expression_histograms(X: ad.AnnData, pos_genes: pd.DataFrame, neg_
             alpha=0.7,
             kde=False,
             bins=30,
-            element="bars"
+            element="bars",
         )
-        
+
         ax_i.set_title(f"{direction}: {gene}")
         ax_i.set_xlabel("Expression (CPM)")
         ax_i.set_yscale("log")
         ax_i.set_ylabel("Count")
-    
+
     f.suptitle("Expression Histograms for Top Eigen Genes", fontsize=16)
     return f
+
 
 def genFig():
     """Generate the figure for the strongest eigen state and weighted genes."""
@@ -147,7 +156,7 @@ def genFig():
     layout = {"ncols": 3, "nrows": 3}
     fig_size = (18, 12)
     ax, f, gs = setupBase(fig_size, layout)
-    
+
     # Delete row 2 and 3 axes, then make subplots spanning those rows
     for col in range(layout["ncols"]):
         f.delaxes(ax[3 + col])
@@ -162,8 +171,8 @@ def genFig():
     a.set_ylabel("Eigenstates")
 
     # Separate positive and negative genes for display
-    pos_genes = weighted_genes_df[weighted_genes_df["direction"] == "positive"]
-    neg_genes = weighted_genes_df[weighted_genes_df["direction"] == "negative"]
+    pos_genes = weighted_genes_df.loc[weighted_genes_df["direction"] == "positive"]
+    neg_genes = weighted_genes_df.loc[weighted_genes_df["direction"] == "negative"]
 
     # Calculate pos and neg % of total genes
     n_pos = pos_genes.shape[0]
@@ -202,22 +211,27 @@ def genFig():
     )
 
     # Prepare disease expression data for the top positive genes
-    expr_long_pos = prepare_disease_expression(X, pos_genes["gene"].head(n_genes).to_list())
+    expr_long_pos = prepare_disease_expression(
+        X, pos_genes["gene"].head(n_genes).tolist()
+    )
 
     # Boxplot of gene expression by disease
-    d = sns.boxplot(data=expr_long_pos,
-                    x="disease",
-                    y="expression",
-                    hue="gene",
-                    ax=ax_row2,
-                    flierprops=dict(marker="o", markersize=2)
+    d = sns.boxplot(
+        data=expr_long_pos,
+        x="disease",
+        y="expression",
+        hue="gene",
+        ax=ax_row2,
+        flierprops=dict(marker="o", markersize=2),
     )
     d.set_title("Gene Expression by Disease (Positive Genes)")
     d.set_xlabel("Disease")
     d.set_ylabel("Expression (Log2 CPM)")
 
     # Prepare disease expression data for the top negative genes
-    expr_long_neg = prepare_disease_expression(X, neg_genes["gene"].head(n_genes).to_list())
+    expr_long_neg = prepare_disease_expression(
+        X, neg_genes["gene"].head(n_genes).tolist()
+    )
 
     # Boxplot of gene expression by disease
     e = sns.boxplot(
@@ -226,12 +240,12 @@ def genFig():
         y="expression",
         hue="gene",
         ax=ax_row3,
-        flierprops=dict(marker="o", markersize=2)
-        )
+        flierprops=dict(marker="o", markersize=2),
+    )
     e.set_title("Gene Expression by Disease (Negative Genes)")
     e.set_xlabel("Disease")
     e.set_ylabel("Expression (Log2 CPM)")
-    
+
     # Generate histogram figure for gene expression distributions
     hist_fig = plot_gene_expression_histograms(X, pos_genes, neg_genes, n_genes=n_genes)
 

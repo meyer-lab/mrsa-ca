@@ -7,13 +7,13 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import setupBase, calculate_layout
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.utils import prepare_data
 
 
 def figure_setup():
     X = prepare_data()
-    
+
     X, _ = perform_parafac2(X)
 
     # Make a weighted projection DataFrame for easier plotting and disease labeling

@@ -35,7 +35,6 @@ def bootstrap_fms(X, target_trials=30):
     factors_true, R2X_true = factorize(X)
 
     for _ in tqdm(range(target_trials), desc="Bootstrapping FMS", total=target_trials):
-        
         # Factor the resampled data
         factors_resampled, R2X_resampled = factorize(resample_adata(X))
 
@@ -55,10 +54,7 @@ def bootstrap_fms(X, target_trials=30):
 
 
 def get_data(X: ad.AnnData, trials=5):
-
-    fms_list, r2x_list = bootstrap_fms(
-        X.copy(), target_trials=trials
-    )
+    fms_list, r2x_list = bootstrap_fms(X.copy(), target_trials=trials)
 
     metrics = {"fms": fms_list, "R2X_diff": r2x_list}
     metrics = pd.DataFrame(
@@ -69,7 +65,6 @@ def get_data(X: ad.AnnData, trials=5):
 
 
 def genFig():
-
     X = prepare_data()
 
     fig_size = (4, 8)
@@ -77,7 +72,6 @@ def genFig():
     ax, f, _ = setupBase(fig_size, layout)
 
     trials = 5
-
 
     # Generate data for different ranks
     trial_data = get_data(X, trials=trials)

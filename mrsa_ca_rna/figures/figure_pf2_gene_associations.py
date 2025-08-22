@@ -10,14 +10,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Rectangle
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import calculate_layout, setupBase
-from mrsa_ca_rna.figures.helpers import plot_component_features, plot_gene_matrix
+from mrsa_ca_rna.figures.helpers import plot_component_features
 from mrsa_ca_rna.utils import (
     calculate_cpm,
-    check_sparsity,
     find_top_features,
     prepare_data,
 )
@@ -129,7 +127,7 @@ def genFig():
 
     # First row: A matrix (diseases) and C matrix (genes) side by side
     ax_a_matrix = ax[0]  # Top left
-    ax_c_matrix = ax[1]  # Top right
+    # ax_c_matrix = ax[1]  # Top right
 
     f.delaxes(ax[0])
     f.delaxes(ax[1])
@@ -142,8 +140,8 @@ def genFig():
     # Plot A matrix (diseases)
     A_df = pd.DataFrame(
         X.uns["Pf2_A"],
-        index=disease_labels,
-        columns=ranks_labels,
+        index=pd.Index(disease_labels),
+        columns=pd.Index(ranks_labels),
     )
     sns.heatmap(
         A_df,
@@ -184,7 +182,9 @@ def genFig():
     f.suptitle("PARAFAC2 Component Analysis: Disease-Gene Associations", fontsize=16)
 
     # Create histogram figure using the overall top genes from all components
-    top_genes_df = top_genes_df.loc[top_genes_df["component"].isin(components_to_show), :]
+    top_genes_df = top_genes_df.loc[
+        top_genes_df["component"].isin(components_to_show), :
+    ]
     pos_genes_all = top_genes_df.loc[top_genes_df["direction"] == "positive", :]
     neg_genes_all = top_genes_df.loc[top_genes_df["direction"] == "negative", :]
     g = plot_gene_expression_histograms(

@@ -68,7 +68,9 @@ def genFig():
         palette="coolwarm",
         s=5,
     )
-    b.set_title(f"PaCMAP Embedding\norganized by Eigen-{strongest_eigenstate + 1} Value")
+    b.set_title(
+        f"PaCMAP Embedding\norganized by Eigen-{strongest_eigenstate + 1} Value"
+    )
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
     b.legend(markerscale=2)

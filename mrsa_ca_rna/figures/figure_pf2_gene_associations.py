@@ -154,7 +154,6 @@ def genFig():
 
     # Plot each selected component's details
     for i, comp_num in enumerate(components_to_show):
-
         # Skip the first row since it contains the A matrix
         row_idx = i + layout["ncols"]
 

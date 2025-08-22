@@ -48,7 +48,7 @@ def plot_table_rasterized(data_df: pd.DataFrame, ax: Axes, title=None, cmap="coo
 
     # Set ticks to match seaborn heatmap style
     ax.set_xticks(np.arange(len(data_df.columns)) + 0.5)  # Center ticks on columns
-    ax.set_xticklabels(data_df.columns)
+    ax.set_xticklabels([data_df.columns[i] if i % 2 == 0 else "" for i in range(len(data_df.columns))])
     ax.set_yticks([])
 
     return artist

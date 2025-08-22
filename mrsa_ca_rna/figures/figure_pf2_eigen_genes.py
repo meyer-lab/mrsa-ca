@@ -106,7 +106,7 @@ def plot_gene_expression_histograms(
         ax_i = ax[i]
 
         # Get expression data for this gene
-        gene_idx = np.where(X.var.index == gene)[0][0]
+        gene_idx = X.var.index.get_loc(gene)
         gene_data = exp[:, gene_idx]
 
         # Determine color and direction

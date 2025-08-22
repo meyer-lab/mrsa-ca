@@ -121,10 +121,10 @@ def prepare_plot_dataframe(mean_genes: pd.DataFrame, top_genes_df: pd.DataFrame)
 
 def get_data():
     """Get the data for plotting the gene factor matrix."""
-    X = prepare_data(filter_threshold=5, min_pct=0.5)
+    X = prepare_data()
 
     # Perform PARAFAC2 factorization
-    X, _ = perform_parafac2(X, slice_col="disease", rank=1)
+    X, _ = perform_parafac2(X)
     genes_df = pd.DataFrame(
         X.varm["Pf2_C"],
         index=X.var.index,
@@ -150,7 +150,7 @@ def genFig():
 
     # Get top genes for each component
     top_genes_df = find_top_features(
-        genes_df, threshold_fraction=0.5, feature_name="gene"
+        genes_df, threshold_fraction=0.75, feature_name="gene"
     )
 
     # Calculate gene space coverage
@@ -200,7 +200,6 @@ def genFig():
     a.set_title(
         "Distribution of top genes by component across gene space\n"
         f"{coverage_report}\n"
-        "Filtering: CPM>5 in at least 50% of samples\n"
         f"{n_comps} Component model"
     )
 

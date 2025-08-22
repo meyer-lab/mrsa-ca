@@ -20,15 +20,9 @@ from mrsa_ca_rna.utils import (
 def figure_setup():
     """Set up the data for the tensor factorization and return the results"""
 
-    rank = 5
+    X = prepare_data()
 
-    X = prepare_data(filter_threshold=5, min_pct=0.5)
-
-    X, r2x = perform_parafac2(
-        X,
-        slice_col="disease",
-        rank=rank,
-    )
+    X, r2x = perform_parafac2(X)
 
     return X, r2x
 
@@ -53,7 +47,7 @@ def plot_gsea(X: ad.AnnData, gene_set: str = "KEGG_2021_Human"):
 def genFig():
     """Start by generating heatmaps of the factor matrices for the diseases and time"""
 
-    fig_size = (12, 4)
+    fig_size = (14, 4)
     layout = {"ncols": 3, "nrows": 1}
     ax, f, _ = setupBase(fig_size, layout)
 
@@ -64,23 +58,29 @@ def genFig():
     # Export gene factor matrix for external analysis
     genes_df = pd.DataFrame(
         X.varm["Pf2_C"],
-        index=X.var.index,
+        index=pd.Index(X.var.index),
         columns=pd.Index(ranks_labels),
     )
-    top_genes = find_top_features(genes_df, threshold_fraction=0.5, feature_name="gene")
+    top_genes = find_top_features(
+        genes_df, threshold_fraction=0.75, feature_name="gene"
+    )
     top_genes.to_csv(f"output/pf2_genes_{len(ranks_labels)}.csv")
 
     # Check sparsity of the gene factor matrix
     sparsity = check_sparsity(genes_df.to_numpy())
 
     # plot the disease factor matrix using coolwarm cmap
-    a = sns.heatmap(
+    A_df = pd.DataFrame(
         X.uns["Pf2_A"],
+        index=X.obs["disease"].unique(),
+        columns=pd.Index(ranks_labels),
+    )
+    a = sns.heatmap(
+        A_df,
         ax=ax[0],
         cmap="coolwarm",
         center=0,
-        xticklabels=ranks_labels,
-        yticklabels=list(X.obs["disease"].unique().astype(str)),
+        xticklabels=2,
     )
     a.set_title(f"Disease Factor Matrix\nR2X: {r2x:.2f}")
     a.set_xlabel("Rank")
@@ -92,13 +92,18 @@ def genFig():
         a.axvline(i, color="black", linestyle="--", linewidth=0.8)
 
     # plot the eigenstate factor matrix using diverging cmap
-    b = sns.heatmap(
+    B_df = pd.DataFrame(
         X.uns["Pf2_B"],
+        index=pd.Index([f"Eigenstate {i + 1}" for i in range(X.uns["Pf2_B"].shape[0])]),
+        columns=pd.Index(ranks_labels),
+    )
+    b = sns.heatmap(
+        B_df,
         ax=ax[1],
         cmap="coolwarm",
         center=0,
-        xticklabels=ranks_labels,
-        yticklabels=ranks_labels,
+        xticklabels=2,
+        yticklabels=2,
     )
     b.set_title("Eigenstate Factor Matrix")
     b.set_xlabel("Rank")

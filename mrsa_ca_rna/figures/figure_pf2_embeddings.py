@@ -11,30 +11,24 @@ from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import prepare_data
 
 
-def get_data(filter_threshold=5, min_pct=0.5, rank=5) -> tuple[ad.AnnData, float]:
+def get_data() -> tuple[ad.AnnData, float]:
     """Concatenate the data and perform the factorization"""
-    X = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
-    X, r2x = perform_parafac2(
-        X,
-        slice_col="disease",
-        rank=rank,
-    )
+    X = prepare_data()
+    X, r2x = perform_parafac2(X)
     return X, r2x
 
 
 def genFig():
     """Generate the figure with PaCMAP and UMAP embeddings"""
-    rank = 5
-    X, r2x = get_data(filter_threshold=5, min_pct=0.5, rank=rank)
+    X, r2x = get_data()
 
-    layout = {"ncols": 3, "nrows": 1}
-    fig_size = (12, 6)
+    layout = {"ncols": 2, "nrows": 1}
+    fig_size = (10, 4)
     ax, f, _ = setupBase(fig_size, layout)
 
     # Explicitly cast the data to avoid spmatrix issues
     pacmap_coords: np.ndarray = np.asarray(X.obsm["Pf2_PaCMAP"])
     projections: np.ndarray = np.asarray(X.obsm["Pf2_projections"])
-    weighted_proj: np.ndarray = np.asarray(X.obsm["weighted_Pf2_projections"])
 
     a = sns.scatterplot(
         x=pacmap_coords[:, 0],
@@ -45,7 +39,7 @@ def genFig():
         s=5,
     )
     a.set_title(
-        f"PaCMAP Embedding of Disease Projections from rank {rank} factorization"
+        f"PaCMAP Embedding of Disease Projections {X.varm['Pf2_C'].shape[1]} components"
     )
     a.set_xlabel("PaCMAP 1")
     a.set_ylabel("PaCMAP 2")
@@ -74,28 +68,11 @@ def genFig():
         palette="coolwarm",
         s=5,
     )
-    b.set_title(f"PaCMAP Embedding organized by Eigen-{strongest_eigenstate + 1} Value")
+    b.set_title(
+        f"PaCMAP Embedding\norganized by Eigen-{strongest_eigenstate + 1} Value"
+    )
     b.set_xlabel("PaCMAP 1")
     b.set_ylabel("PaCMAP 2")
     b.legend(markerscale=2)
-
-    c = sns.scatterplot(
-        x=weighted_proj[:, 0],
-        y=weighted_proj[:, 1],
-        hue=X.obs["disease"],
-        ax=ax[2],
-        palette="tab20",
-        s=5,
-    )
-    c.set_title("Patients described by Pf2 components")
-    c.set_xlabel("Pf2 Component 1")
-    c.set_ylabel("Pf2 Component 2")
-    c.legend(markerscale=2)
-
-    f.suptitle(
-        f"Pf2 Factorization with R2X: {r2x:.3f}\n"
-        "Dimensionality Reduction of Disease Projections",
-        fontsize=16,
-    )
 
     return f

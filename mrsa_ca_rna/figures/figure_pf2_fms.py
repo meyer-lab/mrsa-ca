@@ -9,16 +9,17 @@ import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from tlviz.factor_tools import factor_match_score
+from tqdm import tqdm
 
 from mrsa_ca_rna.factorization import perform_parafac2
 from mrsa_ca_rna.figures.base import setupBase
 from mrsa_ca_rna.utils import prepare_data, resample_adata
 
 
-def factorize(X_in: ad.AnnData, rank: int):
+def factorize(X_in: ad.AnnData):
     X_in.X = StandardScaler().fit_transform(X_in.X)
 
-    X, r2x = perform_parafac2(X_in, slice_col="disease", rank=rank)
+    X, r2x = perform_parafac2(X_in)
 
     factors = list([X.uns["Pf2_A"], X.uns["Pf2_B"], X.varm["Pf2_C"]])
     cp_factors = (X.uns["Pf2_weights"], factors)
@@ -26,14 +27,16 @@ def factorize(X_in: ad.AnnData, rank: int):
     return cp_factors, r2x
 
 
-def bootstrap_fms(X, rank, target_trials=30):
+def bootstrap_fms(X, target_trials=30):
     fms_list = []
     R2X_diff_list = []
 
-    for _ in range(target_trials):
-        # factorize the original and resampled data
-        factors_true, R2X_true = factorize(X, rank)
-        factors_resampled, R2X_resampled = factorize(resample_adata(X), rank)
+    # Factor the original data once
+    factors_true, R2X_true = factorize(X)
+
+    for _ in tqdm(range(target_trials), desc="Bootstrapping FMS", total=target_trials):
+        # Factor the resampled data
+        factors_resampled, R2X_resampled = factorize(resample_adata(X))
 
         # calculate the factor match score
         factor_match = factor_match_score(
@@ -50,12 +53,8 @@ def bootstrap_fms(X, rank, target_trials=30):
     return fms_list, R2X_diff_list
 
 
-def get_data(filter_threshold, min_pct, rank=5, trials=30):
-    disease_data = prepare_data(filter_threshold=filter_threshold, min_pct=min_pct)
-
-    fms_list, r2x_list = bootstrap_fms(
-        disease_data.copy(), rank=rank, target_trials=trials
-    )
+def get_data(X: ad.AnnData, trials=5):
+    fms_list, r2x_list = bootstrap_fms(X.copy(), target_trials=trials)
 
     metrics = {"fms": fms_list, "R2X_diff": r2x_list}
     metrics = pd.DataFrame(
@@ -66,16 +65,16 @@ def get_data(filter_threshold, min_pct, rank=5, trials=30):
 
 
 def genFig():
+    X = prepare_data()
+
     fig_size = (4, 8)
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
 
-    trials = 30
-    filter_threshold = 5
-    min_pct = 0.5
+    trials = 5
 
     # Generate data for different ranks
-    trial_data = get_data(filter_threshold, min_pct, rank=5, trials=trials)
+    trial_data = get_data(X, trials=trials)
 
     # Create scatter plot and KDE plot
     a = sns.scatterplot(data=trial_data, x="fms", y="R2X_diff", ax=ax[0])
@@ -91,7 +90,7 @@ def genFig():
 
     f.suptitle(
         "Pf2 Factor Match Score and R2X Difference w/Resampled data\n"
-        f"Data filtering: CPM > {filter_threshold} in {min_pct * 100}% of samples"
+        f"Rank: {X.varm['Pf2_C'].shape[1]}"
     )
 
     return f

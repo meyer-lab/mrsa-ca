@@ -1,8 +1,12 @@
 .PHONY: all clean_output test pyright setup_salmon quantify_salmon clean_salmon help
 
 flist = $(wildcard mrsa_ca_rna/figures/figure*.py)
+plist = $(wildcard mrsa_ca_rna/figures/figure_pca*.py)
+tlist = $(wildcard mrsa_ca_rna/figures/figure_pf2*.py)
 
 all: $(patsubst mrsa_ca_rna/figures/figure%.py, output/figure%.svg, $(flist))
+all_pca: $(patsubst mrsa_ca_rna/figures/figure_pca%.py, output/figure_pca%.svg, $(plist))
+all_pf2: $(patsubst mrsa_ca_rna/figures/figure_pf2%.py, output/figure_pf2%.svg, $(tlist))
 
 output/figure%.svg: mrsa_ca_rna/figures/figure%.py
 	@ mkdir -p ./output

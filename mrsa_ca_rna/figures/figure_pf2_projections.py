@@ -7,16 +7,14 @@ import pandas as pd
 import seaborn as sns
 
 from mrsa_ca_rna.factorization import perform_parafac2
-from mrsa_ca_rna.figures.base import setupBase
+from mrsa_ca_rna.figures.base import calculate_layout, setupBase
 from mrsa_ca_rna.utils import prepare_data
 
 
 def figure_setup():
-    X = prepare_data(filter_threshold=5, min_pct=0.5)
+    X = prepare_data()
 
-    rank = 5
-
-    X, _ = perform_parafac2(X, slice_col="disease", rank=rank)
+    X, _ = perform_parafac2(X)
 
     # Make a weighted projection DataFrame for easier plotting and disease labeling
     p_df = pd.DataFrame(
@@ -36,8 +34,7 @@ def genFig():
     projections, X = figure_setup()
 
     # Setup the projections figure
-    layout = {"ncols": 4, "nrows": 4}
-    fig_size = (16, 16)
+    fig_size, layout = calculate_layout(num_plots=projections["disease"].nunique())
     ax, f, _ = setupBase(fig_size, layout)
 
     # Find the absolute maximum value across all projections

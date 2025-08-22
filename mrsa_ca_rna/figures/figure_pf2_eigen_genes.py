@@ -122,6 +122,7 @@ def plot_gene_expression_histograms(X: ad.AnnData, pos_genes: pd.DataFrame, neg_
         
         ax_i.set_title(f"{direction}: {gene}")
         ax_i.set_xlabel("Expression (CPM)")
+        ax_i.set_yscale("log")
         ax_i.set_ylabel("Count")
     
     f.suptitle("Expression Histograms for Top Eigen Genes", fontsize=16)
@@ -155,7 +156,7 @@ def genFig():
     ax_row3 = f.add_subplot(gs[2, :])
 
     # Plot the B matrix heatmap
-    a = sns.heatmap(B_df, annot=True, fmt=".2f", cmap="coolwarm", ax=ax[0])
+    a = sns.heatmap(B_df, fmt=".2f", cmap="coolwarm", ax=ax[0])
     a.set_title("B Matrix of PF2 Model")
     a.set_xlabel("Components")
     a.set_ylabel("Eigenstates")

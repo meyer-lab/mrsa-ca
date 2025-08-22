@@ -200,7 +200,6 @@ def genFig():
     a.set_title(
         "Distribution of top genes by component across gene space\n"
         f"{coverage_report}\n"
-        "Filtering: CPM>5 in at least 50% of samples\n"
         f"{n_comps} Component model"
     )
 

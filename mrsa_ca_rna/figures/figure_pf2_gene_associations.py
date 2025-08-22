@@ -118,41 +118,50 @@ def genFig():
     X, r2x, top_genes_df = get_data()
 
     # Create a multi-panel figure with A and C matrices + component details
-    components_to_show = [1, 2, 3, 4, 5]
-    n_genes_to_plot = 10
+    components_to_show = [2, 3, 4, 5]
+    n_genes_to_plot = 25
 
     # Two column layout - first row for matrices, subsequent rows for components
     nrows = -(len(components_to_show) // -2) + 1
     layout = {"ncols": 2, "nrows": nrows}
-    fig_size = (8, nrows * 5)
+    fig_size = (10, nrows * 6)
     ax, f, gs = setupBase(fig_size, layout)
 
     # First row: A matrix (diseases) and C matrix (genes) side by side
     ax_a_matrix = ax[0]  # Top left
     ax_c_matrix = ax[1]  # Top right
 
+    f.delaxes(ax[0])
+    f.delaxes(ax[1])
+    ax_a_matrix = f.add_subplot(gs[0, :])
+
     # Get components and disease labels
     ranks_labels = [str(x) for x in range(1, X.uns["Pf2_A"].shape[1] + 1)]
     disease_labels = list(X.obs["disease"].unique().astype(str))
 
     # Plot A matrix (diseases)
-    sns.heatmap(
+    A_df = pd.DataFrame(
         X.uns["Pf2_A"],
+        index=disease_labels,
+        columns=ranks_labels,
+    )
+    sns.heatmap(
+        A_df,
         ax=ax_a_matrix,
         cmap="coolwarm",
         center=0,
-        xticklabels=ranks_labels,
+        xticklabels=2,
         yticklabels=disease_labels,
     )
     ax_a_matrix.set_title(f"Disease Factor Matrix (A) - R2X: {r2x:.2f}")
     ax_a_matrix.set_xlabel("Component")
     ax_a_matrix.set_ylabel("Disease")
 
-    # Plot C matrix (genes) using the rasterized plotter
-    sparsity = check_sparsity(np.asarray(X.varm["Pf2_C"]))
-    plot_gene_matrix(
-        X, ax=ax_c_matrix, title=f"Gene Factor Matrix (C)\nSparsity: {sparsity:.2f}"
-    )
+    # # Plot C matrix (genes) using the rasterized plotter
+    # sparsity = check_sparsity(np.asarray(X.varm["Pf2_C"]))
+    # plot_gene_matrix(
+    #     X, ax=ax_c_matrix, title=f"Gene Factor Matrix (C)\nSparsity: {sparsity:.2f}"
+    # )
 
     # Plot each selected component's details
     for i, comp_num in enumerate(components_to_show):
@@ -170,11 +179,12 @@ def genFig():
 
         # Highlight this component in both matrices
         highlight_heatmap_columns(ax_a_matrix, comp_num - 1)
-        highlight_heatmap_columns(ax_c_matrix, comp_num - 1)
+        # highlight_heatmap_columns(ax_c_matrix, comp_num - 1)
 
     f.suptitle("PARAFAC2 Component Analysis: Disease-Gene Associations", fontsize=16)
 
     # Create histogram figure using the overall top genes from all components
+    top_genes_df = top_genes_df.loc[top_genes_df["component"].isin(components_to_show), :]
     pos_genes_all = top_genes_df.loc[top_genes_df["direction"] == "positive", :]
     neg_genes_all = top_genes_df.loc[top_genes_df["direction"] == "negative", :]
     g = plot_gene_expression_histograms(
@@ -232,8 +242,9 @@ def plot_gene_expression_histograms(
         )
 
         ax_i.set_title(f"{direction}: {gene}")
-        ax_i.set_xlabel("Expression (CPM)")
+        ax_i.set_xlabel("Expression (Log CPM)")
         ax_i.set_ylabel("Count")
+        ax_i.set_yscale("log")
 
     f.suptitle("Expression Histograms for Top Genes", fontsize=16)
     return f

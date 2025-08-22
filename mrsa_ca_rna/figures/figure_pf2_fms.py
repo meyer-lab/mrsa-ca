@@ -54,11 +54,10 @@ def bootstrap_fms(X, target_trials=30):
     return fms_list, R2X_diff_list
 
 
-def get_data(trials=5):
-    disease_data = prepare_data()
+def get_data(X: ad.AnnData, trials=5):
 
     fms_list, r2x_list = bootstrap_fms(
-        disease_data.copy(), target_trials=trials
+        X.copy(), target_trials=trials
     )
 
     metrics = {"fms": fms_list, "R2X_diff": r2x_list}
@@ -70,6 +69,9 @@ def get_data(trials=5):
 
 
 def genFig():
+
+    X = prepare_data()
+
     fig_size = (4, 8)
     layout = {"ncols": 1, "nrows": 2}
     ax, f, _ = setupBase(fig_size, layout)
@@ -78,7 +80,7 @@ def genFig():
 
 
     # Generate data for different ranks
-    trial_data = get_data(trials=trials)
+    trial_data = get_data(X, trials=trials)
 
     # Create scatter plot and KDE plot
     a = sns.scatterplot(data=trial_data, x="fms", y="R2X_diff", ax=ax[0])
@@ -94,6 +96,7 @@ def genFig():
 
     f.suptitle(
         "Pf2 Factor Match Score and R2X Difference w/Resampled data\n"
+        f"Rank: {X.varm['Pf2_C'].shape[1]}"
     )
 
     return f
